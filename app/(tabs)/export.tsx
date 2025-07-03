@@ -28,8 +28,6 @@ export default function ExportScreen() {
       setError(null);
       console.log('Chargement des projets...');
       
-      await storage.initialize();
-      
       const projectList = await storage.getProjects();
       console.log('Projets chargés:', projectList.length);
       

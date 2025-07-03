@@ -51,15 +51,35 @@ export default function SearchScreen() {
     }, [])
   );
 
-  const loadProjects = async () => {
+  const loadProjects = useCallback(async () => {
     try {
-      await storage.initialize();
+      setError(null);
+      console.log('Chargement des projets...');
+      
       const projectList = await storage.getProjects();
+      console.log('Projets chargés:', projectList.length);
+      
       setProjects(projectList);
     } catch (error) {
       console.error('Erreur lors du chargement des projets:', error);
+      setError('Erreur lors du chargement des projets');
+      setProjects([]);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
     }
-  };
+  }, [storage]);
+
+  useEffect(() => {
+    loadProjects();
+  }, [loadProjects]);
+
+  useFocusEffect(
+    useCallback(() => {
+      console.log('Search screen focused, reloading projects...');
+      loadProjects();
+    }, [loadProjects])
+  );
 
   useEffect(() => {
     if (searchMode === 'simple' && query.trim().length >= 2) {
