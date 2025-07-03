@@ -239,20 +239,18 @@ export default function EditShutterScreen() {
           label={`${strings.referenceFlow} (${strings.cubicMeterPerHour}) *`}
           value={referenceFlow}
           onChangeText={setReferenceFlow}
-          placeholder="Ex: 5000"
+          placeholder="Ex: 5000" // MODIFIÉ : Exemple au lieu de valeur par défaut
           keyboardType="numeric"
           error={errors.referenceFlow}
-          clearZeroOnFocus={referenceFlow === '0'}
         />
 
         <Input
           label={`${strings.measuredFlow} (${strings.cubicMeterPerHour}) *`}
           value={measuredFlow}
           onChangeText={setMeasuredFlow}
-          placeholder="Ex: 4800"
+          placeholder="Ex: 4800" // MODIFIÉ : Exemple au lieu de valeur par défaut
           keyboardType="numeric"
           error={errors.measuredFlow}
-          clearZeroOnFocus={measuredFlow === '0'}
         />
 
         <Input

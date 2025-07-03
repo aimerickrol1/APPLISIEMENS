@@ -13,8 +13,8 @@ export default function CreateShutterScreen() {
   const { zoneId } = useLocalSearchParams<{ zoneId: string }>();
   const [name, setName] = useState('');
   const [type, setType] = useState<ShutterType>('high');
-  const [referenceFlow, setReferenceFlow] = useState('0');
-  const [measuredFlow, setMeasuredFlow] = useState('0');
+  const [referenceFlow, setReferenceFlow] = useState(''); // MODIFIÉ : Vide au lieu de '0'
+  const [measuredFlow, setMeasuredFlow] = useState(''); // MODIFIÉ : Vide au lieu de '0'
   const [remarks, setRemarks] = useState('');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; referenceFlow?: string; measuredFlow?: string }>({});
@@ -174,20 +174,18 @@ export default function CreateShutterScreen() {
           label={`${strings.referenceFlow} (${strings.cubicMeterPerHour}) *`}
           value={referenceFlow}
           onChangeText={setReferenceFlow}
-          placeholder="Ex: 5000"
+          placeholder="Ex: 5000" // MODIFIÉ : Exemple au lieu de valeur par défaut
           keyboardType="numeric"
           error={errors.referenceFlow}
-          clearZeroOnFocus={true}
         />
 
         <Input
           label={`${strings.measuredFlow} (${strings.cubicMeterPerHour}) *`}
           value={measuredFlow}
           onChangeText={setMeasuredFlow}
-          placeholder="Ex: 4800"
+          placeholder="Ex: 4800" // MODIFIÉ : Exemple au lieu de valeur par défaut
           keyboardType="numeric"
           error={errors.measuredFlow}
-          clearZeroOnFocus={true}
         />
 
         <Input

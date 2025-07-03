@@ -657,7 +657,7 @@ export default function ZoneDetailScreen() {
                 onFocus={() => handleFlowFocus(item.id, 'referenceFlow')}
                 onBlur={() => handleFlowBlur(item, 'referenceFlow')}
                 keyboardType="numeric"
-                placeholder="0"
+                placeholder="Ex: 5000" // MODIFIÉ : Exemple au lieu de "0"
                 placeholderTextColor={isDark ? "#6B7280" : "#9CA3AF"}
                 selectTextOnFocus={true}
               />
@@ -678,7 +678,7 @@ export default function ZoneDetailScreen() {
                 onFocus={() => handleFlowFocus(item.id, 'measuredFlow')}
                 onBlur={() => handleFlowBlur(item, 'measuredFlow')}
                 keyboardType="numeric"
-                placeholder="0"
+                placeholder="Ex: 4800" // MODIFIÉ : Exemple au lieu de "0"
                 placeholderTextColor={isDark ? "#6B7280" : "#9CA3AF"}
                 selectTextOnFocus={true}
               />

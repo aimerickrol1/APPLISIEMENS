@@ -340,7 +340,7 @@ export default function ShutterDetailScreen() {
                   onFocus={() => handleFlowFocus('referenceFlow')}
                   onBlur={() => handleFlowBlur('referenceFlow')}
                   keyboardType="numeric"
-                  placeholder="0"
+                  placeholder="Ex: 5000" // MODIFIÉ : Exemple au lieu de "0"
                   placeholderTextColor="#9CA3AF"
                   selectTextOnFocus={true}
                 />
@@ -358,7 +358,7 @@ export default function ShutterDetailScreen() {
                   onFocus={() => handleFlowFocus('measuredFlow')}
                   onBlur={() => handleFlowBlur('measuredFlow')}
                   keyboardType="numeric"
-                  placeholder="0"
+                  placeholder="Ex: 4800" // MODIFIÉ : Exemple au lieu de "0"
                   placeholderTextColor="#9CA3AF"
                   selectTextOnFocus={true}
                 />
@@ -521,6 +521,7 @@ const styles = StyleSheet.create({
   flowEditingField: {
     flex: 1,
   },
+  // Conteneur pour les labels avec hauteur fixe
   flowLabelContainer: {
     height: 44,
     justifyContent: 'flex-start',
