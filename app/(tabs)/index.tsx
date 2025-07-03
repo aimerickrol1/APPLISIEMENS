@@ -622,25 +622,31 @@ export default function ProjectsScreen() {
           </View>
         )}
 
-        {/* Statistiques principales - CORRIGÉ avec icônes plus petites et point coloré */}
+        {/* CORRIGÉ : Statistiques principales avec alignement parfait */}
         <View style={styles.mainStats}>
           <View style={styles.statBox}>
-            <Building size={16} color="#009999" />
+            <View style={styles.statIconContainer}>
+              <Building size={16} color="#009999" />
+            </View>
             <Text style={styles.statNumber}>{stats.buildingCount}</Text>
             <Text style={styles.statLabel}>Bâtiments</Text>
           </View>
           
           <View style={styles.statBox}>
-            <Layers size={16} color="#009999" />
+            <View style={styles.statIconContainer}>
+              <Layers size={16} color="#009999" />
+            </View>
             <Text style={styles.statNumber}>{stats.zoneCount}</Text>
             <Text style={styles.statLabel}>Zones</Text>
           </View>
           
           <View style={styles.statBox}>
-            {/* NOUVEAU : Point coloré aligné avec les icônes */}
-            <View style={[styles.complianceDot, { 
-              backgroundColor: stats.complianceRate >= 80 ? '#10B981' : stats.complianceRate >= 60 ? '#F59E0B' : '#EF4444' 
-            }]} />
+            {/* CORRIGÉ : Point coloré dans un conteneur de même taille que les icônes */}
+            <View style={styles.statIconContainer}>
+              <View style={[styles.complianceDot, { 
+                backgroundColor: stats.complianceRate >= 80 ? '#10B981' : stats.complianceRate >= 60 ? '#F59E0B' : '#EF4444' 
+              }]} />
+            </View>
             <Text style={[styles.statNumber, { 
               color: stats.complianceRate >= 80 ? '#10B981' : stats.complianceRate >= 60 ? '#F59E0B' : '#EF4444' 
             }]}>
@@ -1157,7 +1163,7 @@ const styles = StyleSheet.create({
     color: '#64748B',
   },
 
-  // CORRIGÉ : Statistiques principales avec icônes plus petites et point coloré
+  // CORRIGÉ : Statistiques principales avec alignement parfait
   mainStats: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -1170,11 +1176,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
+  // NOUVEAU : Conteneur pour les icônes avec taille fixe pour alignement parfait
+  statIconContainer: {
+    width: 16,
+    height: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
   statNumber: {
     fontSize: 24,
     fontFamily: 'Inter-Bold',
     color: '#111827',
-    marginTop: 8,
     marginBottom: 4,
   },
   statLabel: {
@@ -1183,7 +1196,7 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     textAlign: 'center',
   },
-  // NOUVEAU : Point coloré pour la conformité
+  // CORRIGÉ : Point coloré centré dans son conteneur
   complianceDot: {
     width: 8,
     height: 8,
