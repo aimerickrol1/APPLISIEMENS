@@ -12,7 +12,7 @@ import { router } from 'expo-router';
 export default function SettingsScreen() {
   const { strings, currentLanguage, changeLanguage } = useLanguage();
   const { theme, themeMode, setThemeMode } = useTheme();
-  const { storage } = useStorage();
+  const storage = useStorage();
   const [languageModalVisible, setLanguageModalVisible] = useState(false);
   const [themeModalVisible, setThemeModalVisible] = useState(false);
   const [clearDataModalVisible, setClearDataModalVisible] = useState(false);
