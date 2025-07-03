@@ -25,8 +25,8 @@ export default function ShutterDetailScreen() {
     measuredFlow: string;
     hasBeenFocused: { referenceFlow: boolean; measuredFlow: boolean };
   }>({
-    referenceFlow: '0',
-    measuredFlow: '0',
+    referenceFlow: '',
+    measuredFlow: '',
     hasBeenFocused: { referenceFlow: false, measuredFlow: false }
   });
 
@@ -71,8 +71,8 @@ export default function ShutterDetailScreen() {
   useEffect(() => {
     if (shutter) {
       setEditingFlows({
-        referenceFlow: shutter.referenceFlow.toString(),
-        measuredFlow: shutter.measuredFlow.toString(),
+        referenceFlow: shutter.referenceFlow > 0 ? shutter.referenceFlow.toString() : '', // CORRIGÉ : Vide si 0
+        measuredFlow: shutter.measuredFlow > 0 ? shutter.measuredFlow.toString() : '', // CORRIGÉ : Vide si 0
         hasBeenFocused: { referenceFlow: false, measuredFlow: false }
       });
     }
@@ -150,19 +150,7 @@ export default function ShutterDetailScreen() {
 
   const handleFlowFocus = useCallback((field: 'referenceFlow' | 'measuredFlow') => {
     setEditingFlows(prev => {
-      // Si c'est le premier focus ET que la valeur est "0", l'effacer
-      if (!prev.hasBeenFocused[field] && prev[field] === '0') {
-        return {
-          ...prev,
-          [field]: '', // Effacer le "0"
-          hasBeenFocused: {
-            ...prev.hasBeenFocused,
-            [field]: true
-          }
-        };
-      }
-
-      // Sinon, juste marquer comme focalisé
+      // Marquer comme focalisé
       return {
         ...prev,
         hasBeenFocused: {
@@ -176,15 +164,15 @@ export default function ShutterDetailScreen() {
   const handleFlowBlur = useCallback(async (field: 'referenceFlow' | 'measuredFlow') => {
     if (!shutter) return;
 
-    const refFlow = parseFloat(editingFlows.referenceFlow);
-    const measFlow = parseFloat(editingFlows.measuredFlow);
+    const refFlow = parseFloat(editingFlows.referenceFlow) || 0;
+    const measFlow = parseFloat(editingFlows.measuredFlow) || 0;
 
     // Validation des valeurs
     if (isNaN(refFlow) || refFlow < 0) {
       // Restaurer la valeur originale en cas d'erreur
       setEditingFlows(prev => ({
         ...prev,
-        referenceFlow: shutter.referenceFlow.toString()
+        referenceFlow: shutter.referenceFlow > 0 ? shutter.referenceFlow.toString() : ''
       }));
       return;
     }
@@ -193,7 +181,7 @@ export default function ShutterDetailScreen() {
       // Restaurer la valeur originale en cas d'erreur
       setEditingFlows(prev => ({
         ...prev,
-        measuredFlow: shutter.measuredFlow.toString()
+        measuredFlow: shutter.measuredFlow > 0 ? shutter.measuredFlow.toString() : ''
       }));
       return;
     }
@@ -227,8 +215,8 @@ export default function ShutterDetailScreen() {
         // En cas d'erreur, restaurer les valeurs originales
         setEditingFlows(prev => ({
           ...prev,
-          referenceFlow: shutter.referenceFlow.toString(),
-          measuredFlow: shutter.measuredFlow.toString()
+          referenceFlow: shutter.referenceFlow > 0 ? shutter.referenceFlow.toString() : '',
+          measuredFlow: shutter.measuredFlow > 0 ? shutter.measuredFlow.toString() : ''
         }));
       }
     }
@@ -340,7 +328,7 @@ export default function ShutterDetailScreen() {
                   onFocus={() => handleFlowFocus('referenceFlow')}
                   onBlur={() => handleFlowBlur('referenceFlow')}
                   keyboardType="numeric"
-                  placeholder="Ex: 5000" // MODIFIÉ : Exemple au lieu de "0"
+                  placeholder="Ex: 5000" // CORRIGÉ : Exemple au lieu de "0"
                   placeholderTextColor="#9CA3AF"
                   selectTextOnFocus={true}
                 />
@@ -358,7 +346,7 @@ export default function ShutterDetailScreen() {
                   onFocus={() => handleFlowFocus('measuredFlow')}
                   onBlur={() => handleFlowBlur('measuredFlow')}
                   keyboardType="numeric"
-                  placeholder="Ex: 4800" // MODIFIÉ : Exemple au lieu de "0"
+                  placeholder="Ex: 4800" // CORRIGÉ : Exemple au lieu de "0"
                   placeholderTextColor="#9CA3AF"
                   selectTextOnFocus={true}
                 />
@@ -523,7 +511,7 @@ const styles = StyleSheet.create({
   },
   // Conteneur pour les labels avec hauteur fixe
   flowLabelContainer: {
-    height: 44,
+    height: 44, // Hauteur fixe pour aligner tous les champs
     justifyContent: 'flex-start',
     marginBottom: 4,
   },

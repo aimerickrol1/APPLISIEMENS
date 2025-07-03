@@ -13,8 +13,8 @@ export default function CreateShutterScreen() {
   const { zoneId } = useLocalSearchParams<{ zoneId: string }>();
   const [name, setName] = useState('');
   const [type, setType] = useState<ShutterType>('high');
-  const [referenceFlow, setReferenceFlow] = useState(''); // MODIFIÉ : Vide au lieu de '0'
-  const [measuredFlow, setMeasuredFlow] = useState(''); // MODIFIÉ : Vide au lieu de '0'
+  const [referenceFlow, setReferenceFlow] = useState(''); // CORRIGÉ : Vide par défaut
+  const [measuredFlow, setMeasuredFlow] = useState(''); // CORRIGÉ : Vide par défaut
   const [remarks, setRemarks] = useState('');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; referenceFlow?: string; measuredFlow?: string }>({});
@@ -174,7 +174,7 @@ export default function CreateShutterScreen() {
           label={`${strings.referenceFlow} (${strings.cubicMeterPerHour}) *`}
           value={referenceFlow}
           onChangeText={setReferenceFlow}
-          placeholder="Ex: 5000" // MODIFIÉ : Exemple au lieu de valeur par défaut
+          placeholder="Ex: 5000" // CORRIGÉ : Exemple clair
           keyboardType="numeric"
           error={errors.referenceFlow}
         />
@@ -183,7 +183,7 @@ export default function CreateShutterScreen() {
           label={`${strings.measuredFlow} (${strings.cubicMeterPerHour}) *`}
           value={measuredFlow}
           onChangeText={setMeasuredFlow}
-          placeholder="Ex: 4800" // MODIFIÉ : Exemple au lieu de valeur par défaut
+          placeholder="Ex: 4800" // CORRIGÉ : Exemple clair
           keyboardType="numeric"
           error={errors.measuredFlow}
         />
