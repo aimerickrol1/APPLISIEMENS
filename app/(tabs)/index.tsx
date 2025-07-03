@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Modal, ScrollView, TextInput } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
-import { Plus, Building, Settings, Star, Trash2, SquareCheck as CheckSquare, Square, X, Minus } from 'lucide-react-native';
+import { Plus, Building, Settings, Star, Trash2, SquareCheck as CheckSquare, Square, X, Minus, Calendar } from 'lucide-react-native';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { DateInput } from '@/components/DateInput';
 import { Project } from '@/types';
 import { storage } from '@/utils/storage';
+import { calculateCompliance } from '@/utils/compliance';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 // Interface pour la structure prédéfinie
@@ -478,6 +479,50 @@ export default function ProjectsScreen() {
     router.push(`/(tabs)/project/edit/${project.id}`);
   };
 
+  // NOUVEAU : Fonction pour calculer les statistiques détaillées du projet
+  const getProjectStats = (project: Project) => {
+    const buildingCount = project.buildings.length;
+    const zoneCount = project.buildings.reduce((total, building) => total + building.functionalZones.length, 0);
+    const shutterCount = project.buildings.reduce((total, building) => 
+      total + building.functionalZones.reduce((zoneTotal, zone) => zoneTotal + zone.shutters.length, 0), 0);
+
+    let compliantCount = 0;
+    let acceptableCount = 0;
+    let nonCompliantCount = 0;
+
+    // Calculer la conformité pour chaque volet
+    project.buildings.forEach(building => {
+      building.functionalZones.forEach(zone => {
+        zone.shutters.forEach(shutter => {
+          const compliance = calculateCompliance(shutter.referenceFlow, shutter.measuredFlow);
+          switch (compliance.status) {
+            case 'compliant':
+              compliantCount++;
+              break;
+            case 'acceptable':
+              acceptableCount++;
+              break;
+            case 'non-compliant':
+              nonCompliantCount++;
+              break;
+          }
+        });
+      });
+    });
+
+    const complianceRate = shutterCount > 0 ? (compliantCount / shutterCount) * 100 : 0;
+
+    return {
+      buildingCount,
+      zoneCount,
+      shutterCount,
+      compliantCount,
+      acceptableCount,
+      nonCompliantCount,
+      complianceRate
+    };
+  };
+
   // Trier les projets : favoris en premier
   const sortedProjects = [...projects].sort((a, b) => {
     const aIsFavorite = favoriteProjects.has(a.id);
@@ -491,10 +536,7 @@ export default function ProjectsScreen() {
   const renderProject = ({ item }: { item: Project }) => {
     const isSelected = selectedProjects.has(item.id);
     const isFavorite = favoriteProjects.has(item.id);
-    const buildingCount = item.buildings.length;
-    const zoneCount = item.buildings.reduce((total, building) => total + building.functionalZones.length, 0);
-    const shutterCount = item.buildings.reduce((total, building) => 
-      total + building.functionalZones.reduce((zoneTotal, zone) => zoneTotal + zone.shutters.length, 0), 0);
+    const stats = getProjectStats(item);
 
     return (
       <TouchableOpacity
@@ -511,6 +553,7 @@ export default function ProjectsScreen() {
           }
         }}
       >
+        {/* En-tête avec nom du projet et actions */}
         <View style={styles.projectHeader}>
           <View style={styles.projectTitleSection}>
             {selectionMode && (
@@ -559,33 +602,101 @@ export default function ProjectsScreen() {
           )}
         </View>
 
-        <View style={styles.projectStats}>
-          <View style={styles.statItem}>
-            <Building size={14} color="#009999" />
-            <Text style={styles.statText}>{buildingCount} bâtiment{buildingCount > 1 ? 's' : ''}</Text>
+        {/* Dates du projet */}
+        {(item.startDate || item.endDate) && (
+          <View style={styles.projectDates}>
+            <Calendar size={14} color="#6B7280" />
+            <Text style={styles.dateText}>
+              {item.startDate && new Date(item.startDate).toLocaleDateString('fr-FR', { 
+                day: 'numeric', 
+                month: 'short', 
+                year: 'numeric' 
+              })}
+              {item.startDate && item.endDate && ' → '}
+              {item.endDate && new Date(item.endDate).toLocaleDateString('fr-FR', { 
+                day: 'numeric', 
+                month: 'short', 
+                year: 'numeric' 
+              })}
+            </Text>
           </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statText}>{zoneCount} zone{zoneCount > 1 ? 's' : ''}</Text>
+        )}
+
+        {/* Statistiques principales */}
+        <View style={styles.mainStats}>
+          <View style={styles.statBox}>
+            <Building size={20} color="#009999" />
+            <Text style={styles.statNumber}>{stats.buildingCount}</Text>
+            <Text style={styles.statLabel}>Bâtiments</Text>
           </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statText}>{shutterCount} volet{shutterCount > 1 ? 's' : ''}</Text>
+          
+          <View style={styles.statBox}>
+            <View style={[styles.statIcon, { backgroundColor: '#E0F2FE' }]}>
+              <Text style={styles.statIconText}>Z</Text>
+            </View>
+            <Text style={styles.statNumber}>{stats.zoneCount}</Text>
+            <Text style={styles.statLabel}>Zones</Text>
+          </View>
+          
+          <View style={styles.statBox}>
+            <View style={styles.complianceIndicator}>
+              <Text style={[styles.compliancePercentage, { 
+                color: stats.complianceRate >= 80 ? '#10B981' : stats.complianceRate >= 60 ? '#F59E0B' : '#EF4444' 
+              }]}>
+                {stats.complianceRate.toFixed(0)}%
+              </Text>
+            </View>
+            <Text style={styles.statLabel}>Conformité</Text>
           </View>
         </View>
 
-        {(item.startDate || item.endDate) && (
-          <View style={styles.projectDates}>
-            {item.startDate && (
-              <Text style={styles.dateText}>
-                Début: {new Date(item.startDate).toLocaleDateString('fr-FR')}
-              </Text>
-            )}
-            {item.endDate && (
-              <Text style={styles.dateText}>
-                Fin: {new Date(item.endDate).toLocaleDateString('fr-FR')}
-              </Text>
-            )}
+        {/* Barre de progression de conformité */}
+        {stats.shutterCount > 0 && (
+          <View style={styles.complianceSection}>
+            <Text style={styles.shutterCountText}>{stats.shutterCount} volets</Text>
+            
+            <View style={styles.complianceBar}>
+              <View style={[styles.complianceSegment, { 
+                flex: stats.compliantCount, 
+                backgroundColor: '#10B981' 
+              }]} />
+              <View style={[styles.complianceSegment, { 
+                flex: stats.acceptableCount, 
+                backgroundColor: '#F59E0B' 
+              }]} />
+              <View style={[styles.complianceSegment, { 
+                flex: stats.nonCompliantCount, 
+                backgroundColor: '#EF4444' 
+              }]} />
+            </View>
+
+            <View style={styles.complianceLegend}>
+              <View style={styles.legendItem}>
+                <View style={[styles.legendDot, { backgroundColor: '#10B981' }]} />
+                <Text style={styles.legendText}>{stats.compliantCount} Fonctionnel</Text>
+              </View>
+              <View style={styles.legendItem}>
+                <View style={[styles.legendDot, { backgroundColor: '#F59E0B' }]} />
+                <Text style={styles.legendText}>{stats.acceptableCount} Acceptable</Text>
+              </View>
+              <View style={styles.legendItem}>
+                <View style={[styles.legendDot, { backgroundColor: '#EF4444' }]} />
+                <Text style={styles.legendText}>{stats.nonCompliantCount} Non conforme</Text>
+              </View>
+            </View>
           </View>
         )}
+
+        {/* Date de création */}
+        <View style={styles.projectFooter}>
+          <Text style={styles.createdText}>
+            Créé le {new Date(item.createdAt).toLocaleDateString('fr-FR', { 
+              day: 'numeric', 
+              month: 'short', 
+              year: 'numeric' 
+            })}
+          </Text>
+        </View>
       </TouchableOpacity>
     );
   };
@@ -971,16 +1082,20 @@ const styles = StyleSheet.create({
   listContainer: {
     padding: 16,
   },
+
+  // NOUVEAU : Styles pour les cartes de projet détaillées
   projectCard: {
     backgroundColor: '#ffffff',
     borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
+    padding: 20,
+    marginBottom: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
   },
   selectedCard: {
     borderWidth: 2,
@@ -995,7 +1110,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   projectTitleSection: {
     flexDirection: 'row',
@@ -1010,47 +1125,142 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   projectName: {
-    fontSize: 18,
+    fontSize: 20,
     fontFamily: 'Inter-Bold',
     color: '#111827',
-    marginBottom: 2,
+    marginBottom: 4,
   },
   projectCity: {
     fontSize: 14,
-    fontFamily: 'Inter-Regular',
+    fontFamily: 'Inter-Medium',
     color: '#009999',
   },
   actionButtons: {
     flexDirection: 'row',
     gap: 8,
   },
-  projectStats: {
+  
+  // Dates du projet
+  projectDates: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: 8,
+    marginBottom: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 8,
+  },
+  dateText: {
+    fontSize: 13,
+    fontFamily: 'Inter-Medium',
+    color: '#64748B',
+  },
+
+  // Statistiques principales
+  mainStats: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 20,
+    paddingVertical: 16,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+  },
+  statBox: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  statIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: 8,
   },
-  statItem: {
+  statIconText: {
+    fontSize: 14,
+    fontFamily: 'Inter-Bold',
+    color: '#0369A1',
+  },
+  statNumber: {
+    fontSize: 24,
+    fontFamily: 'Inter-Bold',
+    color: '#111827',
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    fontFamily: 'Inter-Medium',
+    color: '#6B7280',
+    textAlign: 'center',
+  },
+  complianceIndicator: {
+    marginBottom: 8,
+  },
+  compliancePercentage: {
+    fontSize: 24,
+    fontFamily: 'Inter-Bold',
+  },
+
+  // Section de conformité
+  complianceSection: {
+    marginBottom: 16,
+  },
+  shutterCountText: {
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
+    color: '#111827',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  complianceBar: {
+    flexDirection: 'row',
+    height: 8,
+    borderRadius: 4,
+    overflow: 'hidden',
+    backgroundColor: '#E5E7EB',
+    marginBottom: 12,
+  },
+  complianceSegment: {
+    height: '100%',
+  },
+  complianceLegend: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
   },
-  statText: {
-    fontSize: 12,
+  legendDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  legendText: {
+    fontSize: 11,
     fontFamily: 'Inter-Medium',
     color: '#6B7280',
   },
-  projectDates: {
-    flexDirection: 'row',
-    gap: 16,
+
+  // Pied de page du projet
+  projectFooter: {
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+    paddingTop: 12,
+    alignItems: 'center',
   },
-  dateText: {
+  createdText: {
     fontSize: 12,
     fontFamily: 'Inter-Regular',
     color: '#9CA3AF',
   },
 
-  // Styles pour le modal
+  // Styles pour le modal (inchangés)
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -1096,7 +1306,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  // Styles pour la prédéfinition de structure
+  // Styles pour la prédéfinition de structure (inchangés)
   predefinedToggleSection: {
     marginBottom: 16,
     paddingVertical: 16,
