@@ -1,19 +1,24 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert, KeyboardAvoidingView, Platform, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
 import { Header } from '@/components/Header';
 import { Input } from '@/components/Input';
 import { DateInput } from '@/components/DateInput';
 import { Button } from '@/components/Button';
+import { NumericInput } from '@/components/NumericInput';
 import { storage } from '@/utils/storage';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function CreateProjectScreen() {
+  const { strings } = useLanguage();
   const [name, setName] = useState('');
   const [city, setCity] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; startDate?: string; endDate?: string }>({});
+
+  // États pour la prédéfinition de structure
 
   const handleBack = () => {
     router.push('/(tabs)/');
@@ -26,7 +31,6 @@ export default function CreateProjectScreen() {
       newErrors.name = 'Le nom du projet est requis';
     }
 
-    // Validation des dates si elles sont renseignées
     if (startDate && !isValidDate(startDate)) {
       newErrors.startDate = 'Format de date invalide (JJ/MM/AAAA)';
     }
@@ -35,7 +39,6 @@ export default function CreateProjectScreen() {
       newErrors.endDate = 'Format de date invalide (JJ/MM/AAAA)';
     }
 
-    // Vérifier que la date de fin est après la date de début
     if (startDate && endDate && isValidDate(startDate) && isValidDate(endDate)) {
       const start = parseDate(startDate);
       const end = parseDate(endDate);
@@ -68,6 +71,46 @@ export default function CreateProjectScreen() {
     return new Date(year, month - 1, day);
   };
 
+    try {
+        const building = await storage.createBuilding(projectId, {
+          name: `Bâtiment ${b}`,
+          description: `Bâtiment généré automatiquement ${b}`
+        });
+
+        if (building) {
+            const zone = await storage.createFunctionalZone(building.id, {
+              name: `ZF${z.toString().padStart(2, '0')}`,
+              description: `Zone fonctionnelle ${z}`
+            });
+
+            if (zone) {
+              // Créer les volets hauts
+                await storage.createShutter(zone.id, {
+                  name: `VH${vh.toString().padStart(2, '0')}`,
+                  type: 'high',
+                  referenceFlow: 0,
+                  measuredFlow: 0
+                });
+              }
+
+              // Créer les volets bas
+                await storage.createShutter(zone.id, {
+                  name: `VB${vb.toString().padStart(2, '0')}`,
+                  type: 'low',
+                  referenceFlow: 0,
+                  measuredFlow: 0
+                });
+              }
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Erreur lors de la création de la structure prédéfinie:', error);
+      throw error;
+    }
+  };
+
   const handleCreate = async () => {
     if (!validateForm()) return;
 
@@ -90,6 +133,10 @@ export default function CreateProjectScreen() {
       }
 
       const project = await storage.createProject(projectData);
+
+      // Créer la structure prédéfinie si activée
+      }
+
       router.replace(`/(tabs)/project/${project.id}`);
     } catch (error) {
       Alert.alert('Erreur', 'Impossible de créer le projet. Veuillez réessayer.');
@@ -113,6 +160,7 @@ export default function CreateProjectScreen() {
         style={styles.content} 
         contentContainerStyle={styles.contentContainer}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
         <Input
           label="Nom du projet *"
@@ -145,6 +193,88 @@ export default function CreateProjectScreen() {
           error={errors.endDate}
         />
 
+        {/* Section Prédéfinition de structure - SANS SCROLL AUTOMATIQUE */}
+        <View style={styles.structureSection}>
+          <TouchableOpacity 
+            style={styles.structureHeader}
+            activeOpacity={0.7}
+          >
+            <View style={styles.structureTitle}>
+              <Text style={styles.structureIcon}>🏗️</Text>
+              <Text style={styles.structureTitleText}>Prédéfinir la structure (optionnel)</Text>
+            </View>
+            </View>
+          </TouchableOpacity>
+          
+          <Text style={styles.structureDescription}>
+            Créez automatiquement vos bâtiments, zones et volets
+          </Text>
+
+            <View style={styles.structureInputs}>
+              <NumericInput
+                label="🏢 Bâtiments (max 10)"
+                onValueChange={setBuildingCount}
+                min={1}
+                max={10}
+              />
+
+              <NumericInput
+                label="🏗️ Zones par bâtiment (max 20)"
+                onValueChange={setZonesPerBuilding}
+                min={1}
+                max={20}
+              />
+
+              <View style={styles.shuttersSection}>
+                <Text style={styles.shuttersTitle}>🔲 Volets par zone (max 30)</Text>
+                
+                <View style={styles.shutterInputsRow}>
+                  <View style={styles.shutterInputContainer}>
+                    <View style={styles.shutterTypeIndicator}>
+                      <View style={[styles.shutterDot, { backgroundColor: '#10B981' }]} />
+                      <Text style={styles.shutterTypeLabel}>Volet Haut (VH)</Text>
+                    </View>
+                    <NumericInput
+                      onValueChange={setHighShuttersPerZone}
+                      min={0}
+                      max={30}
+                      style={styles.shutterInput}
+                    />
+                  </View>
+
+                  <View style={styles.shutterInputContainer}>
+                    <View style={styles.shutterTypeIndicator}>
+                      <View style={[styles.shutterDot, { backgroundColor: '#F59E0B' }]} />
+                      <Text style={styles.shutterTypeLabel}>Volet Bas (VB)</Text>
+                    </View>
+                    <NumericInput
+                      onValueChange={setLowShuttersPerZone}
+                      min={0}
+                      max={30}
+                      style={styles.shutterInput}
+                    />
+                  </View>
+                </View>
+              </View>
+
+              {/* Aperçu de la structure */}
+              <View style={styles.previewContainer}>
+                <Text style={styles.previewTitle}>📋 Aperçu de la structure</Text>
+                <View style={styles.previewStats}>
+                  <View style={styles.previewStat}>
+                  </View>
+                  <View style={styles.previewStat}>
+                  </View>
+                  <View style={styles.previewStat}>
+                    <Text style={styles.previewStatValue}>
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+          )}
+        </View>
+
         <View style={styles.buttonContainer}>
           <Button
             title="Créer le projet"
@@ -171,5 +301,150 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     marginTop: 24,
+  },
+
+  // Styles pour la section de prédéfinition de structure
+  structureSection: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  structureHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+    paddingVertical: 4,
+  },
+  structureTitle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  structureIcon: {
+    fontSize: 20,
+    marginRight: 8,
+  },
+  structureTitleText: {
+    fontSize: 16,
+    fontFamily: 'Inter-SemiBold',
+    color: '#111827',
+  },
+  structureDescription: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: '#6B7280',
+    marginBottom: 16,
+  },
+  
+  // Toggle switch
+  toggle: {
+    width: 50,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#D1D5DB',
+    padding: 2,
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  toggleActive: {
+    backgroundColor: '#009999',
+  },
+  toggleThumb: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#ffffff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
+    position: 'absolute',
+    left: 2,
+  },
+  toggleThumbActive: {
+    left: 24,
+  },
+
+  // Inputs de structure
+  structureInputs: {
+    gap: 20,
+  },
+  
+  // Section volets
+  shuttersSection: {
+    marginTop: 8,
+  },
+  shuttersTitle: {
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
+    color: '#374151',
+    marginBottom: 12,
+  },
+  shutterInputsRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  shutterInputContainer: {
+    flex: 1,
+  },
+  shutterTypeIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    gap: 6,
+  },
+  shutterDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  shutterTypeLabel: {
+    fontSize: 12,
+    fontFamily: 'Inter-Medium',
+    color: '#374151',
+  },
+  shutterInput: {
+    marginBottom: 0,
+  },
+
+  // Aperçu de la structure
+  previewContainer: {
+    backgroundColor: '#F0FDFA',
+    borderRadius: 8,
+    padding: 16,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+  },
+  previewTitle: {
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
+    color: '#047857',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  previewStats: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  previewStat: {
+    alignItems: 'center',
+  },
+  previewStatValue: {
+    fontSize: 20,
+    fontFamily: 'Inter-Bold',
+    color: '#059669',
+  },
+  previewStatLabel: {
+    fontSize: 12,
+    fontFamily: 'Inter-Medium',
+    color: '#047857',
+    marginTop: 2,
+    textAlign: 'center',
   },
 });
