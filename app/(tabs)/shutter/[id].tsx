@@ -9,17 +9,18 @@ import { Project, Building, FunctionalZone, Shutter } from '@/types';
 import { storage } from '@/utils/storage';
 import { calculateCompliance, formatDeviation } from '@/utils/compliance';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function ShutterDetailScreen() {
   const { strings } = useLanguage();
-  const { id, from } = useLocalSearchParams<{ id: string; from?: string }>(); // NOUVEAU : Paramètre 'from'
+  const { theme } = useTheme();
+  const { id, from } = useLocalSearchParams<{ id: string; from?: string }>();
   const [shutter, setShutter] = useState<Shutter | null>(null);
   const [zone, setZone] = useState<FunctionalZone | null>(null);
   const [building, setBuilding] = useState<Building | null>(null);
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // NOUVEAU : États pour l'édition directe des débits
   const [editingFlows, setEditingFlows] = useState<{
     referenceFlow: string;
     measuredFlow: string;
@@ -30,7 +31,6 @@ export default function ShutterDetailScreen() {
     hasBeenFocused: { referenceFlow: false, measuredFlow: false }
   });
 
-  // CORRIGÉ : Fonction de chargement avec useCallback
   const loadShutter = useCallback(async () => {
     try {
       const projects = await storage.getProjects();
@@ -55,7 +55,6 @@ export default function ShutterDetailScreen() {
     }
   }, [id]);
 
-  // NOUVEAU : Utiliser useFocusEffect pour recharger les données quand on revient sur la page
   useFocusEffect(
     useCallback(() => {
       console.log('Shutter screen focused, reloading data...');
@@ -67,12 +66,11 @@ export default function ShutterDetailScreen() {
     loadShutter();
   }, [loadShutter]);
 
-  // NOUVEAU : Initialiser l'édition des débits quand le volet est chargé
   useEffect(() => {
     if (shutter) {
       setEditingFlows({
-        referenceFlow: shutter.referenceFlow > 0 ? shutter.referenceFlow.toString() : '', // CORRIGÉ : Vide si 0
-        measuredFlow: shutter.measuredFlow > 0 ? shutter.measuredFlow.toString() : '', // CORRIGÉ : Vide si 0
+        referenceFlow: shutter.referenceFlow > 0 ? shutter.referenceFlow.toString() : '',
+        measuredFlow: shutter.measuredFlow > 0 ? shutter.measuredFlow.toString() : '',
         hasBeenFocused: { referenceFlow: false, measuredFlow: false }
       });
     }
@@ -80,27 +78,21 @@ export default function ShutterDetailScreen() {
 
   const handleBack = () => {
     try {
-      // CORRIGÉ : Navigation intelligente selon la provenance
       if (from === 'search') {
-        // Si on vient de la recherche, retourner à la recherche
         router.push('/(tabs)/search');
       } else if (zone) {
-        // Sinon, retourner vers la zone (comportement normal)
         router.push(`/(tabs)/zone/${zone.id}`);
       } else {
-        // Fallback vers l'accueil
         router.push('/(tabs)/');
       }
     } catch (error) {
       console.error('Erreur de navigation:', error);
-      // Fallback vers l'accueil en cas d'erreur
       router.push('/(tabs)/');
     }
   };
 
   const handleEdit = () => {
     try {
-      // NOUVEAU : Passer le paramètre 'from' à la page d'édition
       if (from === 'search') {
         router.push(`/(tabs)/shutter/edit/${id}?from=search`);
       } else {
@@ -124,14 +116,13 @@ export default function ShutterDetailScreen() {
           style: 'destructive',
           onPress: async () => {
             await storage.deleteShutter(shutter.id);
-            handleBack(); // Utilise la même logique de navigation
+            handleBack();
           }
         }
       ]
     );
   };
 
-  // NOUVEAU : Fonction pour formater les dates
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('fr-FR', {
       day: 'numeric',
@@ -140,7 +131,6 @@ export default function ShutterDetailScreen() {
     }).format(new Date(date));
   };
 
-  // NOUVEAU : Fonctions pour l'édition directe des débits
   const handleFlowChange = useCallback((field: 'referenceFlow' | 'measuredFlow', value: string) => {
     setEditingFlows(prev => ({
       ...prev,
@@ -150,7 +140,6 @@ export default function ShutterDetailScreen() {
 
   const handleFlowFocus = useCallback((field: 'referenceFlow' | 'measuredFlow') => {
     setEditingFlows(prev => {
-      // Marquer comme focalisé
       return {
         ...prev,
         hasBeenFocused: {
@@ -167,9 +156,7 @@ export default function ShutterDetailScreen() {
     const refFlow = parseFloat(editingFlows.referenceFlow) || 0;
     const measFlow = parseFloat(editingFlows.measuredFlow) || 0;
 
-    // Validation des valeurs
     if (isNaN(refFlow) || refFlow < 0) {
-      // Restaurer la valeur originale en cas d'erreur
       setEditingFlows(prev => ({
         ...prev,
         referenceFlow: shutter.referenceFlow > 0 ? shutter.referenceFlow.toString() : ''
@@ -178,7 +165,6 @@ export default function ShutterDetailScreen() {
     }
 
     if (isNaN(measFlow) || measFlow < 0) {
-      // Restaurer la valeur originale en cas d'erreur
       setEditingFlows(prev => ({
         ...prev,
         measuredFlow: shutter.measuredFlow > 0 ? shutter.measuredFlow.toString() : ''
@@ -186,18 +172,15 @@ export default function ShutterDetailScreen() {
       return;
     }
 
-    // Vérifier si les valeurs ont changé
     const hasChanged = refFlow !== shutter.referenceFlow || measFlow !== shutter.measuredFlow;
     
     if (hasChanged) {
       try {
-        // Sauvegarde automatique et silencieuse
         await storage.updateShutter(shutter.id, {
           referenceFlow: refFlow,
           measuredFlow: measFlow,
         });
         
-        // CORRIGÉ : Mise à jour instantanée de l'état local
         setShutter(prevShutter => {
           if (!prevShutter) return prevShutter;
           return {
@@ -212,7 +195,6 @@ export default function ShutterDetailScreen() {
         
       } catch (error) {
         console.error('Erreur lors de la sauvegarde automatique:', error);
-        // En cas d'erreur, restaurer les valeurs originales
         setEditingFlows(prev => ({
           ...prev,
           referenceFlow: shutter.referenceFlow > 0 ? shutter.referenceFlow.toString() : '',
@@ -221,6 +203,8 @@ export default function ShutterDetailScreen() {
       }
     }
   }, [editingFlows, shutter]);
+
+  const styles = createStyles(theme);
 
   if (loading) {
     return (
@@ -244,7 +228,6 @@ export default function ShutterDetailScreen() {
     );
   }
 
-  // Calculer la conformité avec les valeurs actuelles (éditées ou originales)
   const currentRefFlow = parseFloat(editingFlows.referenceFlow) || 0;
   const currentMeasFlow = parseFloat(editingFlows.measuredFlow) || 0;
   const compliance = calculateCompliance(currentRefFlow, currentMeasFlow);
@@ -257,7 +240,7 @@ export default function ShutterDetailScreen() {
         onBack={handleBack}
         rightComponent={
           <TouchableOpacity onPress={handleEdit} style={styles.editButton}>
-            <Settings size={20} color="#009999" />
+            <Settings size={20} color={theme.colors.primary} />
           </TouchableOpacity>
         }
       />
@@ -286,7 +269,6 @@ export default function ShutterDetailScreen() {
             <Text style={styles.infoValue}>{zone.name}</Text>
           </View>
 
-          {/* NOUVEAU : Affichage des dates du projet */}
           {project.startDate && (
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>{strings.startDate}</Text>
@@ -309,7 +291,6 @@ export default function ShutterDetailScreen() {
           </View>
         </View>
 
-        {/* NOUVEAU : Édition directe des débits */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>{strings.flowMeasurements}</Text>
 
@@ -328,8 +309,8 @@ export default function ShutterDetailScreen() {
                   onFocus={() => handleFlowFocus('referenceFlow')}
                   onBlur={() => handleFlowBlur('referenceFlow')}
                   keyboardType="numeric"
-                  placeholder="Ex: 5000" // CORRIGÉ : Exemple au lieu de "0"
-                  placeholderTextColor="#9CA3AF"
+                  placeholder="Ex: 5000"
+                  placeholderTextColor={theme.colors.textTertiary}
                   selectTextOnFocus={true}
                 />
               </View>
@@ -346,8 +327,8 @@ export default function ShutterDetailScreen() {
                   onFocus={() => handleFlowFocus('measuredFlow')}
                   onBlur={() => handleFlowBlur('measuredFlow')}
                   keyboardType="numeric"
-                  placeholder="Ex: 4800" // CORRIGÉ : Exemple au lieu de "0"
-                  placeholderTextColor="#9CA3AF"
+                  placeholder="Ex: 4800"
+                  placeholderTextColor={theme.colors.textTertiary}
                   selectTextOnFocus={true}
                 />
               </View>
@@ -368,14 +349,12 @@ export default function ShutterDetailScreen() {
         </View>
 
         <View style={styles.card}>
-          {/* CORRIGÉ : Titre de conformité mis à jour */}
           <Text style={styles.cardTitle}>{strings.compliance} NF S61-933 Annexe H</Text>
           
           <View style={styles.complianceContainer}>
             <ComplianceIndicator compliance={compliance} size="large" />
           </View>
 
-          {/* CORRIGÉ : Ne pas afficher le texte descriptif si c'est "référence invalide" */}
           {compliance.status !== 'non-compliant' || currentRefFlow > 0 ? (
             <Text style={styles.complianceDescription}>
               {compliance.status === 'compliant' && strings.functionalDesc}
@@ -383,7 +362,6 @@ export default function ShutterDetailScreen() {
               {compliance.status === 'non-compliant' && currentRefFlow > 0 && strings.nonCompliantDesc}
             </Text>
           ) : (
-            // NOUVEAU : Message pour référence invalide
             <Text style={styles.invalidReferenceMessage}>
               Veuillez rentrer les mesures de débits
             </Text>
@@ -410,10 +388,10 @@ export default function ShutterDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: theme.colors.background,
   },
   content: {
     flex: 1,
@@ -429,7 +407,7 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 16,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
   },
   errorContainer: {
     flex: 1,
@@ -440,14 +418,14 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 16,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     textAlign: 'center',
   },
   editButton: {
     padding: 8,
   },
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.surface,
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
@@ -466,13 +444,13 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 18,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
   },
   shutterType: {
     fontSize: 12,
     fontFamily: 'Inter-Medium',
-    color: '#6B7280',
-    backgroundColor: '#F3F4F6',
+    color: theme.colors.textSecondary,
+    backgroundColor: theme.colors.surfaceSecondary,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
@@ -486,18 +464,16 @@ const styles = StyleSheet.create({
   infoLabel: {
     fontSize: 14,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
   },
   infoValue: {
     fontSize: 14,
     fontFamily: 'Inter-Medium',
-    color: '#111827',
+    color: theme.colors.text,
     textAlign: 'right',
   },
-  
-  // NOUVEAU : Styles pour l'édition directe des débits
   flowEditingContainer: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: theme.colors.surfaceSecondary,
     borderRadius: 8,
     padding: 12,
     marginTop: 12,
@@ -509,43 +485,43 @@ const styles = StyleSheet.create({
   flowEditingField: {
     flex: 1,
   },
-  // Conteneur pour les labels avec hauteur fixe
   flowLabelContainer: {
-    height: 44, // Hauteur fixe pour aligner tous les champs
+    height: 44,
     justifyContent: 'flex-start',
     marginBottom: 4,
   },
   flowEditingLabel: {
     fontSize: 10,
     fontFamily: 'Inter-Medium',
-    color: '#374151',
+    color: theme.colors.textSecondary,
     lineHeight: 12,
   },
   flowEditingUnit: {
     fontSize: 9,
     fontFamily: 'Inter-Regular',
-    color: '#9CA3AF',
+    color: theme.colors.textTertiary,
     marginTop: 2,
   },
   flowEditingInput: {
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: theme.colors.border,
     borderRadius: 6,
     paddingHorizontal: 8,
     paddingVertical: 8,
     fontSize: 14,
     fontFamily: 'Inter-Regular',
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.inputBackground,
+    color: theme.colors.text,
     textAlign: 'center',
     height: 40,
   },
   deviationDisplay: {
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: theme.colors.border,
     borderRadius: 6,
     paddingHorizontal: 8,
     paddingVertical: 8,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: theme.colors.surfaceSecondary,
     alignItems: 'center',
     justifyContent: 'center',
     height: 40,
@@ -554,7 +530,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Inter-Bold',
   },
-
   complianceContainer: {
     alignItems: 'center',
     marginVertical: 16,
@@ -562,15 +537,14 @@ const styles = StyleSheet.create({
   complianceDescription: {
     fontSize: 14,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     lineHeight: 20,
     textAlign: 'center',
   },
-  // NOUVEAU : Style pour le message de référence invalide
   invalidReferenceMessage: {
     fontSize: 14,
     fontFamily: 'Inter-Regular',
-    color: '#F59E0B',
+    color: theme.colors.warning,
     lineHeight: 20,
     textAlign: 'center',
     fontStyle: 'italic',
@@ -578,7 +552,7 @@ const styles = StyleSheet.create({
   remarksText: {
     fontSize: 14,
     fontFamily: 'Inter-Regular',
-    color: '#374151',
+    color: theme.colors.textSecondary,
     lineHeight: 20,
   },
   actionButtons: {

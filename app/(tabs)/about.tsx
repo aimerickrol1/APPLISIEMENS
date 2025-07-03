@@ -5,9 +5,11 @@ import { Header } from '@/components/Header';
 import { Button } from '@/components/Button';
 import * as WebBrowser from 'expo-web-browser';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function AboutScreen() {
   const { strings } = useLanguage();
+  const { theme } = useTheme();
   const [versionModalVisible, setVersionModalVisible] = useState(false);
   const [privacyModalVisible, setPrivacyModalVisible] = useState(false);
   const [calculationsModalVisible, setCalculationsModalVisible] = useState(false);
@@ -78,10 +80,12 @@ export default function AboutScreen() {
         </View>
       </View>
       {onPress && (
-        <ChevronRight size={20} color="#9CA3AF" />
+        <ChevronRight size={20} color={theme.colors.textTertiary} />
       )}
     </TouchableOpacity>
   );
+
+  const styles = createStyles(theme);
 
   return (
     <View style={styles.container}>
@@ -92,10 +96,9 @@ export default function AboutScreen() {
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
       >
-        {/* En-tête de l'application */}
         <View style={styles.appHeader}>
           <View style={styles.appIconContainer}>
-            <Info size={48} color="#009999" />
+            <Info size={48} color={theme.colors.primary} />
           </View>
           <Text style={styles.appTitle}>
             {strings.appDescription}
@@ -104,57 +107,53 @@ export default function AboutScreen() {
           <Text style={styles.copyright}>{strings.copyright}</Text>
         </View>
 
-        {/* Informations de l'application */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{strings.application}</Text>
           
           {renderInfoItem(
-            <Smartphone size={20} color="#009999" />,
+            <Smartphone size={20} color={theme.colors.primary} />,
             strings.version,
             `${strings.version} ${appVersion}`,
             handleVersionPress
           )}
 
           {renderInfoItem(
-            <Shield size={20} color="#009999" />,
+            <Shield size={20} color={theme.colors.primary} />,
             strings.privacy,
             strings.dataProtection,
             handlePrivacyPress
           )}
         </View>
 
-        {/* Informations techniques */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{strings.compliance}</Text>
           
           {renderInfoItem(
-            <FileText size={20} color="#009999" />,
+            <FileText size={20} color={theme.colors.primary} />,
             'NF S61-933 Annexe H',
             strings.consultDocument,
             handleOpenPDF
           )}
 
           {renderInfoItem(
-            <Calculator size={20} color="#10B981" />,
+            <Calculator size={20} color={theme.colors.success} />,
             strings.complianceCalculations,
             'Formules et algorithmes utilisés',
             handleCalculationsPress
           )}
         </View>
 
-        {/* Section Prochaines nouveautés */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>🚀 Développement</Text>
           
           {renderInfoItem(
-            <Sparkles size={20} color="#F59E0B" />,
+            <Sparkles size={20} color={theme.colors.warning} />,
             'Prochaines nouveautés',
             'Découvrez les fonctionnalités à venir',
             handleUpcomingFeaturesPress
           )}
         </View>
 
-        {/* Contact */}
         <View style={styles.section}>
           <Button
             title={strings.contactDeveloper}
@@ -174,7 +173,7 @@ export default function AboutScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <CheckCircle size={32} color="#10B981" />
+              <CheckCircle size={32} color={theme.colors.success} />
               <Text style={styles.modalTitle}>{strings.appUpToDate}</Text>
             </View>
             <Text style={styles.modalText}>
@@ -200,7 +199,7 @@ export default function AboutScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Shield size={32} color="#009999" />
+              <Shield size={32} color={theme.colors.primary} />
               <Text style={styles.modalTitle}>{strings.privacyTitle}</Text>
             </View>
             <ScrollView style={styles.modalScrollView} showsVerticalScrollIndicator={false}>
@@ -224,7 +223,7 @@ export default function AboutScreen() {
         </View>
       </Modal>
 
-      {/* Modal Calculs de conformité - SANS BARRE DE SCROLL */}
+      {/* Modal Calculs de conformité */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -234,13 +233,13 @@ export default function AboutScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.calculationsModalContent}>
             <View style={styles.modalHeader}>
-              <Calculator size={32} color="#10B981" />
+              <Calculator size={32} color={theme.colors.success} />
               <Text style={styles.modalTitle}>Calculs de conformité</Text>
               <TouchableOpacity 
                 onPress={() => setCalculationsModalVisible(false)}
                 style={styles.closeButton}
               >
-                <X size={20} color="#6B7280" />
+                <X size={20} color={theme.colors.textSecondary} />
               </TouchableOpacity>
             </View>
             
@@ -249,7 +248,6 @@ export default function AboutScreen() {
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.calculationsScrollContent}
             >
-              {/* Formule principale */}
               <View style={styles.calculationSection}>
                 <Text style={styles.calculationTitle}>📐 Formule de calcul de l'écart</Text>
                 <View style={styles.formulaContainer}>
@@ -262,7 +260,6 @@ export default function AboutScreen() {
                 </Text>
               </View>
 
-              {/* Critères de conformité */}
               <View style={styles.calculationSection}>
                 <Text style={styles.calculationTitle}>⚖️ Critères de conformité NF S61-933 Annexe H</Text>
                 
@@ -280,7 +277,7 @@ export default function AboutScreen() {
                   <View style={styles.criteriaItem}>
                     <View style={[styles.criteriaIndicator, { backgroundColor: '#F59E0B' }]} />
                     <View style={styles.criteriaContent}>
-                      <Text style={styles.criteriaLabel}>Acceptable (10% &lt; |Écart| ≤ 20%)</Text>
+                      <Text style={styles.criteriaLabel}>Acceptable (10% < |Écart| ≤ 20%)</Text>
                       <Text style={styles.criteriaDescription}>
                         Un écart compris entre ±10% et ±20% conduit à signaler cette dérive, par une proposition d'action corrective à l'exploitant ou au chef d'établissement.
                       </Text>
@@ -290,7 +287,7 @@ export default function AboutScreen() {
                   <View style={styles.criteriaItem}>
                     <View style={[styles.criteriaIndicator, { backgroundColor: '#EF4444' }]} />
                     <View style={styles.criteriaContent}>
-                      <Text style={styles.criteriaLabel}>Non conforme (|Écart| &gt; 20%)</Text>
+                      <Text style={styles.criteriaLabel}>Non conforme (|Écart| > 20%)</Text>
                       <Text style={styles.criteriaDescription}>
                         Un écart supérieur à ±20% doit conduire à une action corrective obligatoire, la valeur étant jugée non conforme à la mise en service.
                       </Text>
@@ -299,7 +296,6 @@ export default function AboutScreen() {
                 </View>
               </View>
 
-              {/* Exemples de calcul */}
               <View style={styles.calculationSection}>
                 <Text style={styles.calculationTitle}>🧮 Exemples de calcul</Text>
                 
@@ -327,7 +323,7 @@ export default function AboutScreen() {
                     Écart = ((3450 - 3000) / 3000) × 100 = +15%
                   </Text>
                   <Text style={styles.exampleResult}>
-                    ⚠️ Résultat : <Text style={{ color: '#F59E0B', fontWeight: 'bold' }}>Acceptable</Text> (10% &lt; |15%| ≤ 20%)
+                    ⚠️ Résultat : <Text style={{ color: '#F59E0B', fontWeight: 'bold' }}>Acceptable</Text> (10% < |15%| ≤ 20%)
                   </Text>
                 </View>
 
@@ -341,17 +337,16 @@ export default function AboutScreen() {
                     Écart = ((3000 - 4000) / 4000) × 100 = -25%
                   </Text>
                   <Text style={styles.exampleResult}>
-                    ❌ Résultat : <Text style={{ color: '#EF4444', fontWeight: 'bold' }}>Non conforme</Text> (|25%| &gt; 20%)
+                    ❌ Résultat : <Text style={{ color: '#EF4444', fontWeight: 'bold' }}>Non conforme</Text> (|25%| > 20%)
                   </Text>
                 </View>
               </View>
 
-              {/* Algorithme de validation */}
               <View style={styles.calculationSection}>
                 <Text style={styles.calculationTitle}>🔧 Algorithme de validation</Text>
                 <View style={styles.algorithmContainer}>
                   <Text style={styles.algorithmStep}>1. Vérification des données d'entrée</Text>
-                  <Text style={styles.algorithmDetail}>   • Débit de référence &gt; 0</Text>
+                  <Text style={styles.algorithmDetail}>   • Débit de référence > 0</Text>
                   <Text style={styles.algorithmDetail}>   • Débit mesuré ≥ 0</Text>
                   
                   <Text style={styles.algorithmStep}>2. Calcul de l'écart relatif</Text>
@@ -359,12 +354,11 @@ export default function AboutScreen() {
                   
                   <Text style={styles.algorithmStep}>3. Détermination du statut</Text>
                   <Text style={styles.algorithmDetail}>   • Si |Écart| ≤ 10% → Fonctionnel</Text>
-                  <Text style={styles.algorithmDetail}>   • Si 10% &lt; |Écart| ≤ 20% → Acceptable</Text>
-                  <Text style={styles.algorithmDetail}>   • Si |Écart| &gt; 20% → Non conforme</Text>
+                  <Text style={styles.algorithmDetail}>   • Si 10% < |Écart| ≤ 20% → Acceptable</Text>
+                  <Text style={styles.algorithmDetail}>   • Si |Écart| > 20% → Non conforme</Text>
                 </View>
               </View>
 
-              {/* Note technique */}
               <View style={styles.technicalNote}>
                 <Text style={styles.technicalNoteTitle}>📋 Note technique</Text>
                 <Text style={styles.technicalNoteText}>
@@ -386,7 +380,7 @@ export default function AboutScreen() {
         </View>
       </Modal>
 
-      {/* Modal Prochaines nouveautés - SANS BARRE DE SCROLL */}
+      {/* Modal Prochaines nouveautés */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -396,13 +390,13 @@ export default function AboutScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.upcomingFeaturesModalContent}>
             <View style={styles.modalHeader}>
-              <Sparkles size={32} color="#F59E0B" />
+              <Sparkles size={32} color={theme.colors.warning} />
               <Text style={styles.modalTitle}>Prochaines nouveautés</Text>
               <TouchableOpacity 
                 onPress={() => setUpcomingFeaturesModalVisible(false)}
                 style={styles.closeButton}
               >
-                <X size={20} color="#6B7280" />
+                <X size={20} color={theme.colors.textSecondary} />
               </TouchableOpacity>
             </View>
             
@@ -411,14 +405,12 @@ export default function AboutScreen() {
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.upcomingScrollContent}
             >
-              {/* Introduction */}
               <View style={styles.upcomingIntro}>
                 <Text style={styles.upcomingIntroText}>
                   Découvrez les futures fonctionnalités qui arriveront dans l'application Siemens Smoke Extraction Calculator.
                 </Text>
               </View>
 
-              {/* Fonctionnalités principales */}
               <View style={styles.featureSection}>
                 <Text style={styles.featureSectionTitle}>🎯 Fonctionnalités principales</Text>
                 
@@ -453,7 +445,6 @@ export default function AboutScreen() {
                 </View>
               </View>
 
-              {/* Outils et fonctionnalités */}
               <View style={styles.featureSection}>
                 <Text style={styles.featureSectionTitle}>🔧 Outils et fonctionnalités</Text>
                 
@@ -498,7 +489,6 @@ export default function AboutScreen() {
                 </View>
               </View>
 
-              {/* Améliorations UX */}
               <View style={styles.featureSection}>
                 <Text style={styles.featureSectionTitle}>✨ Expérience utilisateur</Text>
                 
@@ -558,10 +548,10 @@ export default function AboutScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: theme.colors.background,
   },
   content: {
     flex: 1,
@@ -578,7 +568,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 20,
-    backgroundColor: '#F0FDFA',
+    backgroundColor: theme.colors.primary + '20',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
@@ -586,7 +576,7 @@ const styles = StyleSheet.create({
   appTitle: {
     fontSize: 20,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
     textAlign: 'center',
     marginBottom: 8,
     lineHeight: 28,
@@ -594,13 +584,13 @@ const styles = StyleSheet.create({
   developer: {
     fontSize: 16,
     fontFamily: 'Inter-Medium',
-    color: '#009999',
+    color: theme.colors.primary,
     marginBottom: 8,
   },
   copyright: {
     fontSize: 14,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
   },
   section: {
     marginBottom: 24,
@@ -608,14 +598,14 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
     marginBottom: 12,
   },
   infoItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.surface,
     borderRadius: 12,
     padding: 16,
     marginBottom: 8,
@@ -634,7 +624,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 10,
-    backgroundColor: '#F0FDFA',
+    backgroundColor: theme.colors.primary + '20',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -645,12 +635,12 @@ const styles = StyleSheet.create({
   infoTitle: {
     fontSize: 16,
     fontFamily: 'Inter-Medium',
-    color: '#111827',
+    color: theme.colors.text,
   },
   infoSubtitle: {
     fontSize: 14,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     marginTop: 2,
   },
   modalOverlay: {
@@ -661,16 +651,15 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   modalContent: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.surface,
     borderRadius: 16,
     padding: 24,
     width: '100%',
     maxWidth: 400,
     maxHeight: '80%',
   },
-  // Modal des calculs de conformité optimisé pour mobile SANS BARRE DE SCROLL
   calculationsModalContent: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.surface,
     borderRadius: 16,
     padding: 20,
     width: '100%',
@@ -678,9 +667,8 @@ const styles = StyleSheet.create({
     maxHeight: '85%',
     marginVertical: 40,
   },
-  // Modal des prochaines nouveautés optimisé pour mobile SANS BARRE DE SCROLL
   upcomingFeaturesModalContent: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.surface,
     borderRadius: 16,
     padding: 20,
     width: '100%',
@@ -697,7 +685,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
     flex: 1,
     marginLeft: 12,
   },
@@ -707,34 +695,30 @@ const styles = StyleSheet.create({
   modalScrollView: {
     maxHeight: 300,
   },
-  // ScrollView optimisé pour mobile SANS BARRE DE SCROLL
   calculationsScrollView: {
     maxHeight: 450,
     paddingBottom: 10,
   },
-  // Style pour le contenu du scroll des calculs
   calculationsScrollContent: {
     paddingBottom: 20,
   },
-  // ScrollView optimisé pour mobile SANS BARRE DE SCROLL
   upcomingScrollView: {
     maxHeight: 500,
     paddingBottom: 10,
   },
-  // Style pour le contenu du scroll
   upcomingScrollContent: {
     paddingBottom: 20,
   },
   modalText: {
     fontSize: 14,
     fontFamily: 'Inter-Regular',
-    color: '#374151',
+    color: theme.colors.textSecondary,
     lineHeight: 20,
     marginBottom: 20,
   },
   modalBold: {
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
   },
   modalButton: {
     marginTop: 8,
@@ -743,38 +727,36 @@ const styles = StyleSheet.create({
     marginTop: 16,
     paddingTop: 12,
   },
-
-  // Styles pour le contenu des calculs
   calculationSection: {
     marginBottom: 20,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: theme.colors.border,
   },
   calculationTitle: {
     fontSize: 16,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
     marginBottom: 10,
   },
   formulaContainer: {
-    backgroundColor: '#F0FDFA',
+    backgroundColor: theme.colors.success + '20',
     borderRadius: 8,
     padding: 12,
     marginBottom: 8,
     borderLeftWidth: 4,
-    borderLeftColor: '#10B981',
+    borderLeftColor: theme.colors.success,
   },
   formulaText: {
     fontSize: 13,
     fontFamily: 'Inter-Medium',
-    color: '#047857',
+    color: theme.colors.success,
     textAlign: 'center',
   },
   calculationDescription: {
     fontSize: 12,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     lineHeight: 16,
   },
   criteriaContainer: {
@@ -797,17 +779,17 @@ const styles = StyleSheet.create({
   criteriaLabel: {
     fontSize: 13,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
     marginBottom: 3,
   },
   criteriaDescription: {
     fontSize: 11,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     lineHeight: 15,
   },
   exampleContainer: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: theme.colors.surfaceSecondary,
     borderRadius: 8,
     padding: 10,
     marginBottom: 10,
@@ -815,78 +797,76 @@ const styles = StyleSheet.create({
   exampleTitle: {
     fontSize: 13,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
     marginBottom: 5,
   },
   exampleData: {
     fontSize: 11,
     fontFamily: 'Inter-Regular',
-    color: '#374151',
+    color: theme.colors.textSecondary,
     marginBottom: 3,
   },
   exampleCalculation: {
     fontSize: 11,
     fontFamily: 'Inter-Medium',
-    color: '#009999',
+    color: theme.colors.primary,
     marginBottom: 5,
     fontStyle: 'italic',
   },
   exampleResult: {
     fontSize: 12,
     fontFamily: 'Inter-Medium',
-    color: '#111827',
+    color: theme.colors.text,
   },
   algorithmContainer: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: theme.colors.surfaceSecondary,
     borderRadius: 8,
     padding: 10,
   },
   algorithmStep: {
     fontSize: 12,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
     marginTop: 6,
     marginBottom: 3,
   },
   algorithmDetail: {
     fontSize: 11,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     marginBottom: 2,
   },
   technicalNote: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: theme.colors.warning + '20',
     borderRadius: 8,
     padding: 10,
     borderLeftWidth: 4,
-    borderLeftColor: '#F59E0B',
+    borderLeftColor: theme.colors.warning,
   },
   technicalNoteTitle: {
     fontSize: 13,
     fontFamily: 'Inter-SemiBold',
-    color: '#92400E',
+    color: theme.colors.warning,
     marginBottom: 5,
   },
   technicalNoteText: {
     fontSize: 11,
     fontFamily: 'Inter-Regular',
-    color: '#92400E',
+    color: theme.colors.warning,
     lineHeight: 15,
   },
-
-  // Styles pour les prochaines nouveautés - VERSION CORRIGÉE
   upcomingIntro: {
-    backgroundColor: '#F0FDFA',
+    backgroundColor: theme.colors.primary + '20',
     borderRadius: 12,
     padding: 16,
     marginBottom: 20,
     borderLeftWidth: 4,
-    borderLeftColor: '#009999',
+    borderLeftColor: theme.colors.primary,
   },
   upcomingIntroText: {
     fontSize: 14,
     fontFamily: 'Inter-Medium',
-    color: '#047857',
+    color: theme.colors.primary,
     lineHeight: 20,
     textAlign: 'center',
   },
@@ -894,19 +874,19 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: theme.colors.border,
   },
   featureSectionTitle: {
     fontSize: 16,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
     marginBottom: 14,
   },
   featureItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     marginBottom: 14,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: theme.colors.surfaceSecondary,
     borderRadius: 12,
     padding: 14,
   },
@@ -921,13 +901,13 @@ const styles = StyleSheet.create({
   featureTitle: {
     fontSize: 15,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
     marginBottom: 5,
   },
   featureDescription: {
     fontSize: 13,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     lineHeight: 18,
   },
 });

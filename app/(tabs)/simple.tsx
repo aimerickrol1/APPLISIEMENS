@@ -9,17 +9,17 @@ import { Button } from '@/components/Button';
 import { calculateCompliance, formatDeviation } from '@/utils/compliance';
 import { storage, QuickCalcHistoryItem } from '@/utils/storage';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function SimpleCalculatorScreen() {
   const { strings } = useLanguage();
+  const { theme } = useTheme();
   const [referenceFlow, setReferenceFlow] = useState('');
   const [measuredFlow, setMeasuredFlow] = useState('');
   const [history, setHistory] = useState<QuickCalcHistoryItem[]>([]);
 
-  // Référence pour le scroll automatique
   const scrollViewRef = useRef<ScrollView>(null);
 
-  // Charger l'historique au montage
   useEffect(() => {
     loadHistory();
   }, []);
@@ -33,7 +33,6 @@ export default function SimpleCalculatorScreen() {
     }
   };
 
-  // Calculer la conformité en temps réel
   const getCompliance = () => {
     const ref = parseFloat(referenceFlow);
     const measured = parseFloat(measuredFlow);
@@ -47,7 +46,6 @@ export default function SimpleCalculatorScreen() {
 
   const compliance = getCompliance();
 
-  // Sauvegarder le calcul dans l'historique
   const saveToHistory = async () => {
     if (!compliance) return;
 
@@ -63,14 +61,12 @@ export default function SimpleCalculatorScreen() {
         color: compliance.color
       });
       
-      // Recharger l'historique
       loadHistory();
     } catch (error) {
       console.error('Erreur lors de la sauvegarde dans l\'historique:', error);
     }
   };
 
-  // Effacer tout l'historique
   const clearHistory = async () => {
     try {
       await storage.clearQuickCalcHistory();
@@ -100,7 +96,6 @@ export default function SimpleCalculatorScreen() {
     }
   };
 
-  // Formater la date pour l'affichage
   const formatHistoryDate = (date: Date) => {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
@@ -119,23 +114,20 @@ export default function SimpleCalculatorScreen() {
     }).format(date);
   };
 
-  // CORRIGÉ : Scroll simple vers le milieu de la page
   const useHistoryItem = (item: QuickCalcHistoryItem) => {
     setReferenceFlow(item.referenceFlow.toString());
     setMeasuredFlow(item.measuredFlow.toString());
     
-    // CORRIGÉ : Scroll simple vers le milieu de la page
     setTimeout(() => {
       if (scrollViewRef.current) {
         scrollViewRef.current.scrollTo({ 
-          y: 300, // Position fixe au milieu de la page
+          y: 300,
           animated: true 
         });
       }
     }, 200);
   };
 
-  // Fonction pour obtenir le texte de statut
   const getStatusText = (status: string) => {
     switch (status) {
       case 'compliant':
@@ -148,6 +140,8 @@ export default function SimpleCalculatorScreen() {
         return '';
     }
   };
+
+  const styles = createStyles(theme);
 
   return (
     <KeyboardAvoidingView 
@@ -167,10 +161,9 @@ export default function SimpleCalculatorScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Carte de calcul */}
         <View style={styles.calculatorCard}>
           <View style={styles.calculatorHeader}>
-            <Ionicons name="calculator-outline" size={24} color="#009999" />
+            <Ionicons name="calculator-outline" size={24} color={theme.colors.primary} />
             <Text style={styles.cardTitle}>{strings.complianceCalculator}</Text>
           </View>
 
@@ -202,7 +195,6 @@ export default function SimpleCalculatorScreen() {
           )}
         </View>
 
-        {/* Résultats */}
         {compliance ? (
           <View style={[styles.resultCard, { borderColor: compliance.color }]}>
             <Text style={styles.resultTitle}>{strings.complianceResult}</Text>
@@ -227,7 +219,6 @@ export default function SimpleCalculatorScreen() {
               {compliance.status === 'non-compliant' && strings.nonCompliantDesc}
             </Text>
 
-            {/* Bouton pour sauvegarder dans l'historique */}
             <View style={styles.saveToHistoryContainer}>
               <Button
                 title="Sauvegarder dans l'historique"
@@ -239,18 +230,17 @@ export default function SimpleCalculatorScreen() {
           </View>
         ) : (
           <View style={styles.placeholderContainer}>
-            <Ionicons name="calculator-outline" size={48} color="#6B7280" />
+            <Ionicons name="calculator-outline" size={48} color={theme.colors.textSecondary} />
             <Text style={styles.placeholderText}>
               {strings.simplifiedModeDesc}
             </Text>
           </View>
         )}
 
-        {/* Historique COMPACT, LISIBLE et ÉLÉGANT */}
         <View style={styles.historyCard}>
           <View style={styles.historyHeader}>
             <View style={styles.historyTitleContainer}>
-              <Clock size={18} color="#009999" />
+              <Clock size={18} color={theme.colors.primary} />
               <Text style={styles.historyTitle}>Historique des calculs</Text>
             </View>
             {history.length > 0 && (
@@ -258,7 +248,7 @@ export default function SimpleCalculatorScreen() {
                 style={styles.clearHistoryButton}
                 onPress={clearHistory}
               >
-                <Trash2 size={10} color="#EF4444" />
+                <Trash2 size={10} color={theme.colors.error} />
                 <Text style={styles.clearHistoryText}>Tout effacer</Text>
               </TouchableOpacity>
             )}
@@ -275,7 +265,6 @@ export default function SimpleCalculatorScreen() {
             </View>
           ) : (
             <View style={styles.historyList}>
-              {/* Labels compacts directement au-dessus des valeurs */}
               <View style={styles.compactLabelsRow}>
                 <Text style={styles.compactLabel}>Débit de réf.</Text>
                 <Text style={styles.compactLabel}>Débit mesuré</Text>
@@ -288,7 +277,6 @@ export default function SimpleCalculatorScreen() {
                   style={styles.compactHistoryItem}
                   onPress={() => useHistoryItem(item)}
                 >
-                  {/* Débit de référence */}
                   <View style={styles.compactDataColumn}>
                     <Text style={styles.compactDataValue}>
                       {item.referenceFlow.toFixed(0)}
@@ -296,7 +284,6 @@ export default function SimpleCalculatorScreen() {
                     <Text style={styles.compactDataUnit}>m³/h</Text>
                   </View>
 
-                  {/* Débit mesuré */}
                   <View style={styles.compactDataColumn}>
                     <Text style={styles.compactDataValue}>
                       {item.measuredFlow.toFixed(0)}
@@ -304,7 +291,6 @@ export default function SimpleCalculatorScreen() {
                     <Text style={styles.compactDataUnit}>m³/h</Text>
                   </View>
 
-                  {/* Résultat avec statut et date */}
                   <View style={styles.compactResultColumn}>
                     <Text style={[styles.compactResultValue, { color: item.color }]}>
                       {formatDeviation(item.deviation)}
@@ -322,7 +308,6 @@ export default function SimpleCalculatorScreen() {
           )}
         </View>
 
-        {/* Informations sur la norme */}
         <View style={styles.infoCard}>
           <Text style={styles.infoTitle}>NF S61-933 Annexe H</Text>
           <Text style={styles.infoText}>
@@ -340,10 +325,10 @@ export default function SimpleCalculatorScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: theme.colors.background,
   },
   content: {
     flex: 1,
@@ -360,7 +345,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   calculatorCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.surface,
     borderRadius: 16,
     padding: 24,
     marginBottom: 24,
@@ -373,10 +358,10 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 20,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
   },
   resultCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.surface,
     borderRadius: 16,
     padding: 24,
     marginBottom: 24,
@@ -390,7 +375,7 @@ const styles = StyleSheet.create({
   resultTitle: {
     fontSize: 18,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
     marginBottom: 16,
     textAlign: 'center',
   },
@@ -401,7 +386,7 @@ const styles = StyleSheet.create({
   deviationLabel: {
     fontSize: 14,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     marginBottom: 8,
   },
   deviationValue: {
@@ -419,7 +404,7 @@ const styles = StyleSheet.create({
   complianceDescription: {
     fontSize: 14,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     lineHeight: 20,
     textAlign: 'center',
     marginBottom: 16,
@@ -428,7 +413,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   infoCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.surface,
     borderRadius: 12,
     padding: 20,
     marginBottom: 24,
@@ -441,19 +426,19 @@ const styles = StyleSheet.create({
   infoTitle: {
     fontSize: 16,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
     marginBottom: 12,
   },
   infoText: {
     fontSize: 14,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     lineHeight: 20,
   },
   clearButton: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: theme.colors.surfaceSecondary,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: theme.colors.border,
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 16,
@@ -463,7 +448,7 @@ const styles = StyleSheet.create({
   clearButtonText: {
     fontSize: 14,
     fontFamily: 'Inter-Medium',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
   },
   placeholderContainer: {
     alignItems: 'center',
@@ -472,14 +457,12 @@ const styles = StyleSheet.create({
   placeholderText: {
     fontSize: 16,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     textAlign: 'center',
     marginTop: 16,
   },
-
-  // Styles pour l'historique COMPACT, LISIBLE et ÉLÉGANT
   historyCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.surface,
     borderRadius: 16,
     padding: 18,
     marginBottom: 24,
@@ -503,7 +486,7 @@ const styles = StyleSheet.create({
   historyTitle: {
     fontSize: 16,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
   },
   clearHistoryButton: {
     flexDirection: 'row',
@@ -512,12 +495,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 3,
     borderRadius: 4,
-    backgroundColor: '#FEF2F2',
+    backgroundColor: theme.colors.error + '20',
   },
   clearHistoryText: {
     fontSize: 9,
     fontFamily: 'Inter-Medium',
-    color: '#EF4444',
+    color: theme.colors.error,
   },
   emptyHistoryContainer: {
     alignItems: 'center',
@@ -526,19 +509,17 @@ const styles = StyleSheet.create({
   emptyHistoryText: {
     fontSize: 14,
     fontFamily: 'Inter-Medium',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     marginBottom: 4,
   },
   emptyHistorySubtext: {
     fontSize: 12,
     fontFamily: 'Inter-Regular',
-    color: '#9CA3AF',
+    color: theme.colors.textTertiary,
   },
   historyList: {
     gap: 1,
   },
-  
-  // Labels compacts directement au-dessus des valeurs
   compactLabelsRow: {
     flexDirection: 'row',
     paddingHorizontal: 12,
@@ -549,26 +530,22 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 10,
     fontFamily: 'Inter-SemiBold',
-    color: '#64748B',
+    color: theme.colors.textSecondary,
     textAlign: 'center',
     textTransform: 'uppercase',
     letterSpacing: 0.3,
   },
-  
-  // Lignes de l'historique ultra-compactes et élégantes
   compactHistoryItem: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 12,
-    backgroundColor: '#FAFBFC',
+    backgroundColor: theme.colors.surfaceSecondary,
     borderRadius: 8,
     marginBottom: 6,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderColor: theme.colors.border,
   },
-  
-  // Colonnes de données (débits) - COMPACTES
   compactDataColumn: {
     flex: 1,
     alignItems: 'center',
@@ -576,16 +553,14 @@ const styles = StyleSheet.create({
   compactDataValue: {
     fontSize: 15,
     fontFamily: 'Inter-Bold',
-    color: '#1E293B',
+    color: theme.colors.text,
     marginBottom: 1,
   },
   compactDataUnit: {
     fontSize: 9,
     fontFamily: 'Inter-Medium',
-    color: '#64748B',
+    color: theme.colors.textSecondary,
   },
-  
-  // Colonne résultat (écart + statut + date) - COMPACTE
   compactResultColumn: {
     flex: 1,
     alignItems: 'center',
@@ -605,7 +580,7 @@ const styles = StyleSheet.create({
   compactTimeText: {
     fontSize: 9,
     fontFamily: 'Inter-Regular',
-    color: '#64748B',
+    color: theme.colors.textSecondary,
     textAlign: 'center',
   },
 });

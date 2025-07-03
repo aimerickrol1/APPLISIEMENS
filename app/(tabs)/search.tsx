@@ -9,26 +9,27 @@ import { SearchResult, Project, Building as BuildingType, FunctionalZone } from 
 import { storage } from '@/utils/storage';
 import { calculateCompliance, formatDeviation } from '@/utils/compliance';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useFocusEffect } from '@react-navigation/native';
 
 type SearchMode = 'simple' | 'hierarchical';
-type ShutterTypeFilter = 'all' | 'high' | 'low'; // NOUVEAU : Type pour le filtre de volets
+type ShutterTypeFilter = 'all' | 'high' | 'low';
 
 interface HierarchicalFilter {
   projectId?: string;
   buildingId?: string;
   zoneId?: string;
-  shutterType?: ShutterTypeFilter; // NOUVEAU : Filtre par type de volet
+  shutterType?: ShutterTypeFilter;
 }
 
 export default function SearchScreen() {
   const { strings } = useLanguage();
+  const { theme } = useTheme();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchMode, setSearchMode] = useState<SearchMode>('simple');
   
-  // États pour la recherche hiérarchique
   const [projects, setProjects] = useState<Project[]>([]);
   const [hierarchicalFilter, setHierarchicalFilter] = useState<HierarchicalFilter>({});
   const [expandedSections, setExpandedSections] = useState<{
@@ -41,10 +42,8 @@ export default function SearchScreen() {
     zones: false
   });
 
-  // Références pour l'animation SEULEMENT
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  // Charger les projets au montage et quand l'écran devient actif
   useFocusEffect(
     useCallback(() => {
       loadProjects();
@@ -71,7 +70,6 @@ export default function SearchScreen() {
     }
   }, [query, searchMode, hierarchicalFilter]);
 
-  // Animation des résultats
   useEffect(() => {
     if (results.length > 0) {
       Animated.timing(fadeAnim, {
@@ -84,7 +82,6 @@ export default function SearchScreen() {
     }
   }, [results.length, searchMode, hierarchicalFilter]);
 
-  // FONCTION DE RECHERCHE SIMPLE
   const searchShutters = async () => {
     setLoading(true);
     try {
@@ -106,32 +103,27 @@ export default function SearchScreen() {
       let filteredResults: SearchResult[] = [];
       
       for (const project of projects) {
-        // Filtrer par projet si sélectionné
         if (hierarchicalFilter.projectId && project.id !== hierarchicalFilter.projectId) {
           continue;
         }
 
         for (const building of project.buildings) {
-          // Filtrer par bâtiment si sélectionné
           if (hierarchicalFilter.buildingId && building.id !== hierarchicalFilter.buildingId) {
             continue;
           }
 
           for (const zone of building.functionalZones) {
-            // Filtrer par zone si sélectionnée
             if (hierarchicalFilter.zoneId && zone.id !== hierarchicalFilter.zoneId) {
               continue;
             }
 
             for (const shutter of zone.shutters) {
-              // NOUVEAU : Filtrer par type de volet si sélectionné
               if (hierarchicalFilter.shutterType && hierarchicalFilter.shutterType !== 'all') {
                 if (shutter.type !== hierarchicalFilter.shutterType) {
                   continue;
                 }
               }
 
-              // Si une recherche textuelle est active, filtrer par le texte
               if (query.trim().length >= 2) {
                 const queryWords = query.trim().toLowerCase().split(/\s+/).filter(word => word.length > 0);
                 const searchableText = [
@@ -143,14 +135,12 @@ export default function SearchScreen() {
                   shutter.remarks || ''
                 ].join(' ').toLowerCase();
                 
-                // Vérifier si tous les mots sont présents
                 const matchesSearch = queryWords.every(word => searchableText.includes(word));
                 
                 if (matchesSearch) {
                   filteredResults.push({ shutter, zone, building, project });
                 }
               } else {
-                // Sinon, inclure tous les volets qui correspondent aux filtres hiérarchiques
                 filteredResults.push({ shutter, zone, building, project });
               }
             }
@@ -166,9 +156,7 @@ export default function SearchScreen() {
     }
   };
 
-  // SIMPLIFIÉ : Navigation directe vers le volet SANS mémorisation
   const handleShutterPress = (result: SearchResult) => {
-    // Navigation simple vers le volet avec le paramètre 'from=search'
     router.push(`/(tabs)/shutter/${result.shutter.id}?from=search`);
   };
 
@@ -196,7 +184,6 @@ export default function SearchScreen() {
   };
 
   const toggleSection = (section: keyof typeof expandedSections) => {
-    // Fermer toutes les autres sections quand on en ouvre une
     setExpandedSections(prev => ({
       projects: section === 'projects' ? !prev.projects : false,
       buildings: section === 'buildings' ? !prev.buildings : false,
@@ -218,7 +205,6 @@ export default function SearchScreen() {
     return building?.functionalZones.find(z => z.id === hierarchicalFilter.zoneId);
   };
 
-  // NOUVEAU : Fonction pour obtenir les statistiques des volets dans la zone sélectionnée
   const getZoneShutterStats = () => {
     const zone = getSelectedZone();
     if (!zone) return { high: 0, low: 0, total: 0 };
@@ -241,7 +227,7 @@ export default function SearchScreen() {
           ]}
           onPress={() => searchMode !== 'simple' && toggleSearchMode()}
         >
-          <SearchIcon size={16} color={searchMode === 'simple' ? '#ffffff' : '#009999'} />
+          <SearchIcon size={16} color={searchMode === 'simple' ? '#ffffff' : theme.colors.primary} />
           <Text style={[
             styles.modeOptionText,
             searchMode === 'simple' && styles.modeOptionTextActive
@@ -257,7 +243,7 @@ export default function SearchScreen() {
           ]}
           onPress={() => searchMode !== 'hierarchical' && toggleSearchMode()}
         >
-          <Layers size={16} color={searchMode === 'hierarchical' ? '#ffffff' : '#009999'} />
+          <Layers size={16} color={searchMode === 'hierarchical' ? '#ffffff' : theme.colors.primary} />
           <Text style={[
             styles.modeOptionText,
             searchMode === 'hierarchical' && styles.modeOptionTextActive
@@ -280,23 +266,21 @@ export default function SearchScreen() {
     const selectedProject = getSelectedProject();
     const selectedBuilding = getSelectedBuilding();
     const selectedZone = getSelectedZone();
-    const shutterStats = getZoneShutterStats(); // NOUVEAU : Statistiques des volets
+    const shutterStats = getZoneShutterStats();
 
     return (
       <View style={styles.hierarchicalContainer}>
         <View style={styles.hierarchicalHeader}>
-          <Target size={20} color="#009999" />
+          <Target size={20} color={theme.colors.primary} />
           <Text style={styles.hierarchicalTitle}>Filtres hiérarchiques</Text>
           {(hierarchicalFilter.projectId || hierarchicalFilter.buildingId || hierarchicalFilter.zoneId || hierarchicalFilter.shutterType) && (
             <TouchableOpacity style={styles.clearAllButton} onPress={clearHierarchicalFilter}>
-              <X size={16} color="#EF4444" />
+              <X size={16} color={theme.colors.error} />
             </TouchableOpacity>
           )}
         </View>
 
-        {/* Disposition verticale simple et propre */}
         <View style={styles.filtersContainer}>
-          {/* Sélection du projet */}
           <View style={styles.filterSection}>
             <TouchableOpacity
               style={[
@@ -306,7 +290,7 @@ export default function SearchScreen() {
               onPress={() => toggleSection('projects')}
             >
               <View style={styles.filterHeaderContent}>
-                <Building size={16} color={selectedProject ? "#009999" : "#6B7280"} />
+                <Building size={16} color={selectedProject ? theme.colors.primary : theme.colors.textSecondary} />
                 <Text style={[
                   styles.filterHeaderText,
                   selectedProject && styles.filterHeaderTextSelected
@@ -314,9 +298,9 @@ export default function SearchScreen() {
                   {selectedProject ? selectedProject.name : 'Sélectionner un projet'}
                 </Text>
                 {expandedSections.projects ? (
-                  <ChevronDown size={16} color="#6B7280" />
+                  <ChevronDown size={16} color={theme.colors.textSecondary} />
                 ) : (
-                  <ChevronRight size={16} color="#6B7280" />
+                  <ChevronRight size={16} color={theme.colors.textSecondary} />
                 )}
               </View>
             </TouchableOpacity>
@@ -354,7 +338,6 @@ export default function SearchScreen() {
             )}
           </View>
 
-          {/* Sélection du bâtiment */}
           <View style={styles.filterSection}>
             <TouchableOpacity
               style={[
@@ -366,7 +349,7 @@ export default function SearchScreen() {
               disabled={!selectedProject}
             >
               <View style={styles.filterHeaderContent}>
-                <Building size={16} color={selectedBuilding ? "#009999" : "#6B7280"} />
+                <Building size={16} color={selectedBuilding ? theme.colors.primary : theme.colors.textSecondary} />
                 <Text style={[
                   styles.filterHeaderText,
                   selectedBuilding && styles.filterHeaderTextSelected,
@@ -375,9 +358,9 @@ export default function SearchScreen() {
                   {selectedBuilding ? selectedBuilding.name : 'Sélectionner un bâtiment'}
                 </Text>
                 {selectedProject && (expandedSections.buildings ? (
-                  <ChevronDown size={16} color="#6B7280" />
+                  <ChevronDown size={16} color={theme.colors.textSecondary} />
                 ) : (
-                  <ChevronRight size={16} color="#6B7280" />
+                  <ChevronRight size={16} color={theme.colors.textSecondary} />
                 ))}
               </View>
             </TouchableOpacity>
@@ -396,7 +379,7 @@ export default function SearchScreen() {
                         ...prev,
                         buildingId: building.id,
                         zoneId: undefined,
-                        shutterType: undefined // NOUVEAU : Reset du filtre de volet
+                        shutterType: undefined
                       }));
                       setExpandedSections({ projects: false, buildings: false, zones: false });
                     }}
@@ -418,7 +401,6 @@ export default function SearchScreen() {
             )}
           </View>
 
-          {/* Sélection de la zone */}
           <View style={styles.filterSection}>
             <TouchableOpacity
               style={[
@@ -430,7 +412,7 @@ export default function SearchScreen() {
               disabled={!selectedBuilding}
             >
               <View style={styles.filterHeaderContent}>
-                <Wind size={16} color={selectedZone ? "#009999" : "#6B7280"} />
+                <Wind size={16} color={selectedZone ? theme.colors.primary : theme.colors.textSecondary} />
                 <Text style={[
                   styles.filterHeaderText,
                   selectedZone && styles.filterHeaderTextSelected,
@@ -439,9 +421,9 @@ export default function SearchScreen() {
                   {selectedZone ? selectedZone.name : 'Sélectionner une zone'}
                 </Text>
                 {selectedBuilding && (expandedSections.zones ? (
-                  <ChevronDown size={16} color="#6B7280" />
+                  <ChevronDown size={16} color={theme.colors.textSecondary} />
                 ) : (
-                  <ChevronRight size={16} color="#6B7280" />
+                  <ChevronRight size={16} color={theme.colors.textSecondary} />
                 ))}
               </View>
             </TouchableOpacity>
@@ -459,7 +441,7 @@ export default function SearchScreen() {
                       setHierarchicalFilter(prev => ({
                         ...prev,
                         zoneId: zone.id,
-                        shutterType: 'all' // NOUVEAU : Initialiser le filtre de volet à "tous"
+                        shutterType: 'all'
                       }));
                       setExpandedSections({ projects: false, buildings: false, zones: false });
                     }}
@@ -481,7 +463,6 @@ export default function SearchScreen() {
             )}
           </View>
 
-          {/* NOUVEAU : Filtre par type de volet (affiché seulement si une zone est sélectionnée) */}
           {selectedZone && (
             <View style={styles.shutterTypeFilterSection}>
               <Text style={styles.shutterTypeFilterTitle}>🔲 Type de volet</Text>
@@ -623,7 +604,6 @@ export default function SearchScreen() {
       const zone = getSelectedZone();
       let scope = `Dans la zone "${zone?.name}"`;
       
-      // NOUVEAU : Ajouter le type de volet dans la description
       if (hierarchicalFilter.shutterType && hierarchicalFilter.shutterType !== 'all') {
         const typeLabel = hierarchicalFilter.shutterType === 'high' ? 'volets hauts' : 'volets bas';
         scope += ` (${typeLabel} uniquement)`;
@@ -640,6 +620,8 @@ export default function SearchScreen() {
     return 'Sélectionnez un projet';
   };
 
+  const styles = createStyles(theme);
+
   return (
     <View style={styles.container}>
       <Header 
@@ -651,13 +633,10 @@ export default function SearchScreen() {
         style={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* Sélecteur de mode */}
         {renderModeSelector()}
 
-        {/* Mode de recherche hiérarchique */}
         {searchMode === 'hierarchical' && renderHierarchicalFilters()}
 
-        {/* Barre de recherche */}
         <View style={styles.searchContainer}>
           <Input
             placeholder={getSearchPlaceholder()}
@@ -666,14 +645,12 @@ export default function SearchScreen() {
             style={styles.searchInput}
           />
           
-          {/* Indicateur de portée */}
           <View style={styles.scopeIndicator}>
             <Text style={styles.scopeLabel}>{strings.searchScope}:</Text>
             <Text style={styles.scopeValue}>{getScopeDescription()}</Text>
           </View>
         </View>
 
-        {/* Résultats avec animation */}
         {(searchMode === 'simple' && query.length > 0 && query.length < 2) || 
          (searchMode === 'hierarchical' && !hierarchicalFilter.projectId) ? (
           <View style={styles.hintContainer}>
@@ -692,7 +669,7 @@ export default function SearchScreen() {
               (searchMode === 'hierarchical' && hierarchicalFilter.projectId)
             ) ? (
               <View style={styles.emptyContainer}>
-                <SearchIcon size={48} color="#D1D5DB" />
+                <SearchIcon size={48} color={theme.colors.textTertiary} />
                 <Text style={styles.emptyTitle}>{strings.noResults}</Text>
                 <Text style={styles.emptySubtitle}>
                   {getEmptyStateText()}
@@ -731,31 +708,29 @@ export default function SearchScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: theme.colors.background,
   },
   content: {
     flex: 1,
   },
-  
-  // Sélecteur de mode amélioré
   modeSelectorContainer: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.surface,
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: theme.colors.border,
   },
   modeSelectorTitle: {
     fontSize: 16,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
     marginBottom: 12,
   },
   modeSelector: {
     flexDirection: 'row',
-    backgroundColor: '#F3F4F6',
+    backgroundColor: theme.colors.surfaceSecondary,
     borderRadius: 12,
     padding: 4,
     marginBottom: 8,
@@ -771,8 +746,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   modeOptionActive: {
-    backgroundColor: '#009999',
-    shadowColor: '#009999',
+    backgroundColor: theme.colors.primary,
+    shadowColor: theme.colors.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -781,7 +756,7 @@ const styles = StyleSheet.create({
   modeOptionText: {
     fontSize: 14,
     fontFamily: 'Inter-Medium',
-    color: '#009999',
+    color: theme.colors.primary,
     textAlign: 'center',
   },
   modeOptionTextActive: {
@@ -790,15 +765,13 @@ const styles = StyleSheet.create({
   modeDescription: {
     fontSize: 12,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     textAlign: 'center',
   },
-
-  // Filtres hiérarchiques verticaux SANS z-index problématiques
   hierarchicalContainer: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: theme.colors.border,
     padding: 16,
   },
   hierarchicalHeader: {
@@ -810,37 +783,35 @@ const styles = StyleSheet.create({
   hierarchicalTitle: {
     fontSize: 16,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
     flex: 1,
   },
   clearAllButton: {
     padding: 6,
     borderRadius: 6,
-    backgroundColor: '#FEF2F2',
+    backgroundColor: theme.colors.error + '20',
   },
-
-  // Conteneur vertical simple et propre
   filtersContainer: {
     gap: 12,
   },
   filterSection: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: theme.colors.surfaceSecondary,
     borderRadius: 8,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: theme.colors.border,
   },
   filterHeader: {
     paddingVertical: 12,
     paddingHorizontal: 16,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: theme.colors.surfaceSecondary,
   },
   filterHeaderSelected: {
-    backgroundColor: '#F0FDFA',
-    borderColor: '#009999',
+    backgroundColor: theme.colors.primary + '20',
+    borderColor: theme.colors.primary,
   },
   filterHeaderDisabled: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: theme.colors.surfaceSecondary,
     opacity: 0.6,
   },
   filterHeaderContent: {
@@ -851,61 +822,57 @@ const styles = StyleSheet.create({
   filterHeaderText: {
     fontSize: 14,
     fontFamily: 'Inter-Medium',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     flex: 1,
   },
   filterHeaderTextSelected: {
-    color: '#009999',
+    color: theme.colors.primary,
   },
   filterHeaderTextDisabled: {
-    color: '#9CA3AF',
+    color: theme.colors.textTertiary,
   },
-  
-  // Options avec ScrollView simple et propre
   filterOptions: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.surface,
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
+    borderTopColor: theme.colors.border,
     maxHeight: 150,
   },
   filterOption: {
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: theme.colors.separator,
   },
   filterOptionSelected: {
-    backgroundColor: '#F0FDFA',
+    backgroundColor: theme.colors.primary + '20',
     borderLeftWidth: 3,
-    borderLeftColor: '#009999',
+    borderLeftColor: theme.colors.primary,
   },
   filterOptionText: {
     fontSize: 14,
     fontFamily: 'Inter-Medium',
-    color: '#374151',
+    color: theme.colors.textSecondary,
   },
   filterOptionTextSelected: {
-    color: '#009999',
+    color: theme.colors.primary,
   },
   filterOptionSubtext: {
     fontSize: 12,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textTertiary,
     marginTop: 2,
   },
-
-  // NOUVEAU : Styles pour le filtre par type de volet
   shutterTypeFilterSection: {
-    backgroundColor: '#F0FDFA',
+    backgroundColor: theme.colors.primary + '20',
     borderRadius: 8,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#A7F3D0',
+    borderColor: theme.colors.primary + '40',
   },
   shutterTypeFilterTitle: {
     fontSize: 14,
     fontFamily: 'Inter-SemiBold',
-    color: '#047857',
+    color: theme.colors.primary,
     marginBottom: 12,
   },
   shutterTypeButtons: {
@@ -917,15 +884,15 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderRadius: 8,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.surface,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: theme.colors.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
   shutterTypeButtonActive: {
-    backgroundColor: '#009999',
-    borderColor: '#009999',
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
   },
   shutterTypeButtonContent: {
     flexDirection: 'row',
@@ -935,7 +902,7 @@ const styles = StyleSheet.create({
   shutterTypeButtonText: {
     fontSize: 12,
     fontFamily: 'Inter-Medium',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     textAlign: 'center',
   },
   shutterTypeButtonTextActive: {
@@ -946,13 +913,11 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
   },
-
-  // Barre de recherche améliorée
   searchContainer: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.surface,
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: theme.colors.border,
   },
   searchInput: {
     marginBottom: 8,
@@ -963,24 +928,22 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingVertical: 8,
     paddingHorizontal: 12,
-    backgroundColor: '#F0FDFA',
+    backgroundColor: theme.colors.primary + '20',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#A7F3D0',
+    borderColor: theme.colors.primary + '40',
   },
   scopeLabel: {
     fontSize: 12,
     fontFamily: 'Inter-Medium',
-    color: '#047857',
+    color: theme.colors.primary,
   },
   scopeValue: {
     fontSize: 12,
     fontFamily: 'Inter-Regular',
-    color: '#059669',
+    color: theme.colors.primary,
     flex: 1,
   },
-
-  // États vides et chargement
   hintContainer: {
     padding: 32,
     alignItems: 'center',
@@ -988,7 +951,7 @@ const styles = StyleSheet.create({
   hintText: {
     fontSize: 14,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
   },
@@ -999,7 +962,7 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 16,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
   },
   emptyContainer: {
     padding: 32,
@@ -1008,19 +971,17 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 20,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
     marginTop: 16,
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: 16,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     textAlign: 'center',
     lineHeight: 22,
   },
-
-  // Résultats améliorés
   resultsContainer: {
     padding: 16,
   },
@@ -1033,10 +994,10 @@ const styles = StyleSheet.create({
   resultsCount: {
     fontSize: 16,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
   },
   resultsBadge: {
-    backgroundColor: '#009999',
+    backgroundColor: theme.colors.primary,
     borderRadius: 12,
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -1049,7 +1010,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
   resultCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.surface,
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
@@ -1059,7 +1020,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
     borderWidth: 1,
-    borderColor: '#F3F4F6',
+    borderColor: theme.colors.separator,
   },
   resultHeader: {
     flexDirection: 'row',
@@ -1070,14 +1031,14 @@ const styles = StyleSheet.create({
   shutterName: {
     fontSize: 18,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
     flex: 1,
   },
   shutterType: {
     fontSize: 12,
     fontFamily: 'Inter-Medium',
-    color: '#6B7280',
-    backgroundColor: '#F3F4F6',
+    color: theme.colors.textSecondary,
+    backgroundColor: theme.colors.surfaceSecondary,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
@@ -1088,7 +1049,7 @@ const styles = StyleSheet.create({
   breadcrumbText: {
     fontSize: 12,
     fontFamily: 'Inter-Regular',
-    color: '#009999',
+    color: theme.colors.primary,
   },
   flowData: {
     flexDirection: 'row',
@@ -1102,13 +1063,13 @@ const styles = StyleSheet.create({
   flowLabel: {
     fontSize: 12,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     marginBottom: 4,
   },
   flowValue: {
     fontSize: 16,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
   },
   resultFooter: {
     flexDirection: 'row',
@@ -1118,7 +1079,7 @@ const styles = StyleSheet.create({
   remarks: {
     fontSize: 12,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     fontStyle: 'italic',
     flex: 1,
     marginLeft: 12,

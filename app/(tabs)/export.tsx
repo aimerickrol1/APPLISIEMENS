@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, Alert, Platform, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Header } from '@/components/Header';
@@ -7,21 +7,21 @@ import { Project } from '@/types';
 import { storage } from '@/utils/storage';
 import { calculateCompliance } from '@/utils/compliance';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useFocusEffect } from '@react-navigation/native';
-import { useCallback } from 'react';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { router } from 'expo-router';
 
 export default function ExportScreen() {
   const { strings } = useLanguage();
+  const { theme } = useTheme();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [exportLoading, setExportLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Fonction pour charger les projets
   const loadProjects = useCallback(async () => {
     try {
       setError(null);
@@ -59,22 +59,17 @@ export default function ExportScreen() {
     loadProjects();
   }, [loadProjects]);
 
-  // NOUVEAU : Fonction pour naviguer vers la création de projet
   const handleCreateFirstProject = () => {
     try {
-      // Naviguer vers la page principale des projets
       router.push('/(tabs)/');
       
-      // Déclencher l'ouverture du modal de création après un court délai
       setTimeout(() => {
-        // Émettre un événement personnalisé pour ouvrir le modal
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('openCreateProjectModal'));
         }
       }, 300);
     } catch (error) {
       console.error('Erreur de navigation:', error);
-      // Fallback : juste naviguer vers la page principale
       router.push('/(tabs)/');
     }
   };
@@ -115,7 +110,6 @@ export default function ExportScreen() {
     };
   };
 
-  // Génération d'un rapport HTML professionnel avec instructions PDF
   const generateProfessionalHTML = (project: Project) => {
     const report = generateProjectReport(project);
     const timestamp = new Date().toLocaleDateString('fr-FR', {
@@ -153,7 +147,6 @@ export default function ExportScreen() {
             padding: 40px;
         }
         
-        /* Instructions PDF - Affiché seulement à l'écran */
         .pdf-instructions {
             background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
             border: 2px solid #2196f3;
@@ -228,14 +221,12 @@ export default function ExportScreen() {
             font-weight: 500;
         }
         
-        /* Masquer les instructions lors de l'impression */
         @media print {
             .pdf-instructions {
                 display: none !important;
             }
         }
         
-        /* En-tête Siemens */
         .header {
             border-bottom: 4px solid #009999;
             padding-bottom: 30px;
@@ -276,7 +267,6 @@ export default function ExportScreen() {
             margin-bottom: 30px;
         }
         
-        /* Section projet */
         .project-section {
             background: linear-gradient(135deg, #f8fffe 0%, #e6fffa 100%);
             border-left: 6px solid #009999;
@@ -316,7 +306,6 @@ export default function ExportScreen() {
             font-weight: 500;
         }
         
-        /* Résumé exécutif */
         .executive-summary {
             background: #fff;
             border: 2px solid #e0e0e0;
@@ -363,7 +352,6 @@ export default function ExportScreen() {
             letter-spacing: 1px;
         }
         
-        /* Barre de conformité */
         .compliance-bar-container {
             margin: 30px 0;
         }
@@ -405,7 +393,6 @@ export default function ExportScreen() {
             color: #555;
         }
         
-        /* Tableau détaillé - OPTIMISÉ POUR MOBILE */
         .detailed-table {
             margin-top: 40px;
             overflow-x: auto;
@@ -425,24 +412,24 @@ export default function ExportScreen() {
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            font-size: 13px; /* RÉDUIT pour mobile */
+            font-size: 13px;
         }
         
         th {
             background: linear-gradient(135deg, #009999 0%, #007a7a 100%);
             color: white;
-            padding: 12px 8px; /* RÉDUIT pour mobile */
+            padding: 12px 8px;
             text-align: left;
             font-weight: 600;
-            font-size: 12px; /* RÉDUIT pour mobile */
+            font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
         
         td {
-            padding: 10px 8px; /* RÉDUIT pour mobile */
+            padding: 10px 8px;
             border-bottom: 1px solid #e0e0e0;
-            font-size: 12px; /* RÉDUIT pour mobile */
+            font-size: 12px;
             word-wrap: break-word;
         }
         
@@ -455,9 +442,9 @@ export default function ExportScreen() {
         }
         
         .status-badge {
-            padding: 3px 8px; /* RÉDUIT pour mobile */
+            padding: 3px 8px;
             border-radius: 15px;
-            font-size: 10px; /* RÉDUIT pour mobile */
+            font-size: 10px;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.3px;
@@ -479,7 +466,6 @@ export default function ExportScreen() {
             color: #721c24;
         }
         
-        /* Colonnes spécifiques - OPTIMISÉES */
         .col-building { width: 15%; min-width: 100px; }
         .col-zone { width: 15%; min-width: 80px; }
         .col-shutter { width: 15%; min-width: 80px; }
@@ -489,7 +475,6 @@ export default function ExportScreen() {
         .col-status { width: 12%; min-width: 80px; text-align: center; }
         .col-remarks { width: 19%; min-width: 100px; }
         
-        /* Pied de page */
         .footer {
             margin-top: 60px;
             padding-top: 30px;
@@ -508,7 +493,6 @@ export default function ExportScreen() {
             color: #009999;
         }
         
-        /* Responsive - AMÉLIORÉ POUR MOBILE */
         @media (max-width: 768px) {
             .container {
                 padding: 15px;
@@ -534,7 +518,6 @@ export default function ExportScreen() {
                 grid-template-columns: 1fr;
             }
             
-            /* Tableau encore plus compact sur mobile */
             table {
                 font-size: 11px;
             }
@@ -560,7 +543,6 @@ export default function ExportScreen() {
                 border: 1px solid #ccc;
             }
             
-            /* Optimisation pour l'impression */
             table {
                 font-size: 11px;
             }
@@ -573,7 +555,6 @@ export default function ExportScreen() {
 </head>
 <body>
     <div class="container">
-        <!-- Instructions pour exporter en PDF -->
         <div class="pdf-instructions">
             <h3>📄 Pour exporter ce rapport en PDF</h3>
             <div class="pdf-instructions-content">
@@ -603,7 +584,6 @@ export default function ExportScreen() {
             </div>
         </div>
 
-        <!-- En-tête -->
         <div class="header">
             <div class="logo-section">
                 <div class="siemens-logo">SIEMENS</div>
@@ -619,7 +599,6 @@ export default function ExportScreen() {
             </div>
         </div>
 
-        <!-- Section Projet -->
         <div class="project-section">
             <div class="project-title">${project.name}</div>
             <div class="project-details">
@@ -654,7 +633,6 @@ export default function ExportScreen() {
             </div>
         </div>
 
-        <!-- Résumé Exécutif -->
         <div class="executive-summary">
             <div class="summary-title">📊 RÉSUMÉ EXÉCUTIF</div>
             
@@ -704,7 +682,6 @@ export default function ExportScreen() {
             </div>
         </div>
 
-        <!-- Tableau détaillé SANS la colonne Type -->
         <div class="detailed-table">
             <div class="table-title">📋 DÉTAIL DES MESURES</div>
             <table>
@@ -722,7 +699,6 @@ export default function ExportScreen() {
                 </thead>
                 <tbody>`;
 
-    // Ajouter les données des volets SANS la colonne Type
     project.buildings.forEach(building => {
       building.functionalZones.forEach(zone => {
         zone.shutters.forEach(shutter => {
@@ -762,7 +738,6 @@ export default function ExportScreen() {
             </table>
         </div>
 
-        <!-- Pied de page -->
         <div class="footer">
             <div class="footer-note">
                 Ce rapport a été généré automatiquement par l'application Siemens Smoke Extraction Calculator v1.0.3<br>
@@ -879,7 +854,6 @@ export default function ExportScreen() {
           </View>
         </View>
 
-        {/* MODIFIÉ : Bouton d'export avec nouveau texte */}
         <View style={styles.exportButtons}>
           <Button
             title={isExportingHTML ? 'Génération...' : 'Exporter le rapport'}
@@ -893,6 +867,8 @@ export default function ExportScreen() {
       </View>
     );
   };
+
+  const styles = createStyles(theme);
 
   if (loading) {
     return (
@@ -918,7 +894,7 @@ export default function ExportScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.errorContainer}>
-            <Ionicons name="document-text-outline" size={48} color="#EF4444" />
+            <Ionicons name="document-text-outline" size={48} color={theme.colors.error} />
             <Text style={styles.errorTitle}>Erreur de chargement</Text>
             <Text style={styles.errorText}>{error}</Text>
             <Button
@@ -946,12 +922,11 @@ export default function ExportScreen() {
       >
         {projects.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Ionicons name="document-text-outline" size={48} color="#D1D5DB" />
+            <Ionicons name="document-text-outline" size={48} color={theme.colors.textTertiary} />
             <Text style={styles.emptyTitle}>{strings.noProjectsToExport}</Text>
             <Text style={styles.emptySubtitle}>
               {strings.noProjectsToExportDesc}
             </Text>
-            {/* MODIFIÉ : Bouton pour créer le premier projet */}
             <Button
               title="Créer votre premier projet"
               onPress={handleCreateFirstProject}
@@ -960,24 +935,23 @@ export default function ExportScreen() {
           </View>
         ) : (
           <>
-            {/* MODIFIÉ : Carte d'information avec texte mis à jour */}
             <View style={styles.infoCard}>
               <Text style={styles.infoTitle}>🏢 Rapport Professionnel Siemens</Text>
               <View style={styles.formatList}>
                 <View style={styles.formatItem}>
-                  <Ionicons name="document-text-outline" size={16} color="#009999" />
+                  <Ionicons name="document-text-outline" size={16} color={theme.colors.primary} />
                   <Text style={styles.formatText}>
                     <Text style={styles.formatName}>Rapport HTML :</Text> Document professionnel avec graphiques et mise en page élégante
                   </Text>
                 </View>
                 <View style={styles.formatItem}>
-                  <Ionicons name="print-outline" size={16} color="#F59E0B" />
+                  <Ionicons name="print-outline" size={16} color={theme.colors.warning} />
                   <Text style={styles.formatText}>
                     <Text style={styles.formatName}>Conversion PDF :</Text> Instructions détaillées incluses dans le rapport pour l'exporter en PDF depuis votre navigateur
                   </Text>
                 </View>
                 <View style={styles.formatItem}>
-                  <Ionicons name="shield-checkmark-outline" size={16} color="#10B981" />
+                  <Ionicons name="shield-checkmark-outline" size={16} color={theme.colors.success} />
                   <Text style={styles.formatText}>
                     <Text style={styles.formatName}>Qualité :</Text> Mise en page optimisée pour l'impression et la présentation professionnelle
                   </Text>
@@ -997,10 +971,10 @@ export default function ExportScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: theme.colors.background,
   },
   content: {
     flex: 1,
@@ -1016,7 +990,7 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 16,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
   },
   errorContainer: {
     flex: 1,
@@ -1028,14 +1002,14 @@ const styles = StyleSheet.create({
   errorTitle: {
     fontSize: 20,
     fontFamily: 'Inter-SemiBold',
-    color: '#EF4444',
+    color: theme.colors.error,
     marginTop: 16,
     marginBottom: 8,
   },
   errorText: {
     fontSize: 16,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -1052,14 +1026,14 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 20,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
     marginTop: 16,
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: 16,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: 24,
@@ -1068,7 +1042,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   infoCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.surface,
     borderRadius: 12,
     padding: 16,
     marginBottom: 24,
@@ -1078,12 +1052,12 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
     borderLeftWidth: 4,
-    borderLeftColor: '#009999',
+    borderLeftColor: theme.colors.primary,
   },
   infoTitle: {
     fontSize: 16,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
     marginBottom: 12,
   },
   formatList: {
@@ -1098,29 +1072,29 @@ const styles = StyleSheet.create({
   formatText: {
     fontSize: 14,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     flex: 1,
     lineHeight: 20,
   },
   formatName: {
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
   },
   sectionTitle: {
     fontSize: 20,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
     marginBottom: 8,
   },
   sectionSubtitle: {
     fontSize: 16,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     marginBottom: 24,
     lineHeight: 24,
   },
   projectCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.surface,
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
@@ -1136,20 +1110,20 @@ const styles = StyleSheet.create({
   projectName: {
     fontSize: 18,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
     marginBottom: 4,
   },
   projectSite: {
     fontSize: 14,
     fontFamily: 'Inter-Regular',
-    color: '#009999',
+    color: theme.colors.primary,
   },
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     marginBottom: 16,
     paddingVertical: 8,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: theme.colors.surfaceSecondary,
     borderRadius: 8,
   },
   statItem: {
@@ -1158,12 +1132,12 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 20,
     fontFamily: 'Inter-Bold',
-    color: '#111827',
+    color: theme.colors.text,
   },
   statLabel: {
     fontSize: 12,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     marginTop: 2,
   },
   complianceBreakdown: {
@@ -1183,7 +1157,7 @@ const styles = StyleSheet.create({
   complianceText: {
     fontSize: 14,
     fontFamily: 'Inter-Regular',
-    color: '#374151',
+    color: theme.colors.textSecondary,
   },
   exportButtons: {
     flexDirection: 'row',

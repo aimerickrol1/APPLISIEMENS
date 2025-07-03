@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ComplianceResult } from '@/types';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface ComplianceIndicatorProps {
   compliance: ComplianceResult;
@@ -9,6 +10,7 @@ interface ComplianceIndicatorProps {
 }
 
 export function ComplianceIndicator({ compliance, size = 'medium' }: ComplianceIndicatorProps) {
+  const { theme } = useTheme();
   const iconSize = size === 'small' ? 16 : size === 'medium' ? 20 : 24;
   const textSize = size === 'small' ? 12 : size === 'medium' ? 14 : 16;
 
@@ -23,6 +25,8 @@ export function ComplianceIndicator({ compliance, size = 'medium' }: ComplianceI
     }
   };
 
+  const styles = createStyles(theme);
+
   return (
     <View style={styles.container}>
       {getIcon()}
@@ -33,7 +37,7 @@ export function ComplianceIndicator({ compliance, size = 'medium' }: ComplianceI
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -41,9 +45,8 @@ const styles = StyleSheet.create({
   },
   label: {
     fontFamily: 'Inter-Medium',
-    // CORRIGÉ : Alignement vertical parfait du texte
-    lineHeight: undefined, // Laisser React Native calculer automatiquement
-    textAlignVertical: 'center', // Pour Android
-    includeFontPadding: false, // Pour Android - supprime le padding automatique
+    lineHeight: undefined,
+    textAlignVertical: 'center',
+    includeFontPadding: false,
   },
 });
