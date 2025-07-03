@@ -15,7 +15,7 @@ export default function AboutScreen() {
   const [calculationsModalVisible, setCalculationsModalVisible] = useState(false);
   const [upcomingFeaturesModalVisible, setUpcomingFeaturesModalVisible] = useState(false);
 
-  const appVersion = "1.0.3";
+  const appVersion = "1.1.0";
 
   const handleVersionPress = () => {
     setVersionModalVisible(true);
@@ -418,7 +418,7 @@ export default function AboutScreen() {
               {/* Introduction */}
               <View style={styles.upcomingIntro}>
                 <Text style={styles.upcomingIntroText}>
-                  Découvrez les futures fonctionnalités qui arriveront dans l'application Siemens Smoke Extraction Calculator.
+                  Découvrez les futures fonctionnalités qui arriveront dans l'application Siemens CalcConform.
                 </Text>
               </View>
 
