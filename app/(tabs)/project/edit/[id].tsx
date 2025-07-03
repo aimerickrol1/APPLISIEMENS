@@ -6,7 +6,7 @@ import { Input } from '@/components/Input';
 import { DateInput } from '@/components/DateInput';
 import { Button } from '@/components/Button';
 import { Project } from '@/types';
-import { storage } from '@/utils/storage';
+import { useStorage } from '@/contexts/StorageContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAndroidBackButton } from '@/utils/BackHandler';
@@ -14,6 +14,7 @@ import { useAndroidBackButton } from '@/utils/BackHandler';
 export default function EditProjectScreen() {
   const { strings } = useLanguage();
   const { theme } = useTheme();
+  const { storage } = useStorage();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [project, setProject] = useState<Project | null>(null);
   const [name, setName] = useState('');

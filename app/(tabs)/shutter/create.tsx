@@ -5,13 +5,14 @@ import { Header } from '@/components/Header';
 import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
 import { ShutterType } from '@/types';
-import { storage } from '@/utils/storage';
+import { useStorage } from '@/contexts/StorageContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 
 export default function CreateShutterScreen() {
   const { strings, currentLanguage } = useLanguage();
   const { theme } = useTheme();
+  const { storage } = useStorage();
   const { zoneId } = useLocalSearchParams<{ zoneId: string }>();
   const [name, setName] = useState('');
   const [type, setType] = useState<ShutterType>('high');

@@ -6,7 +6,7 @@ import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
 import { ComplianceIndicator } from '@/components/ComplianceIndicator';
 import { Project, Building, FunctionalZone, Shutter, ShutterType } from '@/types';
-import { storage } from '@/utils/storage';
+import { useStorage } from '@/contexts/StorageContext';
 import { calculateCompliance, formatDeviation } from '@/utils/compliance';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -15,6 +15,7 @@ import { useAndroidBackButton } from '@/utils/BackHandler';
 export default function EditShutterScreen() {
   const { strings, currentLanguage } = useLanguage();
   const { theme } = useTheme();
+  const { storage } = useStorage();
   const { id, from } = useLocalSearchParams<{ id: string; from?: string }>();
   const [shutter, setShutter] = useState<Shutter | null>(null);
   const [zone, setZone] = useState<FunctionalZone | null>(null);

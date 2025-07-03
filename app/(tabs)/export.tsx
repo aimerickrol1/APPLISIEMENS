@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/Button';
 import { Project } from '@/types';
-import { storage } from '@/utils/storage';
+import { useStorage } from '@/contexts/StorageContext';
 import { calculateCompliance } from '@/utils/compliance';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -16,6 +16,7 @@ import { router } from 'expo-router';
 export default function ExportScreen() {
   const { strings } = useLanguage();
   const { theme } = useTheme();
+  const { storage } = useStorage();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -41,7 +42,7 @@ export default function ExportScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [storage]);
 
   useEffect(() => {
     loadProjects();

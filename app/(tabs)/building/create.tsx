@@ -4,11 +4,12 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Header } from '@/components/Header';
 import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
-import { storage } from '@/utils/storage';
+import { useStorage } from '@/contexts/StorageContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function CreateBuildingScreen() {
   const { strings } = useLanguage();
+  const { storage } = useStorage();
   const { projectId } = useLocalSearchParams<{ projectId: string }>();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');

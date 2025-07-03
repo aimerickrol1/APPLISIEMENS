@@ -5,7 +5,7 @@ import { Header } from '@/components/Header';
 import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
 import { Project, Building, FunctionalZone } from '@/types';
-import { storage } from '@/utils/storage';
+import { useStorage } from '@/contexts/StorageContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAndroidBackButton } from '@/utils/BackHandler';
@@ -13,6 +13,7 @@ import { useAndroidBackButton } from '@/utils/BackHandler';
 export default function EditZoneScreen() {
   const { strings } = useLanguage();
   const { theme } = useTheme();
+  const { storage } = useStorage();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [zone, setZone] = useState<FunctionalZone | null>(null);
   const [building, setBuilding] = useState<Building | null>(null);

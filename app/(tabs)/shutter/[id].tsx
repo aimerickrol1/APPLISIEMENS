@@ -6,7 +6,7 @@ import { Header } from '@/components/Header';
 import { Button } from '@/components/Button';
 import { ComplianceIndicator } from '@/components/ComplianceIndicator';
 import { Project, Building, FunctionalZone, Shutter } from '@/types';
-import { storage } from '@/utils/storage';
+import { useStorage } from '@/contexts/StorageContext';
 import { calculateCompliance, formatDeviation } from '@/utils/compliance';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -15,6 +15,7 @@ import { useAndroidBackButton } from '@/utils/BackHandler';
 export default function ShutterDetailScreen() {
   const { strings } = useLanguage();
   const { theme } = useTheme();
+  const { storage } = useStorage();
   const { id, from } = useLocalSearchParams<{ id: string; from?: string }>();
   const [shutter, setShutter] = useState<Shutter | null>(null);
   const [zone, setZone] = useState<FunctionalZone | null>(null);
@@ -60,7 +61,7 @@ export default function ShutterDetailScreen() {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, storage]);
 
   useFocusEffect(
     useCallback(() => {
@@ -209,7 +210,7 @@ export default function ShutterDetailScreen() {
         }));
       }
     }
-  }, [editingFlows, shutter]);
+  }, [editingFlows, shutter, storage]);
 
   const styles = createStyles(theme);
 

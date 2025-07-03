@@ -6,7 +6,7 @@ import { Header } from '@/components/Header';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { Project, Building as BuildingType, FunctionalZone } from '@/types';
-import { storage } from '@/utils/storage';
+import { useStorage } from '@/contexts/StorageContext';
 import { calculateCompliance, formatDeviation } from '@/utils/compliance';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -15,6 +15,7 @@ import { useAndroidBackButton } from '@/utils/BackHandler';
 export default function ProjectDetailScreen() {
   const { strings } = useLanguage();
   const { theme } = useTheme();
+  const { storage } = useStorage();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
@@ -66,7 +67,7 @@ export default function ProjectDetailScreen() {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, storage]);
 
   const loadFavorites = useCallback(async () => {
     try {
@@ -75,7 +76,7 @@ export default function ProjectDetailScreen() {
     } catch (error) {
       console.error('Erreur lors du chargement des favoris:', error);
     }
-  }, []);
+  }, [storage]);
 
   // NOUVEAU : Utiliser useFocusEffect pour recharger les données quand on revient sur la page
   useFocusEffect(

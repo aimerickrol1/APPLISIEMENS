@@ -6,7 +6,7 @@ import { Header } from '@/components/Header';
 import { Button } from '@/components/Button';
 import { ComplianceIndicator } from '@/components/ComplianceIndicator';
 import { Project, Building, FunctionalZone, Shutter } from '@/types';
-import { storage } from '@/utils/storage';
+import { useStorage } from '@/contexts/StorageContext';
 import { calculateCompliance, formatDeviation } from '@/utils/compliance';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -15,6 +15,7 @@ import { useAndroidBackButton } from '@/utils/BackHandler';
 export default function ZoneDetailScreen() {
   const { strings } = useLanguage();
   const { theme } = useTheme();
+  const { storage } = useStorage();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [zone, setZone] = useState<FunctionalZone | null>(null);
   const [building, setBuilding] = useState<Building | null>(null);
@@ -85,7 +86,7 @@ export default function ZoneDetailScreen() {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, storage]);
 
   // Charger les favoris
   const loadFavorites = useCallback(async () => {
@@ -95,7 +96,7 @@ export default function ZoneDetailScreen() {
     } catch (error) {
       console.error('Erreur lors du chargement des favoris:', error);
     }
-  }, []);
+  }, [storage]);
 
   // NOUVEAU : Utiliser useFocusEffect pour recharger les données quand on revient sur la page
   useFocusEffect(
@@ -454,7 +455,7 @@ export default function ZoneDetailScreen() {
         }));
       }
     }
-  }, [editingFlows]);
+  }, [editingFlows, storage]);
 
   // Fonctions pour éditer le nom
   const openNameEditModal = (shutter: Shutter) => {

@@ -7,13 +7,14 @@ import { Input } from '@/components/Input';
 import { ComplianceIndicator } from '@/components/ComplianceIndicator';
 import { Button } from '@/components/Button';
 import { calculateCompliance, formatDeviation } from '@/utils/compliance';
-import { storage, QuickCalcHistoryItem } from '@/utils/storage';
+import { useStorage, QuickCalcHistoryItem } from '@/contexts/StorageContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 
 export default function SimpleCalculatorScreen() {
   const { strings } = useLanguage();
   const { theme } = useTheme();
+  const { storage } = useStorage();
   const [referenceFlow, setReferenceFlow] = useState('');
   const [measuredFlow, setMeasuredFlow] = useState('');
   const [history, setHistory] = useState<QuickCalcHistoryItem[]>([]);
