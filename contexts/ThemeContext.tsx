@@ -1,6 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { useColorScheme } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export type ThemeMode = 'light' | 'dark' | 'auto';
 
@@ -112,8 +111,6 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-const THEME_STORAGE_KEY = 'SIEMENS_THEME_MODE';
-
 interface ThemeProviderProps {
   children: ReactNode;
 }
@@ -133,49 +130,11 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   const theme = getCurrentTheme();
   const isDark = theme.mode === 'dark';
 
-  // Charger le mode de thème sauvegardé de manière TRÈS robuste
-  useEffect(() => {
-    let isMounted = true;
-    
-    const loadThemeMode = async () => {
-      try {
-        // Délai pour s'assurer que l'app est complètement initialisée
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        if (!isMounted) return;
-        
-        const savedMode = await AsyncStorage.getItem(THEME_STORAGE_KEY);
-        if (savedMode && ['light', 'dark', 'auto'].includes(savedMode) && isMounted) {
-          setThemeModeState(savedMode as ThemeMode);
-        }
-      } catch (error) {
-        console.error('Erreur lors du chargement du mode de thème:', error);
-        // En cas d'erreur, garder le mode 'auto' par défaut
-      }
-    };
-
-    // Charger de manière asynchrone sans bloquer le rendu initial
-    loadThemeMode();
-    
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  // Sauvegarder le mode de thème de manière non-bloquante
+  // Fonction simple pour changer le thème (sans AsyncStorage pour éviter les crashes)
   const setThemeMode = (mode: ThemeMode) => {
-    try {
-      setThemeModeState(mode);
-      // Sauvegarder de manière asynchrone sans attendre
-      AsyncStorage.setItem(THEME_STORAGE_KEY, mode).catch(error => {
-        console.error('Erreur lors de la sauvegarde du mode de thème:', error);
-      });
-    } catch (error) {
-      console.error('Erreur lors du changement de mode de thème:', error);
-    }
+    setThemeModeState(mode);
   };
 
-  // TOUJOURS rendre immédiatement avec le thème par défaut
   return (
     <ThemeContext.Provider value={{ theme, themeMode, setThemeMode, isDark }}>
       {children}

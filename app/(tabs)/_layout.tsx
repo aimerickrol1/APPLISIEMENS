@@ -1,12 +1,29 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Platform } from 'react-native';
+import { Platform, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { storage } from '@/utils/storage';
 
 export default function TabLayout() {
   const { strings } = useLanguage();
   const { theme } = useTheme();
+
+  // Initialiser le stockage APRÈS que les tabs soient montés
+  useEffect(() => {
+    const initStorage = async () => {
+      try {
+        await storage.initialize();
+        console.log('Stockage initialisé dans les tabs');
+      } catch (error) {
+        console.error('Erreur d\'initialisation du stockage:', error);
+      }
+    };
+
+    // Délai pour s'assurer que tout est stable
+    const timer = setTimeout(initStorage, 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <Tabs

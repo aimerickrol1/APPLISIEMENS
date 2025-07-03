@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
@@ -6,8 +6,7 @@ import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_7
 import * as SplashScreen from 'expo-splash-screen';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
-import { storage } from '@/utils/storage';
-import { Platform } from 'react-native';
+import { Platform, View } from 'react-native';
 
 // Prévenir l'auto-hide du splash screen
 SplashScreen.preventAutoHideAsync().catch(() => {
@@ -16,6 +15,7 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 
 export default function RootLayout() {
   useFrameworkReady();
+  const [isReady, setIsReady] = useState(false);
 
   const [fontsLoaded, fontError] = useFonts({
     'Inter-Regular': Inter_400Regular,
@@ -25,49 +25,33 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    // Initialiser le stockage au démarrage de l'application
-    const initializeApp = async () => {
+    const prepareApp = async () => {
       try {
-        console.log('Initialisation de l\'application...');
-        await storage.initialize();
-        console.log('Stockage initialisé avec succès');
-      } catch (error) {
-        console.error('Erreur lors de l\'initialisation du stockage:', error);
-        // Ne pas bloquer l'application en cas d'erreur de stockage
-      }
-    };
-
-    // CRITIQUE: Initialiser seulement après que les polices soient chargées
-    if (fontsLoaded || fontError) {
-      initializeApp();
-    }
-  }, [fontsLoaded, fontError]);
-
-  useEffect(() => {
-    const hideSplashScreen = async () => {
-      if (fontsLoaded || fontError) {
-        try {
-          // Délai supplémentaire pour s'assurer que tout est prêt
-          await new Promise(resolve => setTimeout(resolve, 500));
+        // Attendre que les polices soient chargées
+        if (fontsLoaded || fontError) {
+          // Délai minimal pour s'assurer que tout est stable
+          await new Promise(resolve => setTimeout(resolve, 100));
+          
+          // Marquer l'app comme prête
+          setIsReady(true);
+          
+          // Cacher le splash screen
           await SplashScreen.hideAsync();
-          console.log('Splash screen caché avec succès');
-        } catch (error) {
-          console.error('Erreur lors du masquage du splash screen:', error);
         }
+      } catch (error) {
+        console.error('Erreur lors de la préparation de l\'app:', error);
+        // En cas d'erreur, continuer quand même
+        setIsReady(true);
+        SplashScreen.hideAsync().catch(() => {});
       }
     };
 
-    hideSplashScreen();
+    prepareApp();
   }, [fontsLoaded, fontError]);
 
-  // CRITIQUE: Attendre que les polices soient chargées avant de rendre l'application
-  if (!fontsLoaded && !fontError) {
+  // Ne rien rendre tant que l'app n'est pas prête
+  if (!isReady) {
     return null;
-  }
-
-  // Si erreur de chargement des polices, continuer quand même
-  if (fontError) {
-    console.warn('Erreur de chargement des polices:', fontError);
   }
 
   return (
