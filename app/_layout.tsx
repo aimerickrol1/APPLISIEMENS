@@ -60,8 +60,8 @@ export default function RootLayout() {
         <Stack 
           screenOptions={{ 
             headerShown: false,
-            animation: Platform.OS === 'web' ? 'none' : 'slide_from_right',
-            animationDuration: Platform.OS === 'web' ? 0 : 300,
+            animation: Platform?.OS === 'web' ? 'none' : 'slide_from_right',
+            animationDuration: Platform?.OS === 'web' ? 0 : 300,
           }}
         >
           <Stack.Screen name="(tabs)" />
