@@ -19,6 +19,11 @@ export default function CreateProjectScreen() {
   const [errors, setErrors] = useState<{ name?: string; startDate?: string; endDate?: string }>({});
 
   // États pour la prédéfinition de structure
+  const [isStructureEnabled, setIsStructureEnabled] = useState(false);
+  const [buildingCount, setBuildingCount] = useState(1);
+  const [zonesPerBuilding, setZonesPerBuilding] = useState(1);
+  const [highShuttersPerZone, setHighShuttersPerZone] = useState(1);
+  const [lowShuttersPerZone, setLowShuttersPerZone] = useState(1);
 
   const handleBack = () => {
     router.push('/(tabs)/');
@@ -71,13 +76,22 @@ export default function CreateProjectScreen() {
     return new Date(year, month - 1, day);
   };
 
+  const createPredefinedStructure = async (
+    projectId: string,
+    buildingsToCreate: number,
+    zonesToCreate: number,
+    highShuttersToCreate: number,
+    lowShuttersToCreate: number
+  ) => {
     try {
+      for (let b = 1; b <= buildingsToCreate; b++) {
         const building = await storage.createBuilding(projectId, {
           name: `Bâtiment ${b}`,
           description: `Bâtiment généré automatiquement ${b}`
         });
 
         if (building) {
+          for (let z = 1; z <= zonesToCreate; z++) {
             const zone = await storage.createFunctionalZone(building.id, {
               name: `ZF${z.toString().padStart(2, '0')}`,
               description: `Zone fonctionnelle ${z}`
@@ -85,6 +99,7 @@ export default function CreateProjectScreen() {
 
             if (zone) {
               // Créer les volets hauts
+              for (let vh = 1; vh <= highShuttersToCreate; vh++) {
                 await storage.createShutter(zone.id, {
                   name: `VH${vh.toString().padStart(2, '0')}`,
                   type: 'high',
@@ -94,6 +109,7 @@ export default function CreateProjectScreen() {
               }
 
               // Créer les volets bas
+              for (let vb = 1; vb <= lowShuttersToCreate; vb++) {
                 await storage.createShutter(zone.id, {
                   name: `VB${vb.toString().padStart(2, '0')}`,
                   type: 'low',
@@ -135,6 +151,14 @@ export default function CreateProjectScreen() {
       const project = await storage.createProject(projectData);
 
       // Créer la structure prédéfinie si activée
+      if (isStructureEnabled) {
+        await createPredefinedStructure(
+          project.id,
+          buildingCount,
+          zonesPerBuilding,
+          highShuttersPerZone,
+          lowShuttersPerZone
+        );
       }
 
       router.replace(`/(tabs)/project/${project.id}`);
@@ -144,6 +168,14 @@ export default function CreateProjectScreen() {
       setLoading(false);
     }
   };
+
+  const toggleStructure = () => {
+    setIsStructureEnabled(!isStructureEnabled);
+  };
+
+  const totalBuildings = buildingCount;
+  const totalZones = buildingCount * zonesPerBuilding;
+  const totalShutters = totalZones * (highShuttersPerZone + lowShuttersPerZone);
 
   return (
     <KeyboardAvoidingView 
@@ -193,26 +225,34 @@ export default function CreateProjectScreen() {
           error={errors.endDate}
         />
 
-        {/* Section Prédéfinition de structure - SANS SCROLL AUTOMATIQUE */}
+        {/* Section Prédéfinition de structure */}
         <View style={styles.structureSection}>
           <TouchableOpacity 
             style={styles.structureHeader}
+            onPress={toggleStructure}
             activeOpacity={0.7}
           >
             <View style={styles.structureTitle}>
               <Text style={styles.structureIcon}>🏗️</Text>
               <Text style={styles.structureTitleText}>Prédéfinir la structure (optionnel)</Text>
             </View>
-            </View>
+            <TouchableOpacity 
+              style={[styles.toggle, isStructureEnabled && styles.toggleActive]}
+              onPress={toggleStructure}
+            >
+              <View style={[styles.toggleThumb, isStructureEnabled && styles.toggleThumbActive]} />
+            </TouchableOpacity>
           </TouchableOpacity>
           
           <Text style={styles.structureDescription}>
             Créez automatiquement vos bâtiments, zones et volets
           </Text>
 
+          {isStructureEnabled && (
             <View style={styles.structureInputs}>
               <NumericInput
                 label="🏢 Bâtiments (max 10)"
+                value={buildingCount}
                 onValueChange={setBuildingCount}
                 min={1}
                 max={10}
@@ -220,6 +260,7 @@ export default function CreateProjectScreen() {
 
               <NumericInput
                 label="🏗️ Zones par bâtiment (max 20)"
+                value={zonesPerBuilding}
                 onValueChange={setZonesPerBuilding}
                 min={1}
                 max={20}
@@ -235,6 +276,7 @@ export default function CreateProjectScreen() {
                       <Text style={styles.shutterTypeLabel}>Volet Haut (VH)</Text>
                     </View>
                     <NumericInput
+                      value={highShuttersPerZone}
                       onValueChange={setHighShuttersPerZone}
                       min={0}
                       max={30}
@@ -248,6 +290,7 @@ export default function CreateProjectScreen() {
                       <Text style={styles.shutterTypeLabel}>Volet Bas (VB)</Text>
                     </View>
                     <NumericInput
+                      value={lowShuttersPerZone}
                       onValueChange={setLowShuttersPerZone}
                       min={0}
                       max={30}
@@ -262,12 +305,16 @@ export default function CreateProjectScreen() {
                 <Text style={styles.previewTitle}>📋 Aperçu de la structure</Text>
                 <View style={styles.previewStats}>
                   <View style={styles.previewStat}>
+                    <Text style={styles.previewStatValue}>{totalBuildings}</Text>
+                    <Text style={styles.previewStatLabel}>Bâtiments</Text>
                   </View>
                   <View style={styles.previewStat}>
+                    <Text style={styles.previewStatValue}>{totalZones}</Text>
+                    <Text style={styles.previewStatLabel}>Zones</Text>
                   </View>
                   <View style={styles.previewStat}>
-                    <Text style={styles.previewStatValue}>
-                    </Text>
+                    <Text style={styles.previewStatValue}>{totalShutters}</Text>
+                    <Text style={styles.previewStatLabel}>Volets</Text>
                   </View>
                 </View>
               </View>
