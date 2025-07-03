@@ -4,33 +4,33 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 
 export default function AboutScreen() {
-  const { t } = useLanguage();
+  const { strings } = useLanguage();
   const { theme } = useTheme();
   const styles = createStyles(theme);
 
   return (
     <ScrollView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>{t('about.title', 'About')}</Text>
+        <Text style={styles.title}>{strings.about?.title || 'About'}</Text>
         
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('about.app_info', 'Application Information')}</Text>
+          <Text style={styles.sectionTitle}>{strings.about?.app_info || 'Application Information'}</Text>
           <Text style={styles.text}>
-            {t('about.description', 'This application helps manage building compliance and monitoring systems.')}
+            {strings.about?.description || 'This application helps manage building compliance and monitoring systems.'}
           </Text>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('about.compliance_criteria', 'Compliance Criteria')}</Text>
+          <Text style={styles.sectionTitle}>{strings.about?.compliance_criteria || 'Compliance Criteria'}</Text>
           
           <View style={styles.criteriaItem}>
             <View style={[styles.criteriaIndicator, { backgroundColor: '#10B981' }]} />
             <View style={styles.criteriaContent}>
               <Text style={styles.criteriaLabel}>
-                {t('about.acceptable_range', 'Acceptable (|Écart| ≤ 10%)')}
+                {strings.about?.acceptable_range || 'Acceptable (|Écart| ≤ 10%)'}
               </Text>
               <Text style={styles.criteriaDescription}>
-                {t('about.acceptable_description', 'Values within ±10% are considered acceptable and require no action.')}
+                {strings.about?.acceptable_description || 'Values within ±10% are considered acceptable and require no action.'}
               </Text>
             </View>
           </View>
@@ -39,10 +39,10 @@ export default function AboutScreen() {
             <View style={[styles.criteriaIndicator, { backgroundColor: '#F59E0B' }]} />
             <View style={styles.criteriaContent}>
               <Text style={styles.criteriaLabel}>
-                {t('about.warning_range', 'Warning (10% < |Écart| ≤ 20%)')}
+                {strings.about?.warning_range || 'Warning (10% < |Écart| ≤ 20%)'}
               </Text>
               <Text style={styles.criteriaDescription}>
-                {t('about.warning_description', 'Deviations between ±10% and ±20% require corrective action proposals.')}
+                {strings.about?.warning_description || 'Deviations between ±10% and ±20% require corrective action proposals.'}
               </Text>
             </View>
           </View>
@@ -51,17 +51,17 @@ export default function AboutScreen() {
             <View style={[styles.criteriaIndicator, { backgroundColor: '#EF4444' }]} />
             <View style={styles.criteriaContent}>
               <Text style={styles.criteriaLabel}>
-                {t('about.critical_range', 'Critical (|Écart| > 20%)')}
+                {strings.about?.critical_range || 'Critical (|Écart| > 20%)'}
               </Text>
               <Text style={styles.criteriaDescription}>
-                {t('about.critical_description', 'Deviations exceeding ±20% require immediate corrective measures.')}
+                {strings.about?.critical_description || 'Deviations exceeding ±20% require immediate corrective measures.'}
               </Text>
             </View>
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('about.version', 'Version Information')}</Text>
+          <Text style={styles.sectionTitle}>{strings.about?.version || 'Version Information'}</Text>
           <Text style={styles.text}>Version 1.0.0</Text>
           <Text style={styles.text}>© 2024 Siemens AG</Text>
         </View>
