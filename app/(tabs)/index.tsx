@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Modal, ScrollView, TextInput } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Modal, ScrollView, TextInput, ToastAndroid, Platform } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { Plus, Building, Settings, Star, Trash2, SquareCheck as CheckSquare, Square, X, Minus, Calendar, Layers } from 'lucide-react-native';
 import { Header } from '@/components/Header';
@@ -11,6 +11,7 @@ import { storage } from '@/utils/storage';
 import { calculateCompliance } from '@/utils/compliance';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useDoubleBackToExit } from '@/utils/BackHandler';
 
 // Interface pour la structure prédéfinie
 interface PredefinedZone {
@@ -61,6 +62,9 @@ export default function ProjectsScreen() {
 
   // Référence pour le ScrollView du modal
   const modalScrollViewRef = useRef<ScrollView>(null);
+
+  // Utiliser le hook pour gérer le double appui sur le bouton retour pour quitter
+  useDoubleBackToExit();
 
   // NOUVEAU : Écouteur d'événement pour ouvrir le modal depuis la page export
   useEffect(() => {

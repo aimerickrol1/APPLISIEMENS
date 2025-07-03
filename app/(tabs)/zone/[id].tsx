@@ -11,6 +11,7 @@ import { storage } from '@/utils/storage';
 import { calculateCompliance, formatDeviation } from '@/utils/compliance';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAndroidBackButton } from '@/utils/BackHandler';
 
 export default function ZoneDetailScreen() {
   const { strings } = useLanguage();
@@ -46,6 +47,12 @@ export default function ZoneDetailScreen() {
   // NOUVEAU : Références pour l'auto-focus des inputs
   const nameInputRef = useRef<TextInput>(null);
   const remarksInputRef = useRef<TextInput>(null);
+
+  // Configure Android back button to go back to the building screen
+  useAndroidBackButton(() => {
+    handleBack();
+    return true;
+  });
 
   // États pour le filtre
   const [filterVisible, setFilterVisible] = useState(false);

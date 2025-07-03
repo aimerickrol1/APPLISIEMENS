@@ -10,6 +10,7 @@ import { storage } from '@/utils/storage';
 import { calculateCompliance, formatDeviation } from '@/utils/compliance';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAndroidBackButton } from '@/utils/BackHandler';
 
 export default function ProjectDetailScreen() {
   const { strings } = useLanguage();
@@ -37,6 +38,12 @@ export default function ProjectDetailScreen() {
 
   // NOUVEAU : Référence pour l'auto-focus
   const nameInputRef = useRef<TextInput>(null);
+
+  // Configure Android back button to go back to the home screen
+  useAndroidBackButton(() => {
+    handleBack();
+    return true;
+  });
 
   // NOUVEAU : Auto-focus sur l'input du nom quand le modal s'ouvre
   useEffect(() => {

@@ -1,14 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, TextInput, Modal } from 'react-native';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Modal, TextInput } from 'react-native';
 import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
-import { Plus, Wind, Settings, Star, Trash2, SquareCheck as CheckSquare, Square, X } from 'lucide-react-native';
+import { Plus, Settings, Wind, Star, Trash2, SquareCheck as CheckSquare, Square, X } from 'lucide-react-native';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/Button';
 import { Project, Building, FunctionalZone } from '@/types';
 import { storage } from '@/utils/storage';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useCallback } from 'react';
+import { useAndroidBackButton } from '@/utils/BackHandler';
 
 export default function BuildingDetailScreen() {
   const { strings } = useLanguage();
@@ -32,6 +32,12 @@ export default function BuildingDetailScreen() {
 
   // Référence pour l'auto-focus
   const nameInputRef = useRef<TextInput>(null);
+
+  // Configure Android back button to go back to the project screen
+  useAndroidBackButton(() => {
+    handleBack();
+    return true;
+  });
 
   // Auto-focus sur l'input du nom quand le modal s'ouvre
   useEffect(() => {

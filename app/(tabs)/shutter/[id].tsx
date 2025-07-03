@@ -10,6 +10,7 @@ import { storage } from '@/utils/storage';
 import { calculateCompliance, formatDeviation } from '@/utils/compliance';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAndroidBackButton } from '@/utils/BackHandler';
 
 export default function ShutterDetailScreen() {
   const { strings } = useLanguage();
@@ -29,6 +30,12 @@ export default function ShutterDetailScreen() {
     referenceFlow: '',
     measuredFlow: '',
     hasBeenFocused: { referenceFlow: false, measuredFlow: false }
+  });
+
+  // Configure Android back button to go back to the zone screen or search
+  useAndroidBackButton(() => {
+    handleBack();
+    return true;
   });
 
   const loadShutter = useCallback(async () => {
