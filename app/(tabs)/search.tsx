@@ -29,6 +29,8 @@ export default function SearchScreen() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
   const [searchMode, setSearchMode] = useState<SearchMode>('simple');
   
   const [projects, setProjects] = useState<Project[]>([]);
