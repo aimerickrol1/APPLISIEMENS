@@ -121,7 +121,6 @@ interface ThemeProviderProps {
 export function ThemeProvider({ children }: ThemeProviderProps) {
   const systemColorScheme = useColorScheme();
   const [themeMode, setThemeModeState] = useState<ThemeMode>('auto');
-  const [isLoaded, setIsLoaded] = useState(false);
 
   // Déterminer le thème actuel basé sur le mode sélectionné
   const getCurrentTheme = (): Theme => {
@@ -134,52 +133,41 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   const theme = getCurrentTheme();
   const isDark = theme.mode === 'dark';
 
-  // Charger le mode de thème sauvegardé
+  // Charger le mode de thème sauvegardé de manière asynchrone APRÈS le rendu initial
   useEffect(() => {
     const loadThemeMode = async () => {
       try {
+        // Délai pour s'assurer que l'app est complètement initialisée
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         const savedMode = await AsyncStorage.getItem(THEME_STORAGE_KEY);
         if (savedMode && ['light', 'dark', 'auto'].includes(savedMode)) {
           setThemeModeState(savedMode as ThemeMode);
         }
       } catch (error) {
         console.error('Erreur lors du chargement du mode de thème:', error);
-      } finally {
-        // CORRIGÉ : Toujours marquer comme chargé, même en cas d'erreur
-        setIsLoaded(true);
+        // En cas d'erreur, garder le mode 'auto' par défaut
       }
     };
 
+    // Charger de manière asynchrone sans bloquer le rendu initial
     loadThemeMode();
   }, []);
 
   // Sauvegarder le mode de thème
   const setThemeMode = async (mode: ThemeMode) => {
     try {
-      await AsyncStorage.setItem(THEME_STORAGE_KEY, mode);
       setThemeModeState(mode);
+      // Sauvegarder de manière asynchrone sans attendre
+      AsyncStorage.setItem(THEME_STORAGE_KEY, mode).catch(error => {
+        console.error('Erreur lors de la sauvegarde du mode de thème:', error);
+      });
     } catch (error) {
-      console.error('Erreur lors de la sauvegarde du mode de thème:', error);
+      console.error('Erreur lors du changement de mode de thème:', error);
     }
   };
 
-  // CORRIGÉ : Rendre immédiatement avec le thème par défaut au lieu d'attendre
-  // Cela évite l'écran blanc au démarrage
-  if (!isLoaded) {
-    // Utiliser le thème système par défaut pendant le chargement
-    const defaultTheme = systemColorScheme === 'dark' ? darkTheme : lightTheme;
-    return (
-      <ThemeContext.Provider value={{ 
-        theme: defaultTheme, 
-        themeMode: 'auto', 
-        setThemeMode: () => {}, 
-        isDark: defaultTheme.mode === 'dark' 
-      }}>
-        {children}
-      </ThemeContext.Provider>
-    );
-  }
-
+  // Toujours rendre immédiatement avec le thème par défaut
   return (
     <ThemeContext.Provider value={{ theme, themeMode, setThemeMode, isDark }}>
       {children}
