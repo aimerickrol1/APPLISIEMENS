@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TextInput, StyleSheet, Platform, useColorScheme } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Platform } from 'react-native';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface DateInputProps {
   label?: string;
@@ -11,8 +12,7 @@ interface DateInputProps {
 }
 
 export function DateInput({ label, value, onChangeText, placeholder, error, containerStyle }: DateInputProps) {
-  const colorScheme = useColorScheme(); // NOUVEAU : Détecter le thème système
-  const isDark = colorScheme === 'dark';
+  const { theme } = useTheme();
 
   const formatDateInput = (text: string) => {
     // Supprimer tous les caractères non numériques
@@ -38,19 +38,20 @@ export function DateInput({ label, value, onChangeText, placeholder, error, cont
     onChangeText(formatted);
   };
 
+  const styles = createStyles(theme);
+
   return (
     <View style={[styles.container, containerStyle]}>
-      {label && <Text style={[styles.label, isDark && styles.labelDark]}>{label}</Text>}
+      {label && <Text style={styles.label}>{label}</Text>}
       <TextInput
         style={[
           styles.input,
-          isDark && styles.inputDark, // NOUVEAU : Style pour mode sombre
           error && styles.inputError,
         ]}
         value={value}
         onChangeText={handleTextChange}
         placeholder={placeholder}
-        placeholderTextColor={isDark ? "#6B7280" : "#9CA3AF"} // NOUVEAU : Couleur adaptative
+        placeholderTextColor={theme.colors.textTertiary}
         keyboardType="numeric"
         maxLength={10} // JJ/MM/AAAA = 10 caractères
         returnKeyType="done"
@@ -61,45 +62,35 @@ export function DateInput({ label, value, onChangeText, placeholder, error, cont
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     marginBottom: 16,
   },
   label: {
     fontSize: 14,
     fontFamily: 'Inter-Medium',
-    color: '#374151',
+    color: theme.colors.textSecondary,
     marginBottom: 6,
-  },
-  // NOUVEAU : Style pour le label en mode sombre
-  labelDark: {
-    color: '#D1D5DB',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: theme.colors.border,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: Platform.OS === 'ios' ? 16 : 12,
     fontSize: 16,
     fontFamily: 'Inter-Regular',
-    backgroundColor: '#ffffff',
-    color: '#111827', // NOUVEAU : Couleur de texte explicite
+    backgroundColor: theme.colors.inputBackground,
+    color: theme.colors.text,
     minHeight: Platform.OS === 'ios' ? 48 : 44,
   },
-  // NOUVEAU : Style pour l'input en mode sombre
-  inputDark: {
-    backgroundColor: '#374151',
-    borderColor: '#4B5563',
-    color: '#F9FAFB', // Texte blanc en mode sombre
-  },
   inputError: {
-    borderColor: '#EF4444',
+    borderColor: theme.colors.error,
   },
   error: {
     fontSize: 12,
     fontFamily: 'Inter-Regular',
-    color: '#EF4444',
+    color: theme.colors.error,
     marginTop: 4,
   },
 });

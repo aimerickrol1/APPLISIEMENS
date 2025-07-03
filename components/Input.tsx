@@ -1,20 +1,19 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TextInputProps, Platform, useColorScheme } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TextInputProps, Platform } from 'react-native';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface InputProps extends TextInputProps {
   label?: string;
   error?: string;
   containerStyle?: any;
-  clearZeroOnFocus?: boolean; // NOUVEAU : Option pour effacer le 0 au focus
+  clearZeroOnFocus?: boolean;
 }
 
 export function Input({ label, error, containerStyle, style, clearZeroOnFocus = false, ...props }: InputProps) {
   const [hasBeenFocused, setHasBeenFocused] = useState(false);
-  const colorScheme = useColorScheme(); // NOUVEAU : Détecter le thème système
-  const isDark = colorScheme === 'dark';
+  const { theme } = useTheme();
 
   const handleFocus = (e: any) => {
-    // NOUVEAU : Si c'est la première fois qu'on focus et que la valeur est "0", on la vide
     if (clearZeroOnFocus && !hasBeenFocused && props.value === '0') {
       props.onChangeText?.('');
     }
@@ -22,17 +21,18 @@ export function Input({ label, error, containerStyle, style, clearZeroOnFocus = 
     props.onFocus?.(e);
   };
 
+  const styles = createStyles(theme);
+
   return (
     <View style={[styles.container, containerStyle]}>
-      {label && <Text style={[styles.label, isDark && styles.labelDark]}>{label}</Text>}
+      {label && <Text style={styles.label}>{label}</Text>}
       <TextInput
         style={[
           styles.input,
-          isDark && styles.inputDark, // NOUVEAU : Style pour mode sombre
           error && styles.inputError,
           style
         ]}
-        placeholderTextColor={isDark ? "#6B7280" : "#9CA3AF"} // NOUVEAU : Couleur adaptative
+        placeholderTextColor={theme.colors.textTertiary}
         returnKeyType="done"
         blurOnSubmit={true}
         {...props}
@@ -43,45 +43,35 @@ export function Input({ label, error, containerStyle, style, clearZeroOnFocus = 
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     marginBottom: 16,
   },
   label: {
     fontSize: 14,
     fontFamily: 'Inter-Medium',
-    color: '#374151',
+    color: theme.colors.textSecondary,
     marginBottom: 6,
-  },
-  // NOUVEAU : Style pour le label en mode sombre
-  labelDark: {
-    color: '#D1D5DB',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: theme.colors.border,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: Platform.OS === 'ios' ? 16 : 12,
     fontSize: 16,
     fontFamily: 'Inter-Regular',
-    backgroundColor: '#ffffff',
-    color: '#111827', // NOUVEAU : Couleur de texte explicite
+    backgroundColor: theme.colors.inputBackground,
+    color: theme.colors.text,
     minHeight: Platform.OS === 'ios' ? 48 : 44,
   },
-  // NOUVEAU : Style pour l'input en mode sombre
-  inputDark: {
-    backgroundColor: '#374151',
-    borderColor: '#4B5563',
-    color: '#F9FAFB', // Texte blanc en mode sombre
-  },
   inputError: {
-    borderColor: '#EF4444',
+    borderColor: theme.colors.error,
   },
   error: {
     fontSize: 12,
     fontFamily: 'Inter-Regular',
-    color: '#EF4444',
+    color: theme.colors.error,
     marginTop: 4,
   },
 });

@@ -10,6 +10,7 @@ import { Project } from '@/types';
 import { storage } from '@/utils/storage';
 import { calculateCompliance } from '@/utils/compliance';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 // Interface pour la structure prédéfinie
 interface PredefinedZone {
@@ -32,6 +33,7 @@ interface PredefinedStructure {
 
 export default function ProjectsScreen() {
   const { strings } = useLanguage();
+  const { theme } = useTheme();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [favoriteProjects, setFavoriteProjects] = useState<Set<string>>(new Set());
@@ -562,9 +564,9 @@ export default function ProjectsScreen() {
                 onPress={() => handleProjectSelection(item.id)}
               >
                 {isSelected ? (
-                  <CheckSquare size={20} color="#009999" />
+                  <CheckSquare size={20} color={theme.colors.primary} />
                 ) : (
-                  <Square size={20} color="#9CA3AF" />
+                  <Square size={20} color={theme.colors.textTertiary} />
                 )}
               </TouchableOpacity>
             )}
@@ -582,7 +584,7 @@ export default function ProjectsScreen() {
               >
                 <Star 
                   size={16} 
-                  color={isFavorite ? "#F59E0B" : "#9CA3AF"} 
+                  color={isFavorite ? "#F59E0B" : theme.colors.textTertiary} 
                   fill={isFavorite ? "#F59E0B" : "none"}
                 />
               </TouchableOpacity>
@@ -590,13 +592,13 @@ export default function ProjectsScreen() {
                 style={styles.actionButton}
                 onPress={() => handleEditProject(item)}
               >
-                <Settings size={16} color="#009999" />
+                <Settings size={16} color={theme.colors.primary} />
               </TouchableOpacity>
               <TouchableOpacity 
                 style={styles.actionButton}
                 onPress={() => handleDeleteProject(item)}
               >
-                <Trash2 size={16} color="#EF4444" />
+                <Trash2 size={16} color={theme.colors.error} />
               </TouchableOpacity>
             </View>
           )}
@@ -605,7 +607,7 @@ export default function ProjectsScreen() {
         {/* Dates du projet */}
         {(item.startDate || item.endDate) && (
           <View style={styles.projectDates}>
-            <Calendar size={14} color="#6B7280" />
+            <Calendar size={14} color={theme.colors.textSecondary} />
             <Text style={styles.dateText}>
               {item.startDate && new Date(item.startDate).toLocaleDateString('fr-FR', { 
                 day: 'numeric', 
@@ -626,7 +628,7 @@ export default function ProjectsScreen() {
         <View style={styles.mainStats}>
           <View style={styles.statBox}>
             <View style={styles.statIconContainer}>
-              <Building size={16} color="#009999" />
+              <Building size={16} color={theme.colors.primary} />
             </View>
             <Text style={styles.statNumber}>{stats.buildingCount}</Text>
             <Text style={styles.statLabel}>Bâtiments</Text>
@@ -634,7 +636,7 @@ export default function ProjectsScreen() {
           
           <View style={styles.statBox}>
             <View style={styles.statIconContainer}>
-              <Layers size={16} color="#009999" />
+              <Layers size={16} color={theme.colors.primary} />
             </View>
             <Text style={styles.statNumber}>{stats.zoneCount}</Text>
             <Text style={styles.statLabel}>Zones</Text>
@@ -723,12 +725,13 @@ export default function ProjectsScreen() {
                   value={building.name}
                   onChangeText={(text) => updateBuildingName(building.id, text)}
                   placeholder="Nom du bâtiment"
+                  placeholderTextColor={theme.colors.textTertiary}
                 />
                 <TouchableOpacity
                   style={styles.removeButton}
                   onPress={() => removeBuilding(building.id)}
                 >
-                  <X size={16} color="#EF4444" />
+                  <X size={16} color={theme.colors.error} />
                 </TouchableOpacity>
               </View>
 
@@ -736,7 +739,7 @@ export default function ProjectsScreen() {
                 style={styles.addZoneButton}
                 onPress={() => addZone(building.id)}
               >
-                <Plus size={16} color="#009999" />
+                <Plus size={16} color={theme.colors.primary} />
                 <Text style={styles.addZoneText}>Ajouter une zone</Text>
               </TouchableOpacity>
 
@@ -748,12 +751,13 @@ export default function ProjectsScreen() {
                       value={zone.name}
                       onChangeText={(text) => updateZoneName(building.id, zone.id, text)}
                       placeholder="Nom de la zone"
+                      placeholderTextColor={theme.colors.textTertiary}
                     />
                     <TouchableOpacity
                       style={styles.removeButton}
                       onPress={() => removeZone(building.id, zone.id)}
                     >
-                      <X size={14} color="#EF4444" />
+                      <X size={14} color={theme.colors.error} />
                     </TouchableOpacity>
                   </View>
 
@@ -765,14 +769,14 @@ export default function ProjectsScreen() {
                           style={styles.counterButton}
                           onPress={() => updateShutterCount(building.id, zone.id, 'high', zone.highShutters - 1)}
                         >
-                          <Minus size={14} color="#009999" />
+                          <Minus size={14} color={theme.colors.primary} />
                         </TouchableOpacity>
                         <Text style={styles.counterValue}>{zone.highShutters}</Text>
                         <TouchableOpacity
                           style={styles.counterButton}
                           onPress={() => updateShutterCount(building.id, zone.id, 'high', zone.highShutters + 1)}
                         >
-                          <Plus size={14} color="#009999" />
+                          <Plus size={14} color={theme.colors.primary} />
                         </TouchableOpacity>
                       </View>
                     </View>
@@ -784,14 +788,14 @@ export default function ProjectsScreen() {
                           style={styles.counterButton}
                           onPress={() => updateShutterCount(building.id, zone.id, 'low', zone.lowShutters - 1)}
                         >
-                          <Minus size={14} color="#009999" />
+                          <Minus size={14} color={theme.colors.primary} />
                         </TouchableOpacity>
                         <Text style={styles.counterValue}>{zone.lowShutters}</Text>
                         <TouchableOpacity
                           style={styles.counterButton}
                           onPress={() => updateShutterCount(building.id, zone.id, 'low', zone.lowShutters + 1)}
                         >
-                          <Plus size={14} color="#009999" />
+                          <Plus size={14} color={theme.colors.primary} />
                         </TouchableOpacity>
                       </View>
                     </View>
@@ -802,13 +806,15 @@ export default function ProjectsScreen() {
           ))}
 
           <TouchableOpacity style={styles.addBuildingButton} onPress={addBuilding}>
-            <Plus size={20} color="#009999" />
+            <Plus size={20} color={theme.colors.primary} />
             <Text style={styles.addBuildingText}>Ajouter un bâtiment</Text>
           </TouchableOpacity>
         </ScrollView>
       </View>
     );
   };
+
+  const styles = createStyles(theme);
 
   if (loading) {
     return (
@@ -836,7 +842,7 @@ export default function ProjectsScreen() {
               </TouchableOpacity>
             )}
             <TouchableOpacity onPress={handleCreateModal} style={styles.actionButton}>
-              <Plus size={24} color="#009999" />
+              <Plus size={24} color={theme.colors.primary} />
             </TouchableOpacity>
           </View>
         }
@@ -853,8 +859,8 @@ export default function ProjectsScreen() {
               onPress={handleBulkFavorite}
               disabled={selectedProjects.size === 0}
             >
-              <Star size={20} color={selectedProjects.size > 0 ? "#F59E0B" : "#9CA3AF"} />
-              <Text style={[styles.toolbarButtonText, { color: selectedProjects.size > 0 ? "#F59E0B" : "#9CA3AF" }]}>
+              <Star size={20} color={selectedProjects.size > 0 ? "#F59E0B" : theme.colors.textTertiary} />
+              <Text style={[styles.toolbarButtonText, { color: selectedProjects.size > 0 ? "#F59E0B" : theme.colors.textTertiary }]}>
                 Favoris
               </Text>
             </TouchableOpacity>
@@ -863,8 +869,8 @@ export default function ProjectsScreen() {
               onPress={handleBulkDelete}
               disabled={selectedProjects.size === 0}
             >
-              <Trash2 size={20} color={selectedProjects.size > 0 ? "#EF4444" : "#9CA3AF"} />
-              <Text style={[styles.toolbarButtonText, { color: selectedProjects.size > 0 ? "#EF4444" : "#9CA3AF" }]}>
+              <Trash2 size={20} color={selectedProjects.size > 0 ? theme.colors.error : theme.colors.textTertiary} />
+              <Text style={[styles.toolbarButtonText, { color: selectedProjects.size > 0 ? theme.colors.error : theme.colors.textTertiary }]}>
                 Supprimer
               </Text>
             </TouchableOpacity>
@@ -875,7 +881,7 @@ export default function ProjectsScreen() {
       <View style={styles.content}>
         {projects.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Building size={64} color="#D1D5DB" />
+            <Building size={64} color={theme.colors.textTertiary} />
             <Text style={styles.emptyTitle}>Aucun projet</Text>
             <Text style={styles.emptySubtitle}>
               Créez votre premier projet de désenfumage pour commencer
@@ -912,7 +918,7 @@ export default function ProjectsScreen() {
                 onPress={() => setCreateModalVisible(false)}
                 style={styles.closeButton}
               >
-                <X size={20} color="#6B7280" />
+                <X size={20} color={theme.colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
@@ -992,10 +998,10 @@ export default function ProjectsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: theme.colors.background,
   },
   content: {
     flex: 1,
@@ -1008,7 +1014,7 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 16,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
   },
   headerActions: {
     flexDirection: 'row',
@@ -1019,12 +1025,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: theme.colors.surfaceSecondary,
   },
   selectionButtonText: {
     fontSize: 12,
     fontFamily: 'Inter-Medium',
-    color: '#374151',
+    color: theme.colors.textSecondary,
   },
   actionButton: {
     padding: 8,
@@ -1035,14 +1041,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: theme.colors.border,
   },
   selectionCount: {
     fontSize: 16,
     fontFamily: 'Inter-Medium',
-    color: '#111827',
+    color: theme.colors.text,
   },
   selectionActions: {
     flexDirection: 'row',
@@ -1055,7 +1061,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: theme.colors.surfaceSecondary,
   },
   toolbarButtonText: {
     fontSize: 14,
@@ -1070,14 +1076,14 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 24,
     fontFamily: 'Inter-Bold',
-    color: '#111827',
+    color: theme.colors.text,
     marginTop: 24,
     marginBottom: 12,
   },
   emptySubtitle: {
     fontSize: 16,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     textAlign: 'center',
     marginBottom: 32,
     lineHeight: 24,
@@ -1091,7 +1097,7 @@ const styles = StyleSheet.create({
 
   // NOUVEAU : Styles pour les cartes de projet détaillées
   projectCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.cardBackground,
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
@@ -1101,12 +1107,12 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 4,
     borderWidth: 1,
-    borderColor: '#F3F4F6',
+    borderColor: theme.colors.border,
   },
   selectedCard: {
     borderWidth: 2,
-    borderColor: '#009999',
-    backgroundColor: '#F0FDFA',
+    borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.primary + '10',
   },
   favoriteCard: {
     borderLeftWidth: 4,
@@ -1133,13 +1139,13 @@ const styles = StyleSheet.create({
   projectName: {
     fontSize: 20,
     fontFamily: 'Inter-Bold',
-    color: '#111827',
+    color: theme.colors.text,
     marginBottom: 4,
   },
   projectCity: {
     fontSize: 14,
     fontFamily: 'Inter-Medium',
-    color: '#009999',
+    color: theme.colors.primary,
   },
   actionButtons: {
     flexDirection: 'row',
@@ -1154,13 +1160,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: theme.colors.surfaceSecondary,
     borderRadius: 8,
   },
   dateText: {
     fontSize: 13,
     fontFamily: 'Inter-Medium',
-    color: '#64748B',
+    color: theme.colors.textSecondary,
   },
 
   // CORRIGÉ : Statistiques principales avec alignement parfait
@@ -1169,7 +1175,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     marginBottom: 20,
     paddingVertical: 16,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: theme.colors.surfaceSecondary,
     borderRadius: 12,
   },
   statBox: {
@@ -1187,13 +1193,13 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 24,
     fontFamily: 'Inter-Bold',
-    color: '#111827',
+    color: theme.colors.text,
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
     fontFamily: 'Inter-Medium',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     textAlign: 'center',
   },
   // CORRIGÉ : Point coloré centré dans son conteneur
@@ -1210,7 +1216,7 @@ const styles = StyleSheet.create({
   shutterCountText: {
     fontSize: 14,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
     marginBottom: 8,
     textAlign: 'center',
   },
@@ -1219,7 +1225,7 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
     overflow: 'hidden',
-    backgroundColor: '#E5E7EB',
+    backgroundColor: theme.colors.border,
     marginBottom: 12,
   },
   complianceSegment: {
@@ -1244,23 +1250,23 @@ const styles = StyleSheet.create({
   legendText: {
     fontSize: 11,
     fontFamily: 'Inter-Medium',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
   },
 
   // Pied de page du projet
   projectFooter: {
     borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
+    borderTopColor: theme.colors.border,
     paddingTop: 12,
     alignItems: 'center',
   },
   createdText: {
     fontSize: 12,
     fontFamily: 'Inter-Regular',
-    color: '#9CA3AF',
+    color: theme.colors.textTertiary,
   },
 
-  // Styles pour le modal (inchangés)
+  // Styles pour le modal
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -1269,7 +1275,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   modalContent: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.surface,
     borderRadius: 20,
     width: '100%',
     maxWidth: 500,
@@ -1281,12 +1287,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: theme.colors.border,
   },
   modalTitle: {
     fontSize: 20,
     fontFamily: 'Inter-Bold',
-    color: '#111827',
+    color: theme.colors.text,
   },
   closeButton: {
     padding: 8,
@@ -1299,19 +1305,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 20,
     borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
+    borderTopColor: theme.colors.border,
     gap: 12,
   },
   modalButton: {
     flex: 1,
   },
 
-  // Styles pour la prédéfinition de structure (inchangés)
+  // Styles pour la prédéfinition de structure
   predefinedToggleSection: {
     marginBottom: 16,
     paddingVertical: 16,
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
+    borderTopColor: theme.colors.border,
   },
   toggleHeader: {
     flexDirection: 'row',
@@ -1322,24 +1328,24 @@ const styles = StyleSheet.create({
   toggleTitle: {
     fontSize: 16,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
   },
   toggle: {
     width: 50,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: theme.colors.border,
     justifyContent: 'center',
     paddingHorizontal: 2,
   },
   toggleActive: {
-    backgroundColor: '#009999',
+    backgroundColor: theme.colors.primary,
   },
   toggleThumb: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.surface,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
@@ -1352,7 +1358,7 @@ const styles = StyleSheet.create({
   toggleDescription: {
     fontSize: 14,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
   },
   predefinedSection: {
     marginTop: 16,
@@ -1360,19 +1366,19 @@ const styles = StyleSheet.create({
   predefinedTitle: {
     fontSize: 16,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
     marginBottom: 16,
   },
   predefinedScroll: {
     maxHeight: 300,
   },
   buildingContainer: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: theme.colors.surfaceSecondary,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: theme.colors.border,
   },
   buildingHeader: {
     flexDirection: 'row',
@@ -1382,19 +1388,20 @@ const styles = StyleSheet.create({
   buildingNameInput: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: theme.colors.border,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 14,
     fontFamily: 'Inter-Medium',
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.inputBackground,
+    color: theme.colors.text,
     marginRight: 8,
   },
   removeButton: {
     padding: 8,
     borderRadius: 6,
-    backgroundColor: '#FEF2F2',
+    backgroundColor: theme.colors.error + '20',
   },
   addZoneButton: {
     flexDirection: 'row',
@@ -1403,24 +1410,24 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 8,
-    backgroundColor: '#F0FDFA',
+    backgroundColor: theme.colors.primary + '20',
     borderWidth: 1,
-    borderColor: '#A7F3D0',
+    borderColor: theme.colors.primary + '40',
     marginBottom: 12,
   },
   addZoneText: {
     fontSize: 14,
     fontFamily: 'Inter-Medium',
-    color: '#009999',
+    color: theme.colors.primary,
     marginLeft: 6,
   },
   zoneContainer: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.surface,
     borderRadius: 8,
     padding: 12,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: theme.colors.border,
   },
   zoneHeader: {
     flexDirection: 'row',
@@ -1430,13 +1437,14 @@ const styles = StyleSheet.create({
   zoneNameInput: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: theme.colors.border,
     borderRadius: 6,
     paddingHorizontal: 10,
     paddingVertical: 6,
     fontSize: 13,
     fontFamily: 'Inter-Medium',
-    backgroundColor: '#F9FAFB',
+    backgroundColor: theme.colors.surfaceSecondary,
+    color: theme.colors.text,
     marginRight: 8,
   },
   shutterControls: {
@@ -1449,7 +1457,7 @@ const styles = StyleSheet.create({
   shutterLabel: {
     fontSize: 12,
     fontFamily: 'Inter-Medium',
-    color: '#374151',
+    color: theme.colors.textSecondary,
     marginBottom: 6,
     textAlign: 'center',
   },
@@ -1457,7 +1465,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F3F4F6',
+    backgroundColor: theme.colors.surfaceSecondary,
     borderRadius: 8,
     padding: 4,
   },
@@ -1465,7 +1473,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 6,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.surface,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -1477,7 +1485,7 @@ const styles = StyleSheet.create({
   counterValue: {
     fontSize: 16,
     fontFamily: 'Inter-Bold',
-    color: '#111827',
+    color: theme.colors.text,
     marginHorizontal: 16,
     minWidth: 24,
     textAlign: 'center',
@@ -1489,16 +1497,16 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 20,
     borderRadius: 12,
-    backgroundColor: '#F0FDFA',
+    backgroundColor: theme.colors.primary + '20',
     borderWidth: 2,
-    borderColor: '#009999',
+    borderColor: theme.colors.primary,
     borderStyle: 'dashed',
     marginTop: 8,
   },
   addBuildingText: {
     fontSize: 16,
     fontFamily: 'Inter-SemiBold',
-    color: '#009999',
+    color: theme.colors.primary,
     marginLeft: 8,
   },
 });

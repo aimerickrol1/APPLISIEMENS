@@ -5,6 +5,7 @@ import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import * as SplashScreen from 'expo-splash-screen';
 import { LanguageProvider } from '@/contexts/LanguageContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 import { storage } from '@/utils/storage';
 
 SplashScreen.preventAutoHideAsync();
@@ -44,18 +45,20 @@ export default function RootLayout() {
   }
 
   return (
-    <LanguageProvider>
-      <Stack 
-        screenOptions={{ 
-          headerShown: false,
-          animation: 'slide_from_right',
-          animationDuration: 300,
-        }}
-      >
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </LanguageProvider>
+    <ThemeProvider>
+      <LanguageProvider>
+        <Stack 
+          screenOptions={{ 
+            headerShown: false,
+            animation: 'slide_from_right',
+            animationDuration: 300,
+          }}
+        >
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="+not-found" />
+        </Stack>
+        <StatusBar style="auto" />
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }
