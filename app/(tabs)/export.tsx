@@ -894,6 +894,7 @@ export default function ExportScreen() {
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
+          showsVerticalScrollIndicator={false}
         >
           <View style={styles.errorContainer}>
             <Ionicons name="document-text-outline" size={48} color="#EF4444" />
@@ -920,6 +921,7 @@ export default function ExportScreen() {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
+        showsVerticalScrollIndicator={false}
       >
         {projects.length === 0 ? (
           <View style={styles.emptyContainer}>
