@@ -6,10 +6,8 @@ import { Input } from '@/components/Input';
 import { DateInput } from '@/components/DateInput';
 import { Button } from '@/components/Button';
 import { storage } from '@/utils/storage';
-import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function CreateProjectScreen() {
-  const { strings } = useLanguage();
   const [name, setName] = useState('');
   const [city, setCity] = useState('');
   const [startDate, setStartDate] = useState('');
@@ -28,6 +26,7 @@ export default function CreateProjectScreen() {
       newErrors.name = 'Le nom du projet est requis';
     }
 
+    // Validation des dates si elles sont renseignées
     if (startDate && !isValidDate(startDate)) {
       newErrors.startDate = 'Format de date invalide (JJ/MM/AAAA)';
     }
@@ -36,6 +35,7 @@ export default function CreateProjectScreen() {
       newErrors.endDate = 'Format de date invalide (JJ/MM/AAAA)';
     }
 
+    // Vérifier que la date de fin est après la date de début
     if (startDate && endDate && isValidDate(startDate) && isValidDate(endDate)) {
       const start = parseDate(startDate);
       const end = parseDate(endDate);
@@ -113,7 +113,6 @@ export default function CreateProjectScreen() {
         style={styles.content} 
         contentContainerStyle={styles.contentContainer}
         keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
       >
         <Input
           label="Nom du projet *"
