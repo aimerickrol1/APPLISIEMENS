@@ -5,7 +5,6 @@ import { Plus, Settings, Copy, Clipboard, Filter, Star, Trash2, SquareCheck as C
 import { Header } from '@/components/Header';
 import { Button } from '@/components/Button';
 import { ComplianceIndicator } from '@/components/ComplianceIndicator';
-import { Input } from '@/components/Input';
 import { Project, Building, FunctionalZone, Shutter } from '@/types';
 import { storage } from '@/utils/storage';
 import { calculateCompliance, formatDeviation } from '@/utils/compliance';
@@ -1280,13 +1279,13 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   flowEditingInput: {
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: theme.mode === 'dark' ? theme.colors.primary + '60' : theme.colors.border,
     borderRadius: 6,
     paddingHorizontal: 8,
     paddingVertical: 8,
     fontSize: 14,
     fontFamily: 'Inter-Regular',
-    backgroundColor: theme.colors.inputBackground,
+    backgroundColor: theme.mode === 'dark' ? theme.colors.primary + '20' : theme.colors.inputBackground,
     color: theme.colors.text,
     textAlign: 'center',
     height: 40, // Hauteur fixe pour tous les champs
