@@ -37,13 +37,18 @@ export default function RootLayout() {
       }
     };
 
-    initializeApp();
-  }, []);
+    // CRITIQUE: Initialiser seulement après que les polices soient chargées
+    if (fontsLoaded || fontError) {
+      initializeApp();
+    }
+  }, [fontsLoaded, fontError]);
 
   useEffect(() => {
     const hideSplashScreen = async () => {
       if (fontsLoaded || fontError) {
         try {
+          // Délai supplémentaire pour s'assurer que tout est prêt
+          await new Promise(resolve => setTimeout(resolve, 500));
           await SplashScreen.hideAsync();
           console.log('Splash screen caché avec succès');
         } catch (error) {
@@ -55,7 +60,7 @@ export default function RootLayout() {
     hideSplashScreen();
   }, [fontsLoaded, fontError]);
 
-  // Attendre que les polices soient chargées avant de rendre l'application
+  // CRITIQUE: Attendre que les polices soient chargées avant de rendre l'application
   if (!fontsLoaded && !fontError) {
     return null;
   }

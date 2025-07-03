@@ -133,15 +133,19 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   const theme = getCurrentTheme();
   const isDark = theme.mode === 'dark';
 
-  // Charger le mode de thème sauvegardé de manière asynchrone APRÈS le rendu initial
+  // Charger le mode de thème sauvegardé de manière TRÈS robuste
   useEffect(() => {
+    let isMounted = true;
+    
     const loadThemeMode = async () => {
       try {
         // Délai pour s'assurer que l'app est complètement initialisée
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        if (!isMounted) return;
         
         const savedMode = await AsyncStorage.getItem(THEME_STORAGE_KEY);
-        if (savedMode && ['light', 'dark', 'auto'].includes(savedMode)) {
+        if (savedMode && ['light', 'dark', 'auto'].includes(savedMode) && isMounted) {
           setThemeModeState(savedMode as ThemeMode);
         }
       } catch (error) {
@@ -152,10 +156,14 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
     // Charger de manière asynchrone sans bloquer le rendu initial
     loadThemeMode();
+    
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  // Sauvegarder le mode de thème
-  const setThemeMode = async (mode: ThemeMode) => {
+  // Sauvegarder le mode de thème de manière non-bloquante
+  const setThemeMode = (mode: ThemeMode) => {
     try {
       setThemeModeState(mode);
       // Sauvegarder de manière asynchrone sans attendre
@@ -167,7 +175,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     }
   };
 
-  // Toujours rendre immédiatement avec le thème par défaut
+  // TOUJOURS rendre immédiatement avec le thème par défaut
   return (
     <ThemeContext.Provider value={{ theme, themeMode, setThemeMode, isDark }}>
       {children}
