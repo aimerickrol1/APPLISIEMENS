@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Modal, TextInput, useColorScheme } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Modal, TextInput } from 'react-native';
 import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import { Plus, Settings, Copy, Clipboard, Filter, Star, Trash2, SquareCheck as CheckSquare, Square, MessageSquare } from 'lucide-react-native';
 import { Header } from '@/components/Header';
@@ -10,19 +10,17 @@ import { Project, Building, FunctionalZone, Shutter } from '@/types';
 import { storage } from '@/utils/storage';
 import { calculateCompliance, formatDeviation } from '@/utils/compliance';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function ZoneDetailScreen() {
   const { strings } = useLanguage();
+  const { theme } = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [zone, setZone] = useState<FunctionalZone | null>(null);
   const [building, setBuilding] = useState<Building | null>(null);
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [copiedShutter, setCopiedShutter] = useState<Shutter | null>(null);
-  
-  // NOUVEAU : Détecter le thème système
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
   
   // CORRIGÉ : États pour l'édition directe des débits - AVEC MISE À JOUR INSTANTANÉE
   const [editingFlows, setEditingFlows] = useState<{[key: string]: {
@@ -572,9 +570,9 @@ export default function ZoneDetailScreen() {
                 onPress={() => handleShutterSelection(item.id)}
               >
                 {isSelected ? (
-                  <CheckSquare size={20} color="#009999" />
+                  <CheckSquare size={20} color={theme.colors.primary} />
                 ) : (
-                  <Square size={20} color="#9CA3AF" />
+                  <Square size={20} color={theme.colors.textTertiary} />
                 )}
               </TouchableOpacity>
             )}
@@ -601,7 +599,7 @@ export default function ZoneDetailScreen() {
                 >
                   <Star 
                     size={14} 
-                    color={isFavorite ? "#F59E0B" : "#9CA3AF"} 
+                    color={isFavorite ? "#F59E0B" : theme.colors.textTertiary} 
                     fill={isFavorite ? "#F59E0B" : "none"}
                   />
                 </TouchableOpacity>
@@ -610,13 +608,13 @@ export default function ZoneDetailScreen() {
                   style={styles.settingsButton}
                   onPress={() => handleEditShutter(item)}
                 >
-                  <Settings size={14} color="#009999" />
+                  <Settings size={14} color={theme.colors.primary} />
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.copyButton}
                   onPress={() => handleCopyShutter(item)}
                 >
-                  <Copy size={16} color="#009999" />
+                  <Copy size={16} color={theme.colors.primary} />
                 </TouchableOpacity>
               </>
             )}
@@ -633,17 +631,14 @@ export default function ZoneDetailScreen() {
                 <Text style={styles.flowEditingUnit}>({strings.cubicMeterPerHour})</Text>
               </View>
               <TextInput
-                style={[
-                  styles.flowEditingInput,
-                  isDark && styles.flowEditingInputDark
-                ]}
+                style={styles.flowEditingInput}
                 value={editData?.referenceFlow || (item.referenceFlow > 0 ? item.referenceFlow.toString() : '')}
                 onChangeText={(text) => handleFlowChange(item.id, 'referenceFlow', text)}
                 onFocus={() => handleFlowFocus(item.id, 'referenceFlow')}
                 onBlur={() => handleFlowBlur(item, 'referenceFlow')}
                 keyboardType="numeric"
-                placeholder="Ex: 5000" // CORRIGÉ : Exemple au lieu de "0"
-                placeholderTextColor={isDark ? "#6B7280" : "#9CA3AF"}
+                placeholder="Ex: 5000"
+                placeholderTextColor={theme.colors.textTertiary}
                 selectTextOnFocus={true}
               />
             </View>
@@ -654,17 +649,14 @@ export default function ZoneDetailScreen() {
                 <Text style={styles.flowEditingUnit}>({strings.cubicMeterPerHour})</Text>
               </View>
               <TextInput
-                style={[
-                  styles.flowEditingInput,
-                  isDark && styles.flowEditingInputDark
-                ]}
+                style={styles.flowEditingInput}
                 value={editData?.measuredFlow || (item.measuredFlow > 0 ? item.measuredFlow.toString() : '')}
                 onChangeText={(text) => handleFlowChange(item.id, 'measuredFlow', text)}
                 onFocus={() => handleFlowFocus(item.id, 'measuredFlow')}
                 onBlur={() => handleFlowBlur(item, 'measuredFlow')}
                 keyboardType="numeric"
-                placeholder="Ex: 4800" // CORRIGÉ : Exemple au lieu de "0"
-                placeholderTextColor={isDark ? "#6B7280" : "#9CA3AF"}
+                placeholder="Ex: 4800"
+                placeholderTextColor={theme.colors.textTertiary}
                 selectTextOnFocus={true}
               />
             </View>
@@ -694,7 +686,7 @@ export default function ZoneDetailScreen() {
             style={styles.remarksButton}
             onPress={() => openRemarksEditModal(item)}
           >
-            <MessageSquare size={14} color="#6B7280" />
+            <MessageSquare size={14} color={theme.colors.textSecondary} />
             <Text style={styles.remarksButtonText}>
               {item.remarks ? `Remarque: ${item.remarks}` : 'Ajouter une remarque'}
             </Text>
@@ -703,6 +695,8 @@ export default function ZoneDetailScreen() {
       </TouchableOpacity>
     );
   };
+
+  const styles = createStyles(theme);
 
   if (loading) {
     return (
@@ -741,17 +735,17 @@ export default function ZoneDetailScreen() {
             <View style={styles.headerActions}>
               {copiedShutter && (
                 <TouchableOpacity onPress={handlePasteShutter} style={styles.actionButton}>
-                  <Clipboard size={20} color="#10B981" />
+                  <Clipboard size={20} color={theme.colors.success} />
                 </TouchableOpacity>
               )}
               <TouchableOpacity onPress={() => setFilterVisible(!filterVisible)} style={styles.actionButton}>
-                <Filter size={20} color="#009999" />
+                <Filter size={20} color={theme.colors.primary} />
               </TouchableOpacity>
               <TouchableOpacity onPress={handleEditZone} style={styles.actionButton}>
-                <Settings size={20} color="#009999" />
+                <Settings size={20} color={theme.colors.primary} />
               </TouchableOpacity>
               <TouchableOpacity onPress={handleCreateShutter} style={styles.actionButton}>
-                <Plus size={24} color="#009999" />
+                <Plus size={24} color={theme.colors.primary} />
               </TouchableOpacity>
             </View>
             
@@ -779,8 +773,8 @@ export default function ZoneDetailScreen() {
               onPress={handleBulkFavorite}
               disabled={selectedShutters.size === 0}
             >
-              <Star size={20} color={selectedShutters.size > 0 ? "#F59E0B" : "#9CA3AF"} />
-              <Text style={[styles.toolbarButtonText, { color: selectedShutters.size > 0 ? "#F59E0B" : "#9CA3AF" }]}>
+              <Star size={20} color={selectedShutters.size > 0 ? "#F59E0B" : theme.colors.textTertiary} />
+              <Text style={[styles.toolbarButtonText, { color: selectedShutters.size > 0 ? "#F59E0B" : theme.colors.textTertiary }]}>
                 {strings.favorites}
               </Text>
             </TouchableOpacity>
@@ -789,8 +783,8 @@ export default function ZoneDetailScreen() {
               onPress={handleBulkDelete}
               disabled={selectedShutters.size === 0}
             >
-              <Trash2 size={20} color={selectedShutters.size > 0 ? "#EF4444" : "#9CA3AF"} />
-              <Text style={[styles.toolbarButtonText, { color: selectedShutters.size > 0 ? "#EF4444" : "#9CA3AF" }]}>
+              <Trash2 size={20} color={selectedShutters.size > 0 ? theme.colors.error : theme.colors.textTertiary} />
+              <Text style={[styles.toolbarButtonText, { color: selectedShutters.size > 0 ? theme.colors.error : theme.colors.textTertiary }]}>
                 {strings.delete}
               </Text>
             </TouchableOpacity>
@@ -803,7 +797,7 @@ export default function ZoneDetailScreen() {
         {copiedShutter && (
           <View style={styles.copiedIndicator}>
             <View style={styles.copiedIndicatorContent}>
-              <Clipboard size={16} color="#10B981" />
+              <Clipboard size={16} color={theme.colors.success} />
               <Text style={styles.copiedText}>
                 {strings.shutter} "{copiedShutter.name}" {strings.copied}
               </Text>
@@ -889,7 +883,7 @@ export default function ZoneDetailScreen() {
                 onPress={() => setNameEditModal({ visible: false, shutter: null, name: '' })}
                 style={styles.closeButton}
               >
-                <Text style={styles.closeButtonText}>✕</Text>
+                <X size={20} color={theme.colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
@@ -897,14 +891,11 @@ export default function ZoneDetailScreen() {
               <Text style={styles.inputLabel}>{strings.shutterName} *</Text>
               <TextInput
                 ref={nameInputRef}
-                style={[
-                  styles.nameTextInput,
-                  isDark && styles.nameTextInputDark
-                ]}
+                style={styles.nameTextInput}
                 value={nameEditModal.name}
                 onChangeText={(text) => setNameEditModal(prev => ({ ...prev, name: text }))}
                 placeholder="Ex: VH01, VB01"
-                placeholderTextColor={isDark ? "#6B7280" : "#9CA3AF"}
+                placeholderTextColor={theme.colors.textTertiary}
                 autoFocus={true}
                 selectTextOnFocus={true}
               />
@@ -942,7 +933,7 @@ export default function ZoneDetailScreen() {
                 onPress={() => setRemarksEditModal({ visible: false, shutter: null, remarks: '' })}
                 style={styles.closeButton}
               >
-                <Text style={styles.closeButtonText}>✕</Text>
+                <X size={20} color={theme.colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
@@ -950,14 +941,11 @@ export default function ZoneDetailScreen() {
               <Text style={styles.inputLabel}>{strings.remarks}</Text>
               <TextInput
                 ref={remarksInputRef}
-                style={[
-                  styles.remarksTextInput,
-                  isDark && styles.remarksTextInputDark
-                ]}
+                style={styles.remarksTextInput}
                 value={remarksEditModal.remarks}
                 onChangeText={(text) => setRemarksEditModal(prev => ({ ...prev, remarks: text }))}
                 placeholder="Observations, conditions de mesure..."
-                placeholderTextColor={isDark ? "#6B7280" : "#9CA3AF"}
+                placeholderTextColor={theme.colors.textTertiary}
                 multiline
                 numberOfLines={4}
                 textAlignVertical="top"
@@ -985,10 +973,10 @@ export default function ZoneDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: theme.colors.background,
   },
   content: {
     flex: 1,
@@ -1001,7 +989,7 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 16,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
   },
   errorContainer: {
     flex: 1,
@@ -1012,7 +1000,7 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 16,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     textAlign: 'center',
   },
   // Styles pour le conteneur d'en-tête à deux niveaux
@@ -1031,12 +1019,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: theme.colors.surfaceSecondary,
   },
   selectionButtonText: {
     fontSize: 12,
     fontFamily: 'Inter-Medium',
-    color: '#374151',
+    color: theme.colors.textSecondary,
   },
   actionButton: {
     padding: 8,
@@ -1048,14 +1036,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: theme.colors.border,
   },
   selectionCount: {
     fontSize: 16,
     fontFamily: 'Inter-Medium',
-    color: '#111827',
+    color: theme.colors.text,
   },
   selectionActions: {
     flexDirection: 'row',
@@ -1068,16 +1056,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: theme.colors.surfaceSecondary,
   },
   toolbarButtonText: {
     fontSize: 14,
     fontFamily: 'Inter-Medium',
   },
   copiedIndicator: {
-    backgroundColor: '#F0FDF4',
+    backgroundColor: theme.colors.success + '20',
     borderWidth: 1,
-    borderColor: '#BBF7D0',
+    borderColor: theme.colors.success + '40',
     borderRadius: 8,
     margin: 16,
     padding: 12,
@@ -1090,7 +1078,7 @@ const styles = StyleSheet.create({
   copiedText: {
     fontSize: 14,
     fontFamily: 'Inter-Medium',
-    color: '#15803D',
+    color: theme.colors.success,
     flex: 1,
   },
   // Styles pour la barre de filtre
@@ -1098,9 +1086,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: theme.colors.border,
     gap: 8,
   },
   filterButton: {
@@ -1111,19 +1099,19 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 8,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: theme.colors.surfaceSecondary,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: theme.colors.border,
     gap: 6,
   },
   filterButtonActive: {
-    backgroundColor: '#009999',
-    borderColor: '#009999',
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
   },
   filterButtonText: {
     fontSize: 14,
     fontFamily: 'Inter-Medium',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
   },
   filterButtonTextActive: {
     color: '#ffffff',
@@ -1142,13 +1130,13 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 20,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: 16,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     textAlign: 'center',
     marginBottom: 24,
     lineHeight: 24,
@@ -1160,7 +1148,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   shutterCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.surface,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
@@ -1173,8 +1161,8 @@ const styles = StyleSheet.create({
   // Styles pour les cartes sélectionnées et favorites
   selectedCard: {
     borderWidth: 2,
-    borderColor: '#009999',
-    backgroundColor: '#F0FDFA',
+    borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.primary + '20',
   },
   favoriteCard: {
     borderLeftWidth: 4,
@@ -1205,7 +1193,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 6,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: theme.colors.surfaceSecondary,
   },
   shutterNameContainerSelection: {
     backgroundColor: 'transparent',
@@ -1213,7 +1201,7 @@ const styles = StyleSheet.create({
   shutterName: {
     fontSize: 18,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
     flex: 1,
   },
   editIcon: {
@@ -1227,8 +1215,8 @@ const styles = StyleSheet.create({
   shutterType: {
     fontSize: 12,
     fontFamily: 'Inter-Medium',
-    color: '#6B7280',
-    backgroundColor: '#F3F4F6',
+    color: theme.colors.textSecondary,
+    backgroundColor: theme.colors.surfaceSecondary,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
@@ -1237,23 +1225,23 @@ const styles = StyleSheet.create({
   favoriteButton: {
     padding: 4,
     borderRadius: 6,
-    backgroundColor: '#FEF3C7',
+    backgroundColor: theme.colors.warning + '20',
   },
   // NOUVEAU : Bouton paramètres pour le volet
   settingsButton: {
     padding: 4,
     borderRadius: 6,
-    backgroundColor: '#F0FDFA',
+    backgroundColor: theme.colors.primary + '20',
   },
   copyButton: {
     padding: 4,
     borderRadius: 6,
-    backgroundColor: '#F0FDFA',
+    backgroundColor: theme.colors.primary + '20',
   },
   
   // STYLES pour l'édition directe avec sauvegarde automatique
   flowEditingContainer: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: theme.colors.surfaceSecondary,
     borderRadius: 8,
     padding: 12,
     marginBottom: 12,
@@ -1274,41 +1262,35 @@ const styles = StyleSheet.create({
   flowEditingLabel: {
     fontSize: 10,
     fontFamily: 'Inter-Medium',
-    color: '#374151',
+    color: theme.colors.textSecondary,
     lineHeight: 12,
   },
   flowEditingUnit: {
     fontSize: 9,
     fontFamily: 'Inter-Regular',
-    color: '#9CA3AF',
+    color: theme.colors.textTertiary,
     marginTop: 2,
   },
   flowEditingInput: {
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: theme.colors.border,
     borderRadius: 6,
     paddingHorizontal: 8,
     paddingVertical: 8,
     fontSize: 14,
     fontFamily: 'Inter-Regular',
-    backgroundColor: '#ffffff',
-    color: '#111827',
+    backgroundColor: theme.colors.inputBackground,
+    color: theme.colors.text,
     textAlign: 'center',
     height: 40, // Hauteur fixe pour tous les champs
   },
-  // NOUVEAU : Style pour l'input en mode sombre
-  flowEditingInputDark: {
-    backgroundColor: '#374151',
-    borderColor: '#4B5563',
-    color: '#F9FAFB', // Texte blanc en mode sombre
-  },
   deviationDisplay: {
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: theme.colors.border,
     borderRadius: 6,
     paddingHorizontal: 8,
     paddingVertical: 8,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: theme.colors.surfaceSecondary,
     alignItems: 'center',
     justifyContent: 'center',
     height: 40, // Même hauteur que les inputs
@@ -1330,15 +1312,15 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingVertical: 8,
     paddingHorizontal: 12,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: theme.colors.surfaceSecondary,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: theme.colors.border,
   },
   remarksButtonText: {
     fontSize: 12,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     flex: 1,
     fontStyle: 'italic',
   },
@@ -1352,7 +1334,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   modalContent: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.surface,
     borderRadius: 16,
     width: '100%',
     maxWidth: 400,
@@ -1363,19 +1345,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: theme.colors.separator,
   },
   modalTitle: {
     fontSize: 18,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
   },
   closeButton: {
     padding: 4,
-  },
-  closeButtonText: {
-    fontSize: 18,
-    color: '#6B7280',
   },
   modalBody: {
     padding: 20,
@@ -1384,7 +1362,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 20,
     borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
+    borderTopColor: theme.colors.separator,
     gap: 12,
   },
   modalButton: {
@@ -1395,44 +1373,32 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 14,
     fontFamily: 'Inter-Medium',
-    color: '#374151',
+    color: theme.colors.textSecondary,
     marginBottom: 6,
   },
   nameTextInput: {
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: theme.colors.border,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 12,
     fontSize: 16,
     fontFamily: 'Inter-Regular',
-    backgroundColor: '#ffffff',
-    color: '#111827',
+    backgroundColor: theme.colors.inputBackground,
+    color: theme.colors.text,
     minHeight: 48,
-  },
-  // NOUVEAU : Style pour l'input nom en mode sombre
-  nameTextInputDark: {
-    backgroundColor: '#374151',
-    borderColor: '#4B5563',
-    color: '#F9FAFB', // Texte blanc en mode sombre
   },
   remarksTextInput: {
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: theme.colors.border,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 12,
     fontSize: 16,
     fontFamily: 'Inter-Regular',
-    backgroundColor: '#ffffff',
-    color: '#111827',
+    backgroundColor: theme.colors.inputBackground,
+    color: theme.colors.text,
     minHeight: 100,
     maxHeight: 150,
-  },
-  // NOUVEAU : Style pour l'input remarques en mode sombre
-  remarksTextInputDark: {
-    backgroundColor: '#374151',
-    borderColor: '#4B5563',
-    color: '#F9FAFB', // Texte blanc en mode sombre
   },
 });
