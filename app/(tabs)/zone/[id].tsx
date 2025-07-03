@@ -112,10 +112,10 @@ export default function ZoneDetailScreen() {
     if (zone) {
       const newEditingFlows: typeof editingFlows = {};
       zone.shutters.forEach(shutter => {
-        // CORRIGÉ : Toujours mettre à jour avec les valeurs actuelles du volet
+        // CORRIGÉ : Initialiser avec des valeurs vides si les débits sont à 0
         newEditingFlows[shutter.id] = {
-          referenceFlow: shutter.referenceFlow.toString(),
-          measuredFlow: shutter.measuredFlow.toString(),
+          referenceFlow: shutter.referenceFlow > 0 ? shutter.referenceFlow.toString() : '',
+          measuredFlow: shutter.measuredFlow > 0 ? shutter.measuredFlow.toString() : '',
           hasBeenFocused: editingFlows[shutter.id]?.hasBeenFocused || { referenceFlow: false, measuredFlow: false }
         };
       });
@@ -363,22 +363,7 @@ export default function ZoneDetailScreen() {
       const currentEdit = prev[shutterId];
       if (!currentEdit) return prev;
 
-      // Si c'est le premier focus ET que la valeur est "0", l'effacer
-      if (!currentEdit.hasBeenFocused[field] && currentEdit[field] === '0') {
-        return {
-          ...prev,
-          [shutterId]: {
-            ...currentEdit,
-            [field]: '', // Effacer le "0"
-            hasBeenFocused: {
-              ...currentEdit.hasBeenFocused,
-              [field]: true
-            }
-          }
-        };
-      }
-
-      // Sinon, juste marquer comme focalisé
+      // Marquer comme focalisé
       return {
         ...prev,
         [shutterId]: {
@@ -397,8 +382,8 @@ export default function ZoneDetailScreen() {
     const editData = editingFlows[shutter.id];
     if (!editData) return;
 
-    const refFlow = parseFloat(editData.referenceFlow);
-    const measFlow = parseFloat(editData.measuredFlow);
+    const refFlow = parseFloat(editData.referenceFlow) || 0;
+    const measFlow = parseFloat(editData.measuredFlow) || 0;
 
     // Validation des valeurs
     if (isNaN(refFlow) || refFlow < 0) {
@@ -407,7 +392,7 @@ export default function ZoneDetailScreen() {
         ...prev,
         [shutter.id]: {
           ...prev[shutter.id],
-          referenceFlow: shutter.referenceFlow.toString()
+          referenceFlow: shutter.referenceFlow > 0 ? shutter.referenceFlow.toString() : ''
         }
       }));
       return;
@@ -419,7 +404,7 @@ export default function ZoneDetailScreen() {
         ...prev,
         [shutter.id]: {
           ...prev[shutter.id],
-          measuredFlow: shutter.measuredFlow.toString()
+          measuredFlow: shutter.measuredFlow > 0 ? shutter.measuredFlow.toString() : ''
         }
       }));
       return;
@@ -459,8 +444,8 @@ export default function ZoneDetailScreen() {
           ...prev,
           [shutter.id]: {
             ...prev[shutter.id],
-            referenceFlow: shutter.referenceFlow.toString(),
-            measuredFlow: shutter.measuredFlow.toString()
+            referenceFlow: shutter.referenceFlow > 0 ? shutter.referenceFlow.toString() : '',
+            measuredFlow: shutter.measuredFlow > 0 ? shutter.measuredFlow.toString() : ''
           }
         }));
       }
@@ -638,7 +623,7 @@ export default function ZoneDetailScreen() {
           </View>
         </View>
 
-        {/* CORRIGÉ : Interface d'édition directe avec valeurs actuelles du volet */}
+        {/* CORRIGÉ : Interface d'édition directe avec placeholders d'exemples */}
         <View style={styles.flowEditingContainer}>
           <View style={styles.flowEditingRow}>
             <View style={styles.flowEditingField}>
@@ -652,12 +637,12 @@ export default function ZoneDetailScreen() {
                   styles.flowEditingInput,
                   isDark && styles.flowEditingInputDark
                 ]}
-                value={editData?.referenceFlow || item.referenceFlow.toString()}
+                value={editData?.referenceFlow || (item.referenceFlow > 0 ? item.referenceFlow.toString() : '')}
                 onChangeText={(text) => handleFlowChange(item.id, 'referenceFlow', text)}
                 onFocus={() => handleFlowFocus(item.id, 'referenceFlow')}
                 onBlur={() => handleFlowBlur(item, 'referenceFlow')}
                 keyboardType="numeric"
-                placeholder="Ex: 5000" // MODIFIÉ : Exemple au lieu de "0"
+                placeholder="Ex: 5000" // CORRIGÉ : Exemple au lieu de "0"
                 placeholderTextColor={isDark ? "#6B7280" : "#9CA3AF"}
                 selectTextOnFocus={true}
               />
@@ -673,12 +658,12 @@ export default function ZoneDetailScreen() {
                   styles.flowEditingInput,
                   isDark && styles.flowEditingInputDark
                 ]}
-                value={editData?.measuredFlow || item.measuredFlow.toString()}
+                value={editData?.measuredFlow || (item.measuredFlow > 0 ? item.measuredFlow.toString() : '')}
                 onChangeText={(text) => handleFlowChange(item.id, 'measuredFlow', text)}
                 onFocus={() => handleFlowFocus(item.id, 'measuredFlow')}
                 onBlur={() => handleFlowBlur(item, 'measuredFlow')}
                 keyboardType="numeric"
-                placeholder="Ex: 4800" // MODIFIÉ : Exemple au lieu de "0"
+                placeholder="Ex: 4800" // CORRIGÉ : Exemple au lieu de "0"
                 placeholderTextColor={isDark ? "#6B7280" : "#9CA3AF"}
                 selectTextOnFocus={true}
               />
