@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Modal, ScrollView, TextInput, ToastAndroid, Platform } from 'react-native';
-import { router, useFocusEffect } from 'expo-router';
+import React, { useState, useRef } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Modal, ScrollView, TextInput, Platform } from 'react-native';
+import { router } from 'expo-router';
 import { Plus, Building, Settings, Star, Trash2, SquareCheck as CheckSquare, Square, X, Minus, Calendar, Layers } from 'lucide-react-native';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { DateInput } from '@/components/DateInput';
 import { Project } from '@/types';
-import { storage } from '@/utils/storage';
+import { useStorage } from '@/contexts/StorageContext';
 import { calculateCompliance } from '@/utils/compliance';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -35,9 +35,17 @@ interface PredefinedStructure {
 export default function ProjectsScreen() {
   const { strings } = useLanguage();
   const { theme } = useTheme();
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [favoriteProjects, setFavoriteProjects] = useState<Set<string>>(new Set());
+  const { 
+    isLoading, 
+    projects, 
+    favoriteProjects, 
+    createProject, 
+    deleteProject, 
+    createBuilding, 
+    createFunctionalZone, 
+    createShutter,
+    setFavoriteProjects 
+  } = useStorage();
   
   // États pour le mode sélection
   const [selectionMode, setSelectionMode] = useState(false);
@@ -67,7 +75,7 @@ export default function ProjectsScreen() {
   useDoubleBackToExit();
 
   // NOUVEAU : Écouteur d'événement pour ouvrir le modal depuis la page export
-  useEffect(() => {
+  React.useEffect(() => {
     const handleOpenModal = () => {
       handleCreateModal();
     };
@@ -82,39 +90,6 @@ export default function ProjectsScreen() {
       };
     }
   }, []);
-
-  const loadProjects = useCallback(async () => {
-    try {
-      await storage.initialize();
-      const projectList = await storage.getProjects();
-      setProjects(projectList);
-    } catch (error) {
-      console.error('Erreur lors du chargement des projets:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const loadFavorites = useCallback(async () => {
-    try {
-      const favorites = await storage.getFavoriteProjects();
-      setFavoriteProjects(new Set(favorites));
-    } catch (error) {
-      console.error('Erreur lors du chargement des favoris:', error);
-    }
-  }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      loadProjects();
-      loadFavorites();
-    }, [loadProjects, loadFavorites])
-  );
-
-  useEffect(() => {
-    loadProjects();
-    loadFavorites();
-  }, [loadProjects, loadFavorites]);
 
   // Fonctions pour la prédéfinition de structure
   const generateUniqueId = () => `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -309,27 +284,27 @@ export default function ProjectsScreen() {
       }
 
       // Créer le projet
-      const project = await storage.createProject(projectData);
+      const project = await createProject(projectData);
 
       // Si la prédéfinition est activée, créer la structure
       if (predefinedStructure.enabled && predefinedStructure.buildings.length > 0) {
         for (const buildingData of predefinedStructure.buildings) {
           if (buildingData.name.trim()) {
-            const building = await storage.createBuilding(project.id, {
+            const building = await createBuilding(project.id, {
               name: buildingData.name.trim()
             });
 
             if (building && buildingData.zones.length > 0) {
               for (const zoneData of buildingData.zones) {
                 if (zoneData.name.trim()) {
-                  const zone = await storage.createFunctionalZone(building.id, {
+                  const zone = await createFunctionalZone(building.id, {
                     name: zoneData.name.trim()
                   });
 
                   if (zone) {
                     // Créer les volets hauts (VH)
                     for (let i = 1; i <= zoneData.highShutters; i++) {
-                      await storage.createShutter(zone.id, {
+                      await createShutter(zone.id, {
                         name: `VH${i.toString().padStart(2, '0')}`,
                         type: 'high',
                         referenceFlow: 0,
@@ -339,7 +314,7 @@ export default function ProjectsScreen() {
 
                     // Créer les volets bas (VB)
                     for (let i = 1; i <= zoneData.lowShutters; i++) {
-                      await storage.createShutter(zone.id, {
+                      await createShutter(zone.id, {
                         name: `VB${i.toString().padStart(2, '0')}`,
                         type: 'low',
                         referenceFlow: 0,
@@ -357,7 +332,6 @@ export default function ProjectsScreen() {
       // Réinitialiser le formulaire
       resetForm();
       setCreateModalVisible(false);
-      loadProjects();
 
       // Naviguer vers le projet créé
       router.push(`/(tabs)/project/${project.id}`);
@@ -394,8 +368,7 @@ export default function ProjectsScreen() {
       newFavorites.add(projectId);
     }
     
-    setFavoriteProjects(newFavorites);
-    await storage.setFavoriteProjects(Array.from(newFavorites));
+    await setFavoriteProjects(Array.from(newFavorites));
   };
 
   const handleSelectionMode = () => {
@@ -426,11 +399,10 @@ export default function ProjectsScreen() {
           style: 'destructive',
           onPress: async () => {
             for (const projectId of selectedProjects) {
-              await storage.deleteProject(projectId);
+              await deleteProject(projectId);
             }
             setSelectedProjects(new Set());
             setSelectionMode(false);
-            loadProjects();
           }
         }
       ]
@@ -449,8 +421,7 @@ export default function ProjectsScreen() {
       }
     }
     
-    setFavoriteProjects(newFavorites);
-    await storage.setFavoriteProjects(Array.from(newFavorites));
+    await setFavoriteProjects(Array.from(newFavorites));
     setSelectedProjects(new Set());
     setSelectionMode(false);
   };
@@ -473,8 +444,7 @@ export default function ProjectsScreen() {
           text: 'Supprimer',
           style: 'destructive',
           onPress: async () => {
-            await storage.deleteProject(project.id);
-            loadProjects();
+            await deleteProject(project.id);
           }
         }
       ]
@@ -531,8 +501,8 @@ export default function ProjectsScreen() {
 
   // Trier les projets : favoris en premier
   const sortedProjects = [...projects].sort((a, b) => {
-    const aIsFavorite = favoriteProjects.has(a.id);
-    const bIsFavorite = favoriteProjects.has(b.id);
+    const aIsFavorite = favoriteProjects.includes(a.id);
+    const bIsFavorite = favoriteProjects.includes(b.id);
     
     if (aIsFavorite && !bIsFavorite) return -1;
     if (!aIsFavorite && bIsFavorite) return 1;
@@ -541,7 +511,7 @@ export default function ProjectsScreen() {
 
   const renderProject = ({ item }: { item: Project }) => {
     const isSelected = selectedProjects.has(item.id);
-    const isFavorite = favoriteProjects.has(item.id);
+    const isFavorite = favoriteProjects.includes(item.id);
     const stats = getProjectStats(item);
 
     return (
@@ -820,7 +790,7 @@ export default function ProjectsScreen() {
 
   const styles = createStyles(theme);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <View style={styles.container}>
         <Header title="Chargement..." />

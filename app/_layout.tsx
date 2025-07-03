@@ -6,6 +6,7 @@ import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_7
 import * as SplashScreen from 'expo-splash-screen';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
+import { StorageProvider } from '@/contexts/StorageContext';
 import { Platform } from 'react-native';
 
 // Prévenir l'auto-hide du splash screen
@@ -37,17 +38,19 @@ export default function RootLayout() {
   return (
     <ThemeProvider>
       <LanguageProvider>
-        <Stack 
-          screenOptions={{ 
-            headerShown: false,
-            animation: Platform?.OS === 'web' ? 'none' : 'slide_from_right',
-            animationDuration: Platform?.OS === 'web' ? 0 : 300,
-          }}
-        >
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-        <StatusBar style="auto" />
+        <StorageProvider>
+          <Stack 
+            screenOptions={{ 
+              headerShown: false,
+              animation: Platform?.OS === 'web' ? 'none' : 'slide_from_right',
+              animationDuration: Platform?.OS === 'web' ? 0 : 300,
+            }}
+          >
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+          <StatusBar style="auto" />
+        </StorageProvider>
       </LanguageProvider>
     </ThemeProvider>
   );
