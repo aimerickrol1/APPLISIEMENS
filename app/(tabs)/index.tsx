@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Modal, ScrollView, TextInput } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { Plus, Building, Settings, Star, Trash2, SquareCheck as CheckSquare, Square, X, Minus } from 'lucide-react-native';
@@ -55,6 +55,9 @@ export default function ProjectsScreen() {
     enabled: false,
     buildings: []
   });
+
+  // NOUVEAU : Référence pour le ScrollView du modal
+  const modalScrollViewRef = useRef<ScrollView>(null);
 
   const loadProjects = useCallback(async () => {
     try {
@@ -200,7 +203,7 @@ export default function ProjectsScreen() {
     }));
   };
 
-  // Validation du formulaire
+  // MODIFIÉ : Validation du formulaire avec scroll automatique
   const validateForm = () => {
     const newErrors: { name?: string; startDate?: string; endDate?: string } = {};
 
@@ -225,6 +228,17 @@ export default function ProjectsScreen() {
     }
 
     setErrors(newErrors);
+
+    // NOUVEAU : Si le champ nom est vide, faire un scroll vers le haut
+    if (newErrors.name && modalScrollViewRef.current) {
+      setTimeout(() => {
+        modalScrollViewRef.current?.scrollTo({ 
+          y: 0, 
+          animated: true 
+        });
+      }, 100); // Petit délai pour s'assurer que l'erreur est affichée
+    }
+
     return Object.keys(newErrors).length === 0;
   };
 
@@ -768,7 +782,12 @@ export default function ProjectsScreen() {
               </TouchableOpacity>
             </View>
 
-            <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
+            {/* MODIFIÉ : Ajout de la référence au ScrollView */}
+            <ScrollView 
+              ref={modalScrollViewRef}
+              style={styles.modalBody} 
+              showsVerticalScrollIndicator={false}
+            >
               <Input
                 label="Nom du projet *"
                 value={name}
