@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal } fr
 import { Settings as SettingsIcon, Globe, Trash2, Download, Info, Database, ChevronRight, CircleCheck as CheckCircle, X, Moon, Sun, Smartphone } from 'lucide-react-native';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/Button';
-import { storage } from '@/utils/storage';
+import { useStorage } from '@/contexts/StorageContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme, ThemeMode } from '@/contexts/ThemeContext';
 import { getLanguageOptions, SupportedLanguage } from '@/utils/i18n';
@@ -12,6 +12,7 @@ import { router } from 'expo-router';
 export default function SettingsScreen() {
   const { strings, currentLanguage, changeLanguage } = useLanguage();
   const { theme, themeMode, setThemeMode } = useTheme();
+  const { storage } = useStorage();
   const [languageModalVisible, setLanguageModalVisible] = useState(false);
   const [themeModalVisible, setThemeModalVisible] = useState(false);
   const [clearDataModalVisible, setClearDataModalVisible] = useState(false);
