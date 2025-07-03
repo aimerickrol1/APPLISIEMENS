@@ -13,7 +13,7 @@ import { useAndroidBackButton } from '@/utils/BackHandler';
 export default function BuildingDetailScreen() {
   const { strings } = useLanguage();
   const { theme } = useTheme();
-  const { storage } = useStorage();
+  const storage = useStorage();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [building, setBuilding] = useState<Building | null>(null);
   const [project, setProject] = useState<Project | null>(null);
