@@ -145,6 +145,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       } catch (error) {
         console.error('Erreur lors du chargement du mode de thème:', error);
       } finally {
+        // CORRIGÉ : Toujours marquer comme chargé, même en cas d'erreur
         setIsLoaded(true);
       }
     };
@@ -162,9 +163,21 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     }
   };
 
-  // Ne pas rendre les enfants tant que le thème n'est pas chargé
+  // CORRIGÉ : Rendre immédiatement avec le thème par défaut au lieu d'attendre
+  // Cela évite l'écran blanc au démarrage
   if (!isLoaded) {
-    return null;
+    // Utiliser le thème système par défaut pendant le chargement
+    const defaultTheme = systemColorScheme === 'dark' ? darkTheme : lightTheme;
+    return (
+      <ThemeContext.Provider value={{ 
+        theme: defaultTheme, 
+        themeMode: 'auto', 
+        setThemeMode: () => {}, 
+        isDark: defaultTheme.mode === 'dark' 
+      }}>
+        {children}
+      </ThemeContext.Provider>
+    );
   }
 
   return (
