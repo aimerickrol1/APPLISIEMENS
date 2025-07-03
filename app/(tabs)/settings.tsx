@@ -174,7 +174,7 @@ export default function SettingsScreen() {
           {renderSettingItem(
             <Download size={20} color="#10B981" />,
             strings.exportMyData,
-            strings.exportMyDataDesc,
+            'Créer un rapport professionnel', // MODIFIÉ : Nouveau texte
             handleExportData
           )}
 
