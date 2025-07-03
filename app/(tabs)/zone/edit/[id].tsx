@@ -8,12 +8,13 @@ import { Project, Building, FunctionalZone } from '@/types';
 import { storage } from '@/utils/storage';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAndroidBackButton } from '@/utils/BackHandler';
 
 export default function EditZoneScreen() {
   const { strings } = useLanguage();
   const { theme } = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const [zone,setZone] = useState<FunctionalZone | null>(null);
+  const [zone, setZone] = useState<FunctionalZone | null>(null);
   const [building, setBuilding] = useState<Building | null>(null);
   const [project, setProject] = useState<Project | null>(null);
   const [name, setName] = useState('');
@@ -21,6 +22,12 @@ export default function EditZoneScreen() {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [errors, setErrors] = useState<{ name?: string }>({});
+
+  // Configure Android back button to go back to the zone screen
+  useAndroidBackButton(() => {
+    handleBack();
+    return true;
+  });
 
   useEffect(() => {
     loadZone();
@@ -49,10 +56,12 @@ export default function EditZoneScreen() {
     }
   };
 
-  // CORRIGÉ : Retourner vers la page du bâtiment (d'où on vient)
+  // CORRIGÉ : Retourner vers la page de la zone (et non du bâtiment)
   const handleBack = () => {
     try {
-      if (building) {
+      if (zone) {
+        router.push(`/(tabs)/zone/${zone.id}`);
+      } else if (building) {
         router.push(`/(tabs)/building/${building.id}`);
       } else {
         router.push('/(tabs)/');
@@ -85,12 +94,8 @@ export default function EditZoneScreen() {
       });
 
       if (updatedZone) {
-        // CORRIGÉ : Retourner vers la page du bâtiment (d'où on vient)
-        if (building) {
-          router.push(`/(tabs)/building/${building.id}`);
-        } else {
-          router.push('/(tabs)/');
-        }
+        // CORRIGÉ : Retourner vers la page de la zone (et non du bâtiment)
+        router.push(`/(tabs)/zone/${zone.id}`);
       }
     } catch (error) {
       console.error('Erreur lors de la modification de la zone:', error);

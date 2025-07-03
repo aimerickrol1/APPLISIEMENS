@@ -59,9 +59,14 @@ export default function EditProjectScreen() {
     }
   };
 
+  // CORRIGÉ : Retourner vers la page du projet (et non la liste des projets)
   const handleBack = () => {
     try {
-      router.push('/(tabs)/');
+      if (project) {
+        router.push(`/(tabs)/project/${project.id}`);
+      } else {
+        router.push('/(tabs)/');
+      }
     } catch (error) {
       console.error('Erreur de navigation:', error);
       router.push('/(tabs)/');
@@ -140,7 +145,8 @@ export default function EditProjectScreen() {
       const updatedProject = await storage.updateProject(project.id, updateData);
 
       if (updatedProject) {
-        router.push('/(tabs)/');
+        // CORRIGÉ : Retourner vers la page du projet (et non la liste des projets)
+        router.push(`/(tabs)/project/${project.id}`);
       }
     } catch (error) {
       console.error('Erreur lors de la modification du projet:', error);

@@ -10,6 +10,7 @@ import { storage } from '@/utils/storage';
 import { calculateCompliance, formatDeviation } from '@/utils/compliance';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAndroidBackButton } from '@/utils/BackHandler';
 
 export default function EditShutterScreen() {
   const { strings, currentLanguage } = useLanguage();
@@ -27,6 +28,12 @@ export default function EditShutterScreen() {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [errors, setErrors] = useState<{ name?: string; referenceFlow?: string; measuredFlow?: string }>({});
+
+  // Configure Android back button to go back to the shutter screen
+  useAndroidBackButton(() => {
+    handleBack();
+    return true;
+  });
 
   const getShutterPrefix = (shutterType: ShutterType, language: string) => {
     const prefixes = {
@@ -73,9 +80,16 @@ export default function EditShutterScreen() {
     }
   };
 
+  // CORRIGÉ : Retourner vers la page du volet (et non de la zone)
   const handleBack = () => {
     try {
-      if (from === 'search') {
+      if (shutter) {
+        if (from === 'search') {
+          router.push(`/(tabs)/shutter/${shutter.id}?from=search`);
+        } else {
+          router.push(`/(tabs)/shutter/${shutter.id}`);
+        }
+      } else if (from === 'search') {
         router.push('/(tabs)/search');
       } else if (zone) {
         router.push(`/(tabs)/zone/${zone.id}`);
@@ -123,12 +137,11 @@ export default function EditShutterScreen() {
       });
 
       if (updatedShutter) {
+        // CORRIGÉ : Retourner vers la page du volet (et non de la zone)
         if (from === 'search') {
-          router.push('/(tabs)/search');
-        } else if (zone) {
-          router.push(`/(tabs)/zone/${zone.id}`);
+          router.push(`/(tabs)/shutter/${shutter.id}?from=search`);
         } else {
-          router.push('/(tabs)/');
+          router.push(`/(tabs)/shutter/${shutter.id}`);
         }
       }
     } catch (error) {

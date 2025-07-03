@@ -8,6 +8,7 @@ import { Project, Building } from '@/types';
 import { storage } from '@/utils/storage';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAndroidBackButton } from '@/utils/BackHandler';
 
 export default function EditBuildingScreen() {
   const { strings } = useLanguage();
@@ -20,6 +21,12 @@ export default function EditBuildingScreen() {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [errors, setErrors] = useState<{ name?: string }>({});
+
+  // Configure Android back button to go back to the building screen
+  useAndroidBackButton(() => {
+    handleBack();
+    return true;
+  });
 
   useEffect(() => {
     loadBuilding();
@@ -45,10 +52,12 @@ export default function EditBuildingScreen() {
     }
   };
 
-  // CORRIGÉ : Retourner vers la page du projet (d'où on vient)
+  // CORRIGÉ : Retourner vers la page du bâtiment (et non du projet)
   const handleBack = () => {
     try {
-      if (project) {
+      if (building) {
+        router.push(`/(tabs)/building/${building.id}`);
+      } else if (project) {
         router.push(`/(tabs)/project/${project.id}`);
       } else {
         router.push('/(tabs)/');
@@ -81,12 +90,8 @@ export default function EditBuildingScreen() {
       });
 
       if (updatedBuilding) {
-        // CORRIGÉ : Retourner vers la page du projet (d'où on vient)
-        if (project) {
-          router.push(`/(tabs)/project/${project.id}`);
-        } else {
-          router.push('/(tabs)/');
-        }
+        // CORRIGÉ : Retourner vers la page du bâtiment (et non du projet)
+        router.push(`/(tabs)/building/${building.id}`);
       }
     } catch (error) {
       console.error('Erreur lors de la modification du bâtiment:', error);
