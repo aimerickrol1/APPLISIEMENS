@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Modal, ScrollView, TextInput } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
-import { Plus, Building, Settings, Star, Trash2, SquareCheck as CheckSquare, Square, X, Minus, Calendar } from 'lucide-react-native';
+import { Plus, Building, Settings, Star, Trash2, SquareCheck as CheckSquare, Square, X, Minus, Calendar, Layers } from 'lucide-react-native';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
@@ -631,9 +631,7 @@ export default function ProjectsScreen() {
           </View>
           
           <View style={styles.statBox}>
-            <View style={[styles.statIcon, { backgroundColor: '#E0F2FE' }]}>
-              <Text style={styles.statIconText}>Z</Text>
-            </View>
+            <Layers size={20} color="#009999" />
             <Text style={styles.statNumber}>{stats.zoneCount}</Text>
             <Text style={styles.statLabel}>Zones</Text>
           </View>
