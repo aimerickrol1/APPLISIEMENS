@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Siemens CalcConform",
-    "slug": "siemens-smoke-extraction-calculator",
+    "slug": "siemens-calcconform",
     "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -16,11 +16,11 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.siemens.smokeextraction",
+      "bundleIdentifier": "com.siemens.calcconform",
       "icon": "./assets/images/icon.png"
     },
     "android": {
-      "package": "com.siemens.smokeextraction",
+      "package": "com.siemens.calcconform",
       "icon": "./assets/images/icon.png",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon.png",
