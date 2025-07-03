@@ -11,6 +11,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
+import { router } from 'expo-router';
 
 export default function ExportScreen() {
   const { strings } = useLanguage();
@@ -57,6 +58,26 @@ export default function ExportScreen() {
     setRefreshing(true);
     loadProjects();
   }, [loadProjects]);
+
+  // NOUVEAU : Fonction pour naviguer vers la création de projet
+  const handleCreateFirstProject = () => {
+    try {
+      // Naviguer vers la page principale des projets
+      router.push('/(tabs)/');
+      
+      // Déclencher l'ouverture du modal de création après un court délai
+      setTimeout(() => {
+        // Émettre un événement personnalisé pour ouvrir le modal
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('openCreateProjectModal'));
+        }
+      }, 300);
+    } catch (error) {
+      console.error('Erreur de navigation:', error);
+      // Fallback : juste naviguer vers la page principale
+      router.push('/(tabs)/');
+    }
+  };
 
   const generateProjectReport = (project: Project) => {
     const totalShutters = project.buildings.reduce((total, building) => 
@@ -930,9 +951,10 @@ export default function ExportScreen() {
             <Text style={styles.emptySubtitle}>
               {strings.noProjectsToExportDesc}
             </Text>
+            {/* MODIFIÉ : Bouton pour créer le premier projet */}
             <Button
-              title="Actualiser"
-              onPress={onRefresh}
+              title="Créer votre premier projet"
+              onPress={handleCreateFirstProject}
               style={styles.refreshButton}
             />
           </View>

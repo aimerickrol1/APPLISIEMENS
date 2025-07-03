@@ -56,8 +56,25 @@ export default function ProjectsScreen() {
     buildings: []
   });
 
-  // NOUVEAU : Référence pour le ScrollView du modal
+  // Référence pour le ScrollView du modal
   const modalScrollViewRef = useRef<ScrollView>(null);
+
+  // NOUVEAU : Écouteur d'événement pour ouvrir le modal depuis la page export
+  useEffect(() => {
+    const handleOpenModal = () => {
+      handleCreateModal();
+    };
+
+    // Ajouter l'écouteur d'événement seulement sur web
+    if (typeof window !== 'undefined') {
+      window.addEventListener('openCreateProjectModal', handleOpenModal);
+      
+      // Nettoyer l'écouteur au démontage
+      return () => {
+        window.removeEventListener('openCreateProjectModal', handleOpenModal);
+      };
+    }
+  }, []);
 
   const loadProjects = useCallback(async () => {
     try {
@@ -203,7 +220,7 @@ export default function ProjectsScreen() {
     }));
   };
 
-  // MODIFIÉ : Validation du formulaire avec scroll automatique
+  // Validation du formulaire avec scroll automatique
   const validateForm = () => {
     const newErrors: { name?: string; startDate?: string; endDate?: string } = {};
 
@@ -229,14 +246,14 @@ export default function ProjectsScreen() {
 
     setErrors(newErrors);
 
-    // NOUVEAU : Si le champ nom est vide, faire un scroll vers le haut
+    // Si le champ nom est vide, faire un scroll vers le haut
     if (newErrors.name && modalScrollViewRef.current) {
       setTimeout(() => {
         modalScrollViewRef.current?.scrollTo({ 
           y: 0, 
           animated: true 
         });
-      }, 100); // Petit délai pour s'assurer que l'erreur est affichée
+      }, 100);
     }
 
     return Object.keys(newErrors).length === 0;
@@ -782,7 +799,6 @@ export default function ProjectsScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* MODIFIÉ : Ajout de la référence au ScrollView */}
             <ScrollView 
               ref={modalScrollViewRef}
               style={styles.modalBody} 
