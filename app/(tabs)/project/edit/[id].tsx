@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, useColorScheme } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Header } from '@/components/Header';
 import { Input } from '@/components/Input';
@@ -8,9 +8,12 @@ import { Button } from '@/components/Button';
 import { Project } from '@/types';
 import { storage } from '@/utils/storage';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useAndroidBackButton } from '@/utils/BackHandler';
 
 export default function EditProjectScreen() {
   const { strings } = useLanguage();
+  const { theme } = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [project, setProject] = useState<Project | null>(null);
   const [name, setName] = useState('');
@@ -21,9 +24,11 @@ export default function EditProjectScreen() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [errors, setErrors] = useState<{ name?: string; startDate?: string; endDate?: string }>({});
 
-  // NOUVEAU : Détecter le thème système
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  // Configure Android back button to go back to the project screen
+  useAndroidBackButton(() => {
+    handleBack();
+    return true;
+  });
 
   useEffect(() => {
     loadProject();
@@ -54,10 +59,8 @@ export default function EditProjectScreen() {
     }
   };
 
-  // CORRIGÉ : Retourner vers la page d'accueil des projets (d'où on vient)
   const handleBack = () => {
     try {
-      // Navigation forcée vers la page d'accueil des projets
       router.push('/(tabs)/');
     } catch (error) {
       console.error('Erreur de navigation:', error);
@@ -72,7 +75,6 @@ export default function EditProjectScreen() {
       newErrors.name = strings.nameRequired;
     }
 
-    // Validation des dates si elles sont renseignées
     if (startDate && !isValidDate(startDate)) {
       newErrors.startDate = strings.invalidDate;
     }
@@ -81,7 +83,6 @@ export default function EditProjectScreen() {
       newErrors.endDate = strings.invalidDate;
     }
 
-    // Vérifier que la date de fin est après la date de début
     if (startDate && endDate && isValidDate(startDate) && isValidDate(endDate)) {
       const start = parseDate(startDate);
       const end = parseDate(endDate);
@@ -139,7 +140,6 @@ export default function EditProjectScreen() {
       const updatedProject = await storage.updateProject(project.id, updateData);
 
       if (updatedProject) {
-        // CORRIGÉ : Retourner vers la page d'accueil des projets (d'où on vient)
         router.push('/(tabs)/');
       }
     } catch (error) {
@@ -148,6 +148,8 @@ export default function EditProjectScreen() {
       setLoading(false);
     }
   };
+
+  const styles = createStyles(theme);
 
   if (initialLoading) {
     return (
@@ -230,10 +232,10 @@ export default function EditProjectScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: theme.colors.background,
   },
   content: {
     flex: 1,
@@ -250,7 +252,7 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 16,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
   },
   errorContainer: {
     flex: 1,
@@ -261,7 +263,7 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 16,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     textAlign: 'center',
   },
   buttonContainer: {
