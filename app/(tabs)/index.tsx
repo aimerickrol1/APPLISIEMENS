@@ -622,28 +622,30 @@ export default function ProjectsScreen() {
           </View>
         )}
 
-        {/* Statistiques principales */}
+        {/* Statistiques principales - CORRIGÉ avec icônes plus petites et point coloré */}
         <View style={styles.mainStats}>
           <View style={styles.statBox}>
-            <Building size={20} color="#009999" />
+            <Building size={16} color="#009999" />
             <Text style={styles.statNumber}>{stats.buildingCount}</Text>
             <Text style={styles.statLabel}>Bâtiments</Text>
           </View>
           
           <View style={styles.statBox}>
-            <Layers size={20} color="#009999" />
+            <Layers size={16} color="#009999" />
             <Text style={styles.statNumber}>{stats.zoneCount}</Text>
             <Text style={styles.statLabel}>Zones</Text>
           </View>
           
           <View style={styles.statBox}>
-            <View style={styles.complianceIndicator}>
-              <Text style={[styles.compliancePercentage, { 
-                color: stats.complianceRate >= 80 ? '#10B981' : stats.complianceRate >= 60 ? '#F59E0B' : '#EF4444' 
-              }]}>
-                {stats.complianceRate.toFixed(0)}%
-              </Text>
-            </View>
+            {/* NOUVEAU : Point coloré aligné avec les icônes */}
+            <View style={[styles.complianceDot, { 
+              backgroundColor: stats.complianceRate >= 80 ? '#10B981' : stats.complianceRate >= 60 ? '#F59E0B' : '#EF4444' 
+            }]} />
+            <Text style={[styles.statNumber, { 
+              color: stats.complianceRate >= 80 ? '#10B981' : stats.complianceRate >= 60 ? '#F59E0B' : '#EF4444' 
+            }]}>
+              {stats.complianceRate.toFixed(0)}%
+            </Text>
             <Text style={styles.statLabel}>Conformité</Text>
           </View>
         </View>
@@ -1155,7 +1157,7 @@ const styles = StyleSheet.create({
     color: '#64748B',
   },
 
-  // Statistiques principales
+  // CORRIGÉ : Statistiques principales avec icônes plus petites et point coloré
   mainStats: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -1168,23 +1170,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
-  statIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  statIconText: {
-    fontSize: 14,
-    fontFamily: 'Inter-Bold',
-    color: '#0369A1',
-  },
   statNumber: {
     fontSize: 24,
     fontFamily: 'Inter-Bold',
     color: '#111827',
+    marginTop: 8,
     marginBottom: 4,
   },
   statLabel: {
@@ -1193,12 +1183,11 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     textAlign: 'center',
   },
-  complianceIndicator: {
-    marginBottom: 8,
-  },
-  compliancePercentage: {
-    fontSize: 24,
-    fontFamily: 'Inter-Bold',
+  // NOUVEAU : Point coloré pour la conformité
+  complianceDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
 
   // Section de conformité
