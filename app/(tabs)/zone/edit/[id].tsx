@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, useColorScheme } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Header } from '@/components/Header';
 import { Input } from '@/components/Input';
@@ -7,9 +7,11 @@ import { Button } from '@/components/Button';
 import { Project, Building, FunctionalZone } from '@/types';
 import { storage } from '@/utils/storage';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function EditZoneScreen() {
   const { strings } = useLanguage();
+  const { theme } = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [zone,setZone] = useState<FunctionalZone | null>(null);
   const [building, setBuilding] = useState<Building | null>(null);
@@ -19,10 +21,6 @@ export default function EditZoneScreen() {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [errors, setErrors] = useState<{ name?: string }>({});
-
-  // NOUVEAU : Détecter le thème système
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
 
   useEffect(() => {
     loadZone();
@@ -101,6 +99,8 @@ export default function EditZoneScreen() {
     }
   };
 
+  const styles = createStyles(theme);
+
   if (initialLoading) {
     return (
       <View style={styles.container}>
@@ -169,10 +169,10 @@ export default function EditZoneScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: theme.colors.background,
   },
   content: {
     flex: 1,
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 16,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
   },
   errorContainer: {
     flex: 1,
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 16,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     textAlign: 'center',
   },
   buttonContainer: {

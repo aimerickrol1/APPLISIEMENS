@@ -80,10 +80,12 @@ export default function AboutScreen() {
         </View>
       </View>
       {onPress && (
-        <ChevronRight size={20} color="#9CA3AF" />
+        <ChevronRight size={20} color={theme.colors.textTertiary} />
       )}
     </TouchableOpacity>
   );
+
+  const styles = createStyles(theme);
 
   return (
     <View style={styles.container}>
@@ -97,7 +99,7 @@ export default function AboutScreen() {
         {/* En-tête de l'application */}
         <View style={styles.appHeader}>
           <View style={styles.appIconContainer}>
-            <Info size={48} color="#009999" />
+            <Info size={48} color={theme.colors.primary} />
           </View>
           <Text style={styles.appTitle}>
             {strings.appDescription}
@@ -111,14 +113,14 @@ export default function AboutScreen() {
           <Text style={styles.sectionTitle}>{strings.application}</Text>
           
           {renderInfoItem(
-            <Smartphone size={20} color="#009999" />,
+            <Smartphone size={20} color={theme.colors.primary} />,
             strings.version,
             `${strings.version} ${appVersion}`,
             handleVersionPress
           )}
 
           {renderInfoItem(
-            <Shield size={20} color="#009999" />,
+            <Shield size={20} color={theme.colors.primary} />,
             strings.privacy,
             strings.dataProtection,
             handlePrivacyPress
@@ -130,14 +132,14 @@ export default function AboutScreen() {
           <Text style={styles.sectionTitle}>{strings.compliance}</Text>
           
           {renderInfoItem(
-            <FileText size={20} color="#009999" />,
+            <FileText size={20} color={theme.colors.primary} />,
             'NF S61-933 Annexe H',
             strings.consultDocument,
             handleOpenPDF
           )}
 
           {renderInfoItem(
-            <Calculator size={20} color="#10B981" />,
+            <Calculator size={20} color={theme.colors.success} />,
             strings.complianceCalculations,
             'Formules et algorithmes utilisés',
             handleCalculationsPress
@@ -176,7 +178,7 @@ export default function AboutScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <CheckCircle size={32} color="#10B981" />
+              <CheckCircle size={32} color={theme.colors.success} />
               <Text style={styles.modalTitle}>{strings.appUpToDate}</Text>
             </View>
             <Text style={styles.modalText}>
@@ -202,7 +204,7 @@ export default function AboutScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Shield size={32} color="#009999" />
+              <Shield size={32} color={theme.colors.primary} />
               <Text style={styles.modalTitle}>{strings.privacyTitle}</Text>
             </View>
             <ScrollView style={styles.modalScrollView} showsVerticalScrollIndicator={false}>
@@ -236,13 +238,13 @@ export default function AboutScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.calculationsModalContent}>
             <View style={styles.modalHeader}>
-              <Calculator size={32} color="#10B981" />
+              <Calculator size={32} color={theme.colors.success} />
               <Text style={styles.modalTitle}>Calculs de conformité</Text>
               <TouchableOpacity 
                 onPress={() => setCalculationsModalVisible(false)}
                 style={styles.closeButton}
               >
-                <X size={20} color="#6B7280" />
+                <X size={20} color={theme.colors.textSecondary} />
               </TouchableOpacity>
             </View>
             
@@ -404,7 +406,7 @@ export default function AboutScreen() {
                 onPress={() => setUpcomingFeaturesModalVisible(false)}
                 style={styles.closeButton}
               >
-                <X size={20} color="#6B7280" />
+                <X size={20} color={theme.colors.textSecondary} />
               </TouchableOpacity>
             </View>
             
@@ -550,10 +552,10 @@ export default function AboutScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: theme.colors.background,
   },
   content: {
     flex: 1,
@@ -570,7 +572,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 20,
-    backgroundColor: '#F0FDFA',
+    backgroundColor: theme.colors.primary + '20',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
@@ -578,7 +580,7 @@ const styles = StyleSheet.create({
   appTitle: {
     fontSize: 20,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
     textAlign: 'center',
     marginBottom: 8,
     lineHeight: 28,
@@ -586,13 +588,13 @@ const styles = StyleSheet.create({
   developer: {
     fontSize: 16,
     fontFamily: 'Inter-Medium',
-    color: '#009999',
+    color: theme.colors.primary,
     marginBottom: 8,
   },
   copyright: {
     fontSize: 14,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
   },
   section: {
     marginBottom: 24,
@@ -600,14 +602,14 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
     marginBottom: 12,
   },
   infoItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.surface,
     borderRadius: 12,
     padding: 16,
     marginBottom: 8,
@@ -626,7 +628,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 10,
-    backgroundColor: '#F0FDFA',
+    backgroundColor: theme.colors.primary + '20',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -637,12 +639,12 @@ const styles = StyleSheet.create({
   infoTitle: {
     fontSize: 16,
     fontFamily: 'Inter-Medium',
-    color: '#111827',
+    color: theme.colors.text,
   },
   infoSubtitle: {
     fontSize: 14,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     marginTop: 2,
   },
   modalOverlay: {
@@ -653,7 +655,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   modalContent: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.surface,
     borderRadius: 16,
     padding: 24,
     width: '100%',
@@ -662,7 +664,7 @@ const styles = StyleSheet.create({
   },
   // Modal des calculs de conformité optimisé pour mobile SANS BARRE DE SCROLL
   calculationsModalContent: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.surface,
     borderRadius: 16,
     padding: 20,
     width: '100%',
@@ -672,7 +674,7 @@ const styles = StyleSheet.create({
   },
   // Modal des prochaines nouveautés optimisé pour mobile SANS BARRE DE SCROLL
   upcomingFeaturesModalContent: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.surface,
     borderRadius: 16,
     padding: 20,
     width: '100%',
@@ -689,7 +691,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
     flex: 1,
     marginLeft: 12,
   },
@@ -720,13 +722,13 @@ const styles = StyleSheet.create({
   modalText: {
     fontSize: 14,
     fontFamily: 'Inter-Regular',
-    color: '#374151',
+    color: theme.colors.textSecondary,
     lineHeight: 20,
     marginBottom: 20,
   },
   modalBold: {
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
   },
   modalButton: {
     marginTop: 8,
@@ -741,32 +743,32 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: theme.colors.separator,
   },
   calculationTitle: {
     fontSize: 16,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
     marginBottom: 10,
   },
   formulaContainer: {
-    backgroundColor: '#F0FDFA',
+    backgroundColor: theme.colors.primary + '20',
     borderRadius: 8,
     padding: 12,
     marginBottom: 8,
     borderLeftWidth: 4,
-    borderLeftColor: '#10B981',
+    borderLeftColor: theme.colors.success,
   },
   formulaText: {
     fontSize: 13,
     fontFamily: 'Inter-Medium',
-    color: '#047857',
+    color: theme.colors.primary,
     textAlign: 'center',
   },
   calculationDescription: {
     fontSize: 12,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     lineHeight: 16,
   },
   criteriaContainer: {
@@ -789,17 +791,17 @@ const styles = StyleSheet.create({
   criteriaLabel: {
     fontSize: 13,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
     marginBottom: 3,
   },
   criteriaDescription: {
     fontSize: 11,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     lineHeight: 15,
   },
   exampleContainer: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: theme.colors.surfaceSecondary,
     borderRadius: 8,
     padding: 10,
     marginBottom: 10,
@@ -807,78 +809,78 @@ const styles = StyleSheet.create({
   exampleTitle: {
     fontSize: 13,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
     marginBottom: 5,
   },
   exampleData: {
     fontSize: 11,
     fontFamily: 'Inter-Regular',
-    color: '#374151',
+    color: theme.colors.textSecondary,
     marginBottom: 3,
   },
   exampleCalculation: {
     fontSize: 11,
     fontFamily: 'Inter-Medium',
-    color: '#009999',
+    color: theme.colors.primary,
     marginBottom: 5,
     fontStyle: 'italic',
   },
   exampleResult: {
     fontSize: 12,
     fontFamily: 'Inter-Medium',
-    color: '#111827',
+    color: theme.colors.text,
   },
   algorithmContainer: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: theme.colors.surfaceSecondary,
     borderRadius: 8,
     padding: 10,
   },
   algorithmStep: {
     fontSize: 12,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
     marginTop: 6,
     marginBottom: 3,
   },
   algorithmDetail: {
     fontSize: 11,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     marginBottom: 2,
   },
   technicalNote: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: theme.colors.warning + '20',
     borderRadius: 8,
     padding: 10,
     borderLeftWidth: 4,
-    borderLeftColor: '#F59E0B',
+    borderLeftColor: theme.colors.warning,
   },
   technicalNoteTitle: {
     fontSize: 13,
     fontFamily: 'Inter-SemiBold',
-    color: '#92400E',
+    color: theme.colors.warning,
     marginBottom: 5,
   },
   technicalNoteText: {
     fontSize: 11,
     fontFamily: 'Inter-Regular',
-    color: '#92400E',
+    color: theme.colors.warning,
     lineHeight: 15,
   },
 
   // Styles pour les prochaines nouveautés - VERSION CORRIGÉE
   upcomingIntro: {
-    backgroundColor: '#F0FDFA',
+    backgroundColor: theme.colors.primary + '20',
     borderRadius: 12,
     padding: 16,
     marginBottom: 20,
     borderLeftWidth: 4,
-    borderLeftColor: '#009999',
+    borderLeftColor: theme.colors.primary,
   },
   upcomingIntroText: {
     fontSize: 14,
     fontFamily: 'Inter-Medium',
-    color: '#047857',
+    color: theme.colors.primary,
     lineHeight: 20,
     textAlign: 'center',
   },
@@ -886,19 +888,19 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: theme.colors.separator,
   },
   featureSectionTitle: {
     fontSize: 16,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
     marginBottom: 14,
   },
   featureItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     marginBottom: 14,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: theme.colors.surfaceSecondary,
     borderRadius: 12,
     padding: 14,
   },
@@ -913,13 +915,13 @@ const styles = StyleSheet.create({
   featureTitle: {
     fontSize: 15,
     fontFamily: 'Inter-SemiBold',
-    color: '#111827',
+    color: theme.colors.text,
     marginBottom: 5,
   },
   featureDescription: {
     fontSize: 13,
     fontFamily: 'Inter-Regular',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     lineHeight: 18,
   },
 });
