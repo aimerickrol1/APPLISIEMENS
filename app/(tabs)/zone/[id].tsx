@@ -627,7 +627,7 @@ export default function ZoneDetailScreen() {
           </View>
         </View>
 
-        {/* CORRIGÉ : Interface d'édition directe avec placeholders d'exemples */}
+        {/* CORRIGÉ : Interface d'édition directe avec placeholders d'exemples et meilleure visibilité */}
         <View style={styles.flowEditingContainer}>
           <View style={styles.flowEditingRow}>
             <View style={styles.flowEditingField}>
@@ -1245,7 +1245,7 @@ const createStyles = (theme: any) => StyleSheet.create({
     backgroundColor: theme.colors.primary + '20',
   },
   
-  // STYLES pour l'édition directe avec sauvegarde automatique
+  // STYLES pour l'édition directe avec sauvegarde automatique - AMÉLIORÉ POUR DARK MODE
   flowEditingContainer: {
     backgroundColor: theme.colors.surfaceSecondary,
     borderRadius: 8,
@@ -1279,20 +1279,29 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   flowEditingInput: {
     borderWidth: 1,
-    borderColor: theme.mode === 'dark' ? theme.colors.primary + '60' : theme.colors.border,
+    // Amélioration pour le mode sombre: bordure plus visible avec une teinte de la couleur primaire
+    borderColor: theme.mode === 'dark' 
+      ? theme.colors.primary + '80'  // Bordure plus visible en mode sombre
+      : theme.colors.border,
     borderRadius: 6,
     paddingHorizontal: 8,
     paddingVertical: 8,
     fontSize: 14,
     fontFamily: 'Inter-Regular',
-    backgroundColor: theme.mode === 'dark' ? theme.colors.primary + '20' : theme.colors.inputBackground,
+    // Amélioration pour le mode sombre: arrière-plan légèrement teinté pour plus de contraste
+    backgroundColor: theme.mode === 'dark' 
+      ? theme.colors.primary + '15'  // Arrière-plan légèrement teinté en mode sombre
+      : theme.colors.inputBackground,
     color: theme.colors.text,
     textAlign: 'center',
     height: 40, // Hauteur fixe pour tous les champs
   },
   deviationDisplay: {
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    // Amélioration pour le mode sombre: bordure plus visible
+    borderColor: theme.mode === 'dark' 
+      ? theme.colors.border + '80'  // Bordure plus visible en mode sombre
+      : theme.colors.border,
     borderRadius: 6,
     paddingHorizontal: 8,
     paddingVertical: 8,

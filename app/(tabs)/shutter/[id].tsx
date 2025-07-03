@@ -479,6 +479,7 @@ const createStyles = (theme: any) => StyleSheet.create({
     color: theme.colors.text,
     textAlign: 'right',
   },
+  // AMÉLIORÉ : Styles pour l'édition directe des débits avec meilleure visibilité en mode sombre
   flowEditingContainer: {
     backgroundColor: theme.colors.surfaceSecondary,
     borderRadius: 8,
@@ -511,20 +512,29 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   flowEditingInput: {
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    // Amélioration pour le mode sombre: bordure plus visible avec une teinte de la couleur primaire
+    borderColor: theme.mode === 'dark' 
+      ? theme.colors.primary + '80'  // Bordure plus visible en mode sombre
+      : theme.colors.border,
     borderRadius: 6,
     paddingHorizontal: 8,
     paddingVertical: 8,
     fontSize: 14,
     fontFamily: 'Inter-Regular',
-    backgroundColor: theme.colors.inputBackground,
+    // Amélioration pour le mode sombre: arrière-plan légèrement teinté pour plus de contraste
+    backgroundColor: theme.mode === 'dark' 
+      ? theme.colors.primary + '15'  // Arrière-plan légèrement teinté en mode sombre
+      : theme.colors.inputBackground,
     color: theme.colors.text,
     textAlign: 'center',
     height: 40,
   },
   deviationDisplay: {
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    // Amélioration pour le mode sombre: bordure plus visible
+    borderColor: theme.mode === 'dark' 
+      ? theme.colors.border + '80'  // Bordure plus visible en mode sombre
+      : theme.colors.border,
     borderRadius: 6,
     paddingHorizontal: 8,
     paddingVertical: 8,
