@@ -6,7 +6,7 @@ import { Header } from '@/components/Header';
 import { Input } from '@/components/Input';
 import { ComplianceIndicator } from '@/components/ComplianceIndicator';
 import { SearchResult, Project, Building as BuildingType, FunctionalZone } from '@/types';
-import { storage } from '@/utils/storage';
+import { useStorage } from '@/contexts/StorageContext';
 import { calculateCompliance, formatDeviation } from '@/utils/compliance';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -25,6 +25,7 @@ interface HierarchicalFilter {
 export default function SearchScreen() {
   const { strings } = useLanguage();
   const { theme } = useTheme();
+  const { storage } = useStorage();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
