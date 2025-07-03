@@ -284,7 +284,7 @@ export default function AboutScreen() {
                   <View style={styles.criteriaItem}>
                     <View style={[styles.criteriaIndicator, { backgroundColor: '#F59E0B' }]} />
                     <View style={styles.criteriaContent}>
-                      <Text style={styles.criteriaLabel}>Acceptable (10% &lt; |Écart| ≤ 20%)</Text>
+                      <Text style={styles.criteriaLabel}>Acceptable (10% < |Écart| ≤ 20%)</Text>
                       <Text style={styles.criteriaDescription}>
                         Un écart compris entre ±10% et ±20% conduit à signaler cette dérive, par une proposition d'action corrective à l'exploitant ou au chef d'établissement.
                       </Text>
@@ -294,7 +294,7 @@ export default function AboutScreen() {
                   <View style={styles.criteriaItem}>
                     <View style={[styles.criteriaIndicator, { backgroundColor: '#EF4444' }]} />
                     <View style={styles.criteriaContent}>
-                      <Text style={styles.criteriaLabel}>Non conforme (|Écart| &gt; 20%)</Text>
+                      <Text style={styles.criteriaLabel}>Non conforme (|Écart| > 20%)</Text>
                       <Text style={styles.criteriaDescription}>
                         Un écart supérieur à ±20% doit conduire à une action corrective obligatoire, la valeur étant jugée non conforme à la mise en service.
                       </Text>
@@ -331,7 +331,7 @@ export default function AboutScreen() {
                     Écart = ((3450 - 3000) / 3000) × 100 = +15%
                   </Text>
                   <Text style={styles.exampleResult}>
-                    ⚠️ Résultat : <Text style={{ color: '#F59E0B', fontWeight: 'bold' }}>Acceptable</Text> (10% &lt; |15%| ≤ 20%)
+                    ⚠️ Résultat : <Text style={{ color: '#F59E0B', fontWeight: 'bold' }}>Acceptable</Text> (10% < |15%| ≤ 20%)
                   </Text>
                 </View>
 
@@ -345,7 +345,7 @@ export default function AboutScreen() {
                     Écart = ((3000 - 4000) / 4000) × 100 = -25%
                   </Text>
                   <Text style={styles.exampleResult}>
-                    ❌ Résultat : <Text style={{ color: '#EF4444', fontWeight: 'bold' }}>Non conforme</Text> (|25%| &gt; 20%)
+                    ❌ Résultat : <Text style={{ color: '#EF4444', fontWeight: 'bold' }}>Non conforme</Text> (|25%| > 20%)
                   </Text>
                 </View>
               </View>
@@ -355,7 +355,7 @@ export default function AboutScreen() {
                 <Text style={styles.calculationTitle}>🔧 Algorithme de validation</Text>
                 <View style={styles.algorithmContainer}>
                   <Text style={styles.algorithmStep}>1. Vérification des données d'entrée</Text>
-                  <Text style={styles.algorithmDetail}>   • Débit de référence &gt; 0</Text>
+                  <Text style={styles.algorithmDetail}>   • Débit de référence > 0</Text>
                   <Text style={styles.algorithmDetail}>   • Débit mesuré ≥ 0</Text>
                   
                   <Text style={styles.algorithmStep}>2. Calcul de l'écart relatif</Text>
@@ -363,8 +363,8 @@ export default function AboutScreen() {
                   
                   <Text style={styles.algorithmStep}>3. Détermination du statut</Text>
                   <Text style={styles.algorithmDetail}>   • Si |Écart| ≤ 10% → Fonctionnel</Text>
-                  <Text style={styles.algorithmDetail}>   • Si 10% &lt; |Écart| ≤ 20% → Acceptable</Text>
-                  <Text style={styles.algorithmDetail}>   • Si |Écart| &gt; 20% → Non conforme</Text>
+                  <Text style={styles.algorithmDetail}>   • Si 10% < |Écart| ≤ 20% → Acceptable</Text>
+                  <Text style={styles.algorithmDetail}>   • Si |Écart| > 20% → Non conforme</Text>
                 </View>
               </View>
 
@@ -506,16 +506,6 @@ export default function AboutScreen() {
               <View style={styles.featureSection}>
                 <Text style={styles.featureSectionTitle}>✨ Expérience utilisateur</Text>
                 
-                <View style={styles.featureItem}>
-                  <Text style={styles.featureIcon}>🌙</Text>
-                  <View style={styles.featureContent}>
-                    <Text style={styles.featureTitle}>Mode sombre complet</Text>
-                    <Text style={styles.featureDescription}>
-                      Interface adaptée pour le travail de nuit avec réduction de la fatigue oculaire et économie de batterie.
-                    </Text>
-                  </View>
-                </View>
-
                 <View style={styles.featureItem}>
                   <Text style={styles.featureIcon}>♿</Text>
                   <View style={styles.featureContent}>
@@ -704,7 +694,7 @@ const createStyles = (theme: any) => StyleSheet.create({
     marginLeft: 12,
   },
   closeButton: {
-    padding: 8,
+    padding: 4,
   },
   modalScrollView: {
     maxHeight: 300,
@@ -742,7 +732,6 @@ const createStyles = (theme: any) => StyleSheet.create({
     paddingTop: 12,
   },
 
-  // Styles pour le contenu des calculs
   calculationSection: {
     marginBottom: 20,
     paddingBottom: 12,
@@ -872,7 +861,6 @@ const createStyles = (theme: any) => StyleSheet.create({
     lineHeight: 15,
   },
 
-  // Styles pour les prochaines nouveautés
   upcomingIntro: {
     backgroundColor: theme.colors.primary + '20',
     borderRadius: 12,
