@@ -273,6 +273,12 @@ export default function BuildingDetailScreen() {
     return { highShutters, lowShutters, total };
   };
 
+  const getFilteredZones = () => {
+    if (!building) return [];
+    
+    return building.functionalZones || [];
+  };
+
   // Trier les zones : favoris en premier
   const sortedZones = building ? [...building.functionalZones].sort((a, b) => {
     const aIsFavorite = favoriteZonesSet.has(a.id);

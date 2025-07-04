@@ -15,28 +15,6 @@ export interface Building {
   name: string;
   description?: string;
   createdAt: Date;
-  functionalZones: FunctionalZone[];
-}
-
-export interface FunctionalZone {
-  id: string;
-  buildingId: string;
-  name: string;
-  description?: string;
-  createdAt: Date;
-  shutters: Shutter[];
-}
-
-export interface Shutter {
-  id: string;
-  zoneId: string;
-  name: string;
-  type: 'high' | 'low'; // Volet Haut ou Bas
-  referenceFlow: number; // Débit de référence
-  measuredFlow: number; // Débit mesuré
-  remarks?: string;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 export interface ComplianceResult {
