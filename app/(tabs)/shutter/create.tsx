@@ -12,7 +12,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 export default function CreateShutterScreen() {
   const { strings, currentLanguage } = useLanguage();
   const { theme } = useTheme();
-  const { storage } = useStorage();
+  const { createShutter } = useStorage();
   const { zoneId } = useLocalSearchParams<{ zoneId: string }>();
   const [name, setName] = useState('');
   const [type, setType] = useState<ShutterType>('high');
@@ -90,7 +90,16 @@ export default function CreateShutterScreen() {
 
     setLoading(true);
     try {
-      const shutter = await storage.createShutter(zoneId, {
+      console.log('🔲 Création du volet:', name.trim(), 'dans la zone:', zoneId);
+      console.log('📊 Données du volet:', {
+        name: name.trim(),
+        type,
+        referenceFlow: parseFloat(referenceFlow),
+        measuredFlow: parseFloat(measuredFlow),
+        remarks: remarks.trim() || undefined,
+      });
+
+      const shutter = await createShutter(zoneId, {
         name: name.trim(),
         type,
         referenceFlow: parseFloat(referenceFlow),
@@ -99,11 +108,14 @@ export default function CreateShutterScreen() {
       });
 
       if (shutter) {
+        console.log('✅ Volet créé avec succès:', shutter.id);
         router.push(`/(tabs)/shutter/${shutter.id}`);
       } else {
+        console.error('❌ Erreur: Volet non créé');
         Alert.alert(strings.error, 'Impossible de créer le volet. Zone introuvable.');
       }
     } catch (error) {
+      console.error('❌ Erreur lors de la création du volet:', error);
       Alert.alert(strings.error, 'Impossible de créer le volet. Veuillez réessayer.');
     } finally {
       setLoading(false);
@@ -191,7 +203,7 @@ export default function CreateShutterScreen() {
 
         <View style={styles.buttonContainer}>
           <Button
-            title={strings.createShutter}
+            title={loading ? "Création..." : strings.createShutter}
             onPress={handleCreate}
             disabled={loading}
           />
