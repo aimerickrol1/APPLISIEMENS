@@ -526,6 +526,11 @@ export default function ExportScreen() {
         }
         
         @media print {
+            @page {
+                size: A4;
+                margin: 1cm;
+            }
+            
             .container {
                 padding: 20px;
             }
@@ -543,6 +548,15 @@ export default function ExportScreen() {
             th, td {
                 padding: 6px 4px;
             }
+            
+            .pdf-instructions {
+                display: none !important;
+            }
+            
+            body {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
         }
     </style>
 </head>
@@ -550,6 +564,12 @@ export default function ExportScreen() {
     <div class="container">
         <div class="pdf-instructions">
             <h3>📄 Pour exporter ce rapport en PDF</h3>
+            <div id="pdf-download-container" style="text-align: center; margin-bottom: 15px;">
+                <button id="download-pdf-button" style="background-color: #009999; color: white; border: none; border-radius: 8px; padding: 10px 20px; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; margin: 0 auto; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    Télécharger en PDF
+                </button>
+            </div>
             <div class="pdf-instructions-content">
                 <div class="pdf-device">
                     <h4>📱 Sur téléphone/tablette</h4>
@@ -575,6 +595,22 @@ export default function ExportScreen() {
             <div class="pdf-note">
                 <p>💡 Astuce : Les instructions ci-dessus ne seront pas incluses dans le PDF final. Le rapport sera automatiquement formaté pour l'impression professionnelle.</p>
             </div>
+            
+            <script>
+                document.getElementById('download-pdf-button').addEventListener('click', function() {
+                    // Cacher temporairement les instructions PDF
+                    const pdfInstructions = document.querySelector('.pdf-instructions');
+                    pdfInstructions.style.display = 'none';
+                    
+                    // Déclencher l'impression
+                    window.print();
+                    
+                    // Réafficher les instructions après un court délai
+                    setTimeout(function() {
+                        pdfInstructions.style.display = 'block';
+                    }, 1000);
+                });
+            </script>
         </div>
 
         <div class="header">
