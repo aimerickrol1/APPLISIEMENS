@@ -62,7 +62,7 @@ export default function BuildingDetailScreen() {
   const loadBuilding = useCallback(async () => {
     try {
       for (const proj of projects) {
-        const foundBuilding = proj.buildings.find(b => b.id === id);
+        const foundBuilding = proj.buildings?.find(b => b.id === id);
         if (foundBuilding) {
           setBuilding(foundBuilding);
           setProject(proj);
@@ -85,7 +85,9 @@ export default function BuildingDetailScreen() {
   );
 
   useEffect(() => {
-    loadBuilding();
+    if (projects && projects.length > 0) {
+      loadBuilding();
+    }
   }, [loadBuilding]);
 
   const handleBack = () => {
@@ -276,11 +278,11 @@ export default function BuildingDetailScreen() {
   const getFilteredZones = () => {
     if (!building) return [];
     
-    return building.functionalZones || [];
+    return building.functionalZones?.filter(Boolean) || [];
   };
 
   // Trier les zones : favoris en premier
-  const sortedZones = building ? [...building.functionalZones].sort((a, b) => {
+  const sortedZones = building && building.functionalZones ? [...building.functionalZones].sort((a, b) => {
     const aIsFavorite = favoriteZonesSet.has(a.id);
     const bIsFavorite = favoriteZonesSet.has(b.id);
     

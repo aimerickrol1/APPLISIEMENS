@@ -42,9 +42,12 @@ export default function ShutterDetailScreen() {
   const loadShutter = useCallback(async () => {
     try {
       for (const proj of projects) {
+        if (!proj.buildings) continue;
         for (const bldg of proj.buildings) {
+          if (!bldg.functionalZones) continue;
           for (const z of bldg.functionalZones) {
-            const foundShutter = z.shutters.find(s => s.id === id);
+            if (!z.shutters) continue;
+            const foundShutter = z.shutters?.find(s => s.id === id);
             if (foundShutter) {
               setShutter(foundShutter);
               setZone(z);
@@ -70,7 +73,9 @@ export default function ShutterDetailScreen() {
   );
 
   useEffect(() => {
-    loadShutter();
+    if (projects && projects.length > 0) {
+      loadShutter();
+    }
   }, [loadShutter]);
 
   useEffect(() => {
@@ -161,29 +166,29 @@ export default function ShutterDetailScreen() {
   const handleFlowBlur = useCallback(async (field: 'referenceFlow' | 'measuredFlow') => {
     if (!shutter) return;
 
-    const refFlow = parseFloat(editingFlows.referenceFlow) || 0;
-    const measFlow = parseFloat(editingFlows.measuredFlow) || 0;
+    try {
+      const refFlow = parseFloat(editingFlows.referenceFlow) || 0;
+      const measFlow = parseFloat(editingFlows.measuredFlow) || 0;
 
-    if (isNaN(refFlow) || refFlow < 0) {
-      setEditingFlows(prev => ({
-        ...prev,
-        referenceFlow: shutter.referenceFlow > 0 ? shutter.referenceFlow.toString() : ''
-      }));
-      return;
-    }
+      if (isNaN(refFlow) || refFlow < 0) {
+        setEditingFlows(prev => ({
+          ...prev,
+          referenceFlow: shutter.referenceFlow > 0 ? shutter.referenceFlow.toString() : ''
+        }));
+        return;
+      }
 
-    if (isNaN(measFlow) || measFlow < 0) {
-      setEditingFlows(prev => ({
-        ...prev,
-        measuredFlow: shutter.measuredFlow > 0 ? shutter.measuredFlow.toString() : ''
-      }));
-      return;
-    }
+      if (isNaN(measFlow) || measFlow < 0) {
+        setEditingFlows(prev => ({
+          ...prev,
+          measuredFlow: shutter.measuredFlow > 0 ? shutter.measuredFlow.toString() : ''
+        }));
+        return;
+      }
 
-    const hasChanged = refFlow !== shutter.referenceFlow || measFlow !== shutter.measuredFlow;
-    
-    if (hasChanged) {
-      try {
+      const hasChanged = refFlow !== shutter.referenceFlow || measFlow !== shutter.measuredFlow;
+      
+      if (hasChanged) {
         const updatedShutter = await updateShutter(shutter.id, {
           referenceFlow: refFlow,
           measuredFlow: measFlow,
@@ -203,16 +208,15 @@ export default function ShutterDetailScreen() {
           
           console.log(`✅ Volet ${shutter.name} mis à jour instantanément: ${refFlow}/${measFlow}`);
         }
-        
-      } catch (error) {
-        console.error('Erreur lors de la sauvegarde automatique:', error);
-        setEditingFlows(prev => ({
+      }
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde automatique:', error);
+      setEditingFlows(prev => ({
           ...prev,
           referenceFlow: shutter.referenceFlow > 0 ? shutter.referenceFlow.toString() : '',
           measuredFlow: shutter.measuredFlow > 0 ? shutter.measuredFlow.toString() : ''
         }));
       }
-    }
   }, [editingFlows, shutter, updateShutter]);
 
   const styles = createStyles(theme);

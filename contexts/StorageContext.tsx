@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { Project, Building, FunctionalZone, Shutter, SearchResult } from '@/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 
 // Interface pour l'historique des calculs rapides
 export interface QuickCalcHistoryItem {
@@ -117,23 +118,38 @@ export function StorageProvider({ children }: StorageProviderProps) {
   const initializeStorage = async () => {
     try {
       setIsLoading(true);
+
+      // Vérifier si AsyncStorage est disponible
+      if (!AsyncStorage) {
+        console.error('AsyncStorage n\'est pas disponible');
+        setIsInitialized(true);
+        setIsLoading(false);
+        return;
+      }
       
       // Charger toutes les données en parallèle
-      const [
-        projectsData,
-        favProjectsData,
-        favBuildingsData,
-        favZonesData,
-        favShuttersData,
-        historyData
-      ] = await Promise.all([
-        AsyncStorage.getItem(STORAGE_KEYS.PROJECTS),
-        AsyncStorage.getItem(STORAGE_KEYS.FAVORITE_PROJECTS),
-        AsyncStorage.getItem(STORAGE_KEYS.FAVORITE_BUILDINGS),
-        AsyncStorage.getItem(STORAGE_KEYS.FAVORITE_ZONES),
-        AsyncStorage.getItem(STORAGE_KEYS.FAVORITE_SHUTTERS),
-        AsyncStorage.getItem(STORAGE_KEYS.QUICK_CALC_HISTORY),
-      ]);
+      let projectsData, favProjectsData, favBuildingsData, favZonesData, favShuttersData, historyData;
+      
+      try {
+        [
+          projectsData,
+          favProjectsData,
+          favBuildingsData,
+          favZonesData,
+          favShuttersData,
+          historyData
+        ] = await Promise.all([
+          AsyncStorage.getItem(STORAGE_KEYS.PROJECTS),
+          AsyncStorage.getItem(STORAGE_KEYS.FAVORITE_PROJECTS),
+          AsyncStorage.getItem(STORAGE_KEYS.FAVORITE_BUILDINGS),
+          AsyncStorage.getItem(STORAGE_KEYS.FAVORITE_ZONES),
+          AsyncStorage.getItem(STORAGE_KEYS.FAVORITE_SHUTTERS),
+          AsyncStorage.getItem(STORAGE_KEYS.QUICK_CALC_HISTORY),
+        ]);
+      } catch (error) {
+        console.error('Erreur lors du chargement des données:', error);
+        // Continuer avec des valeurs par défaut
+      }
 
       // Parser et convertir les projets
       if (projectsData) {
@@ -199,7 +215,7 @@ export function StorageProvider({ children }: StorageProviderProps) {
   // CORRIGÉ : Fonction utilitaire pour sauvegarder les projets ET mettre à jour l'état React
   const saveProjects = async (newProjects: Project[]) => {
     try {
-      console.log('💾 Sauvegarde de', newProjects.length, 'projets...');
+      console.log('Sauvegarde de', newProjects.length, 'projets...');
       await AsyncStorage.setItem(STORAGE_KEYS.PROJECTS, JSON.stringify(newProjects));
       console.log('✅ Projets sauvegardés dans AsyncStorage');
       
@@ -214,7 +230,7 @@ export function StorageProvider({ children }: StorageProviderProps) {
 
   // Actions pour les projets
   const createProject = async (projectData: Omit<Project, 'id' | 'createdAt' | 'updatedAt' | 'buildings'>): Promise<Project> => {
-    console.log('🚀 StorageContext.createProject appelé avec:', projectData);
+    console.log('StorageContext.createProject appelé');
     
     const newProject: Project = {
       ...projectData,
@@ -224,9 +240,7 @@ export function StorageProvider({ children }: StorageProviderProps) {
       buildings: []
     };
     
-    console.log('📦 Nouveau projet créé:', newProject);
-    
-    const newProjects = [...projectsRef.current, newProject];
+    const newProjects = [...(projectsRef.current || []), newProject];
     await saveProjects(newProjects);
     
     console.log('✅ Projet ajouté à la liste, total:', newProjects.length);
@@ -748,7 +762,10 @@ export function StorageProvider({ children }: StorageProviderProps) {
   // Utilitaires
   const clearAllData = async () => {
     try {
-      await AsyncStorage.multiRemove(Object.values(STORAGE_KEYS));
+      // Supprimer les clés une par une pour éviter les erreurs
+      for (const key of Object.values(STORAGE_KEYS)) {
+        await AsyncStorage.removeItem(key);
+      }
       
       setProjects([]);
       setFavoriteProjectsState([]);

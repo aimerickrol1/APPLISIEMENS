@@ -81,8 +81,10 @@ export default function ZoneDetailScreen() {
   const loadZone = useCallback(async () => {
     try {
       for (const proj of projects) {
+        if (!proj.buildings) continue;
         for (const bldg of proj.buildings) {
-          const foundZone = bldg.functionalZones.find(z => z.id === id);
+          if (!bldg.functionalZones) continue;
+          const foundZone = bldg.functionalZones?.find(z => z.id === id);
           if (foundZone) {
             setZone(foundZone);
             setBuilding(bldg);
@@ -107,12 +109,16 @@ export default function ZoneDetailScreen() {
   );
 
   useEffect(() => {
-    loadZone();
+    if (projects && projects.length > 0) {
+      loadZone();
+    }
   }, [loadZone]);
 
   // CORRIGÉ : Initialiser l'édition pour tous les volets quand la zone change
   useEffect(() => {
     if (zone) {
+      if (!zone.shutters) return;
+      
       const newEditingFlows: typeof editingFlows = {};
       zone.shutters.forEach(shutter => {
         // CORRIGÉ : Initialiser avec des valeurs vides si les débits sont à 0
@@ -491,7 +497,7 @@ export default function ZoneDetailScreen() {
   // CORRIGÉ : Fonction pour filtrer les volets avec filtre de conformité
   const getFilteredShutters = () => {
     if (!zone) return [];
-    
+    if (!zone.shutters) return [];
     let filtered = zone.shutters;
     
     // Filtre par type de volet

@@ -65,7 +65,7 @@ export default function ProjectDetailScreen() {
 
   const loadProject = useCallback(async () => {
     try {
-      const foundProject = projects.find(p => p.id === id);
+      const foundProject = projects?.find(p => p.id === id);
       setProject(foundProject || null);
     } catch (error) {
       console.error('Erreur lors du chargement du projet:', error);
@@ -83,7 +83,9 @@ export default function ProjectDetailScreen() {
   );
 
   useEffect(() => {
-    loadProject();
+    if (projects && projects.length > 0) {
+      loadProject();
+    }
   }, [loadProject]);
 
   const handleBack = () => {
@@ -376,9 +378,9 @@ export default function ProjectDetailScreen() {
   };
 
   // Trier les bâtiments : favoris en premier
-  const sortedBuildings = project ? [...project.buildings].sort((a, b) => {
-    const aIsFavorite = favoriteBuildings.includes(a.id);
-    const bIsFavorite = favoriteBuildings.includes(b.id);
+  const sortedBuildings = project && project.buildings ? [...project.buildings].sort((a, b) => {
+    const aIsFavorite = favoriteBuildings?.includes(a.id) || false;
+    const bIsFavorite = favoriteBuildings?.includes(b.id) || false;
     
     if (aIsFavorite && !bIsFavorite) return -1;
     if (!aIsFavorite && bIsFavorite) return 1;
