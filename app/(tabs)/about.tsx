@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Alert, Linking, Platform } from 'react-native';
-import { Info, ChevronRight, Shield, Smartphone, CircleCheck as CheckCircle, FileText, Calculator, Sparkles, X, AlertTriangle } from 'lucide-react-native';
+import { Info, ChevronRight, Shield, Smartphone, CircleCheck as CheckCircle, FileText, Calculator, Sparkles, X, TriangleAlert as AlertTriangle } from 'lucide-react-native';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/Button';
 import * as WebBrowser from 'expo-web-browser';
@@ -272,7 +272,7 @@ export default function AboutScreen() {
                 <Text style={styles.warningText}>
                   Le taux de conformité affiché dans l'aperçu des projets <Text style={styles.warningBold}>n'a aucune valeur réglementaire</Text>.
                   {'\n\n'}
-                  Il s'agit uniquement d'un <Text style={styles.warningBold}>indicateur visuel</Text> pour aider à suivre globalement l'état des volets d'un projet.
+                  Il s'agit uniquement d\'un <Text style={styles.warningBold}>indicateur visuel</Text> pour aider à suivre globalement l'état des volets d'un projet.
                   {'\n\n'}
                   Ce taux <Text style={styles.warningBold}>n'est défini nulle part dans la norme NF S61-933</Text>.
                 </Text>
