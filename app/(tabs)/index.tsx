@@ -360,7 +360,7 @@ export default function ProjectsScreen() {
       loadProjects();
 
       // Naviguer vers le projet créé
-      router.push(/(tabs)/project/${project.id});
+      router.push(`/(tabs)/project/${project.id}`);
     } catch (error) {
       Alert.alert('Erreur', 'Impossible de créer le projet. Veuillez réessayer.');
     } finally {
@@ -459,7 +459,7 @@ export default function ProjectsScreen() {
     if (selectionMode) {
       handleProjectSelection(project.id);
     } else {
-      router.push(/(tabs)/project/${project.id});
+      router.push(`/(tabs)/project/${project.id}`);
     }
   };
 
@@ -482,7 +482,7 @@ export default function ProjectsScreen() {
   };
 
   const handleEditProject = (project: Project) => {
-    router.push(/(tabs)/project/edit/${project.id});
+    router.push(`/(tabs)/project/edit/${project.id}`);
   };
 
   // NOUVEAU : Fonction pour calculer les statistiques détaillées du projet
