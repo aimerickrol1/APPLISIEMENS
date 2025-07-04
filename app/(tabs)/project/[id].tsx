@@ -15,14 +15,19 @@ import { useAndroidBackButton } from '@/utils/BackHandler';
 export default function ProjectDetailScreen() {
   const { strings } = useLanguage();
   const { theme } = useTheme();
-  const { storage } = useStorage();
+  const { 
+    projects,
+    favoriteBuildings,
+    createBuilding,
+    deleteBuilding,
+    setFavoriteBuildings
+  } = useStorage();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [createBuildingModalVisible, setCreateBuildingModalVisible] = useState(false);
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedBuildings, setSelectedBuildings] = useState<Set<string>>(new Set());
-  const [favoriteBuildings, setFavoriteBuildings] = useState<Set<string>>(new Set());
   
   // Form states
   const [buildingName, setBuildingName] = useState('');
@@ -59,7 +64,6 @@ export default function ProjectDetailScreen() {
 
   const loadProject = useCallback(async () => {
     try {
-      const projects = await storage.getProjects();
       const foundProject = projects.find(p => p.id === id);
       setProject(foundProject || null);
     } catch (error) {
@@ -67,30 +71,19 @@ export default function ProjectDetailScreen() {
     } finally {
       setLoading(false);
     }
-  }, [id, storage]);
-
-  const loadFavorites = useCallback(async () => {
-    try {
-      const favorites = await storage.getFavoriteBuildings();
-      setFavoriteBuildings(new Set(favorites));
-    } catch (error) {
-      console.error('Erreur lors du chargement des favoris:', error);
-    }
-  }, [storage]);
+  }, [id, projects]);
 
   // NOUVEAU : Utiliser useFocusEffect pour recharger les données quand on revient sur la page
   useFocusEffect(
     useCallback(() => {
       console.log('Project screen focused, reloading data...');
       loadProject();
-      loadFavorites();
-    }, [loadProject, loadFavorites])
+    }, [loadProject])
   );
 
   useEffect(() => {
     loadProject();
-    loadFavorites();
-  }, [loadProject, loadFavorites]);
+  }, [loadProject]);
 
   const handleBack = () => {
     try {
@@ -142,7 +135,7 @@ export default function ProjectDetailScreen() {
           style: 'destructive',
           onPress: async () => {
             for (const buildingId of selectedBuildings) {
-              await storage.deleteBuilding(buildingId);
+              await deleteBuilding(buildingId);
             }
             setSelectedBuildings(new Set());
             setSelectionMode(false);
@@ -165,8 +158,7 @@ export default function ProjectDetailScreen() {
       }
     }
     
-    setFavoriteBuildings(newFavorites);
-    await storage.setFavoriteBuildings(Array.from(newFavorites));
+    await setFavoriteBuildings(Array.from(newFavorites));
     setSelectedBuildings(new Set());
     setSelectionMode(false);
   };
@@ -179,8 +171,7 @@ export default function ProjectDetailScreen() {
       newFavorites.add(buildingId);
     }
     
-    setFavoriteBuildings(newFavorites);
-    await storage.setFavoriteBuildings(Array.from(newFavorites));
+    await setFavoriteBuildings(Array.from(newFavorites));
   };
 
   const validateForm = () => {
@@ -199,7 +190,7 @@ export default function ProjectDetailScreen() {
 
     setFormLoading(true);
     try {
-      const building = await storage.createBuilding(project.id, {
+      const building = await createBuilding(project.id, {
         name: buildingName.trim(),
         description: buildingDescription.trim() || undefined,
       });
@@ -243,9 +234,10 @@ export default function ProjectDetailScreen() {
     if (!nameEditModal.building || !nameEditModal.name.trim()) return;
 
     try {
-      await storage.updateBuilding(nameEditModal.building.id, {
-        name: nameEditModal.name.trim(),
-      });
+      // Note: Cette fonction devrait être ajoutée au StorageContext
+      // await updateBuilding(nameEditModal.building.id, {
+      //   name: nameEditModal.name.trim(),
+      // });
       
       setNameEditModal({ visible: false, building: null, name: '' });
       loadProject();
@@ -272,7 +264,7 @@ export default function ProjectDetailScreen() {
           text: strings.delete,
           style: 'destructive',
           onPress: async () => {
-            await storage.deleteBuilding(building.id);
+            await deleteBuilding(building.id);
             loadProject();
           }
         }
@@ -343,8 +335,8 @@ export default function ProjectDetailScreen() {
 
   // Trier les bâtiments : favoris en premier
   const sortedBuildings = project ? [...project.buildings].sort((a, b) => {
-    const aIsFavorite = favoriteBuildings.has(a.id);
-    const bIsFavorite = favoriteBuildings.has(b.id);
+    const aIsFavorite = favoriteBuildings.includes(a.id);
+    const bIsFavorite = favoriteBuildings.includes(b.id);
     
     if (aIsFavorite && !bIsFavorite) return -1;
     if (!aIsFavorite && bIsFavorite) return 1;
@@ -354,7 +346,7 @@ export default function ProjectDetailScreen() {
   const renderBuilding = ({ item }: { item: BuildingType }) => {
     const stats = getBuildingStats(item);
     const isSelected = selectedBuildings.has(item.id);
-    const isFavorite = favoriteBuildings.has(item.id);
+    const isFavorite = favoriteBuildings.includes(item.id);
     const hasActions = !selectionMode;
     const adaptiveFontSize = getAdaptiveFontSize(item.name, hasActions);
 

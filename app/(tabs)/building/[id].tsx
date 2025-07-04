@@ -13,7 +13,13 @@ import { useAndroidBackButton } from '@/utils/BackHandler';
 export default function BuildingDetailScreen() {
   const { strings } = useLanguage();
   const { theme } = useTheme();
-  const storage = useStorage();
+  const { 
+    projects, 
+    favoriteZones, 
+    setFavoriteZones, 
+    deleteFunctionalZone, 
+    updateFunctionalZone 
+  } = useStorage();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [building, setBuilding] = useState<Building | null>(null);
   const [project, setProject] = useState<Project | null>(null);
@@ -22,7 +28,6 @@ export default function BuildingDetailScreen() {
   // États pour le mode sélection
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedZones, setSelectedZones] = useState<Set<string>>(new Set());
-  const [favoriteZones, setFavoriteZones] = useState<Set<string>>(new Set());
 
   // Modal pour éditer le nom de la zone
   const [nameEditModal, setNameEditModal] = useState<{
@@ -53,7 +58,6 @@ export default function BuildingDetailScreen() {
 
   const loadBuilding = useCallback(async () => {
     try {
-      const projects = await storage.getProjects();
       for (const proj of projects) {
         const foundBuilding = proj.buildings.find(b => b.id === id);
         if (foundBuilding) {
@@ -67,30 +71,19 @@ export default function BuildingDetailScreen() {
     } finally {
       setLoading(false);
     }
-  }, [id, storage]);
-
-  const loadFavorites = useCallback(async () => {
-    try {
-      const favorites = await storage.getFavoriteZones();
-      setFavoriteZones(new Set(favorites));
-    } catch (error) {
-      console.error('Erreur lors du chargement des favoris:', error);
-    }
-  }, [storage]);
+  }, [id, projects]);
 
   // NOUVEAU : Utiliser useFocusEffect pour recharger les données quand on revient sur la page
   useFocusEffect(
     useCallback(() => {
       console.log('Building screen focused, reloading data...');
       loadBuilding();
-      loadFavorites();
-    }, [loadBuilding, loadFavorites])
+    }, [loadBuilding])
   );
 
   useEffect(() => {
     loadBuilding();
-    loadFavorites();
-  }, [loadBuilding, loadFavorites]);
+  }, [loadBuilding]);
 
   const handleBack = () => {
     try {
@@ -154,7 +147,7 @@ export default function BuildingDetailScreen() {
     if (!nameEditModal.zone || !nameEditModal.name.trim()) return;
 
     try {
-      await storage.updateFunctionalZone(nameEditModal.zone.id, {
+      await updateFunctionalZone(nameEditModal.zone.id, {
         name: nameEditModal.name.trim(),
       });
       
@@ -194,7 +187,7 @@ export default function BuildingDetailScreen() {
           style: 'destructive',
           onPress: async () => {
             for (const zoneId of selectedZones) {
-              await storage.deleteFunctionalZone(zoneId);
+              await deleteFunctionalZone(zoneId);
             }
             setSelectedZones(new Set());
             setSelectionMode(false);
@@ -217,8 +210,7 @@ export default function BuildingDetailScreen() {
       }
     }
     
-    setFavoriteZones(newFavorites);
-    await storage.setFavoriteZones(Array.from(newFavorites));
+    setFavoriteZones(Array.from(newFavorites));
     setSelectedZones(new Set());
     setSelectionMode(false);
   };
@@ -231,8 +223,7 @@ export default function BuildingDetailScreen() {
       newFavorites.add(zoneId);
     }
     
-    setFavoriteZones(newFavorites);
-    await storage.setFavoriteZones(Array.from(newFavorites));
+    setFavoriteZones(Array.from(newFavorites));
   };
 
   const handleDeleteZone = async (zone: FunctionalZone) => {
@@ -245,7 +236,7 @@ export default function BuildingDetailScreen() {
           text: strings.delete,
           style: 'destructive',
           onPress: async () => {
-            await storage.deleteFunctionalZone(zone.id);
+            await deleteFunctionalZone(zone.id);
             loadBuilding();
           }
         }

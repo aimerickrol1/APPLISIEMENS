@@ -25,15 +25,12 @@ interface HierarchicalFilter {
 export default function SearchScreen() {
   const { strings } = useLanguage();
   const { theme } = useTheme();
-  const { storage } = useStorage();
+  const { projects, searchShutters } = useStorage();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
   const [searchMode, setSearchMode] = useState<SearchMode>('simple');
   
-  const [projects, setProjects] = useState<Project[]>([]);
   const [hierarchicalFilter, setHierarchicalFilter] = useState<HierarchicalFilter>({});
   const [expandedSections, setExpandedSections] = useState<{
     projects: boolean;
@@ -47,51 +44,15 @@ export default function SearchScreen() {
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  useFocusEffect(
-    useCallback(() => {
-      loadProjects();
-    }, [])
-  );
-
-  const loadProjects = useCallback(async () => {
-    try {
-      setError(null);
-      console.log('Chargement des projets...');
-      
-      const projectList = await storage.getProjects();
-      console.log('Projets chargés:', projectList.length);
-      
-      setProjects(projectList);
-    } catch (error) {
-      console.error('Erreur lors du chargement des projets:', error);
-      setError('Erreur lors du chargement des projets');
-      setProjects([]);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [storage]);
-
-  useEffect(() => {
-    loadProjects();
-  }, [loadProjects]);
-
-  useFocusEffect(
-    useCallback(() => {
-      console.log('Search screen focused, reloading projects...');
-      loadProjects();
-    }, [loadProjects])
-  );
-
   useEffect(() => {
     if (searchMode === 'simple' && query.trim().length >= 2) {
-      searchShutters();
+      performSearch();
     } else if (searchMode === 'hierarchical') {
       searchWithHierarchy();
     } else {
       setResults([]);
     }
-  }, [query, searchMode, hierarchicalFilter]);
+  }, [query, searchMode, hierarchicalFilter, projects]);
 
   useEffect(() => {
     if (results.length > 0) {
@@ -105,11 +66,11 @@ export default function SearchScreen() {
     }
   }, [results.length, searchMode, hierarchicalFilter]);
 
-  const searchShutters = async () => {
+  const performSearch = async () => {
     setLoading(true);
     try {
       console.log('Recherche simple avec la requête:', query.trim());
-      const searchResults = await storage.searchShutters(query.trim());
+      const searchResults = searchShutters(query.trim());
       console.log('Résultats trouvés:', searchResults.length);
       setResults(searchResults);
     } catch (error) {

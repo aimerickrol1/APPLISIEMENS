@@ -12,7 +12,7 @@ import { router } from 'expo-router';
 export default function SettingsScreen() {
   const { strings, currentLanguage, changeLanguage } = useLanguage();
   const { theme, themeMode, setThemeMode } = useTheme();
-  const storage = useStorage();
+  const { clearAllData, getStorageInfo } = useStorage();
   const [languageModalVisible, setLanguageModalVisible] = useState(false);
   const [themeModalVisible, setThemeModalVisible] = useState(false);
   const [clearDataModalVisible, setClearDataModalVisible] = useState(false);
@@ -28,7 +28,7 @@ export default function SettingsScreen() {
 
   const loadStorageInfo = async () => {
     try {
-      const info = await storage.getStorageInfo();
+      const info = getStorageInfo();
       setStorageInfo(info);
     } catch (error) {
       console.error('Erreur lors du chargement des infos de stockage:', error);
@@ -69,7 +69,7 @@ export default function SettingsScreen() {
 
   const confirmClearData = async () => {
     try {
-      await storage.clearAllData();
+      await clearAllData();
       setClearDataModalVisible(false);
       Alert.alert(
         strings.dataCleared,

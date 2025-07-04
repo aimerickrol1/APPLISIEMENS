@@ -15,7 +15,14 @@ import { useAndroidBackButton } from '@/utils/BackHandler';
 export default function ZoneDetailScreen() {
   const { strings } = useLanguage();
   const { theme } = useTheme();
-  const { storage } = useStorage();
+  const { 
+    projects, 
+    favoriteShutters, 
+    setFavoriteShutters, 
+    deleteShutter, 
+    createShutter, 
+    updateShutter 
+  } = useStorage();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [zone, setZone] = useState<FunctionalZone | null>(null);
   const [building, setBuilding] = useState<Building | null>(null);
@@ -61,7 +68,6 @@ export default function ZoneDetailScreen() {
   // États pour le mode sélection
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedShutters, setSelectedShutters] = useState<Set<string>>(new Set());
-  const [favoriteShutters, setFavoriteShutters] = useState<Set<string>>(new Set());
 
   // Référence pour le FlatList pour le scroll automatique
   const flatListRef = useRef<FlatList>(null);
@@ -69,7 +75,6 @@ export default function ZoneDetailScreen() {
   // Charger la zone
   const loadZone = useCallback(async () => {
     try {
-      const projects = await storage.getProjects();
       for (const proj of projects) {
         for (const bldg of proj.buildings) {
           const foundZone = bldg.functionalZones.find(z => z.id === id);
@@ -86,31 +91,19 @@ export default function ZoneDetailScreen() {
     } finally {
       setLoading(false);
     }
-  }, [id, storage]);
-
-  // Charger les favoris
-  const loadFavorites = useCallback(async () => {
-    try {
-      const favorites = await storage.getFavoriteShutters();
-      setFavoriteShutters(new Set(favorites));
-    } catch (error) {
-      console.error('Erreur lors du chargement des favoris:', error);
-    }
-  }, [storage]);
+  }, [id, projects]);
 
   // NOUVEAU : Utiliser useFocusEffect pour recharger les données quand on revient sur la page
   useFocusEffect(
     useCallback(() => {
       console.log('Zone screen focused, reloading data...');
       loadZone();
-      loadFavorites();
-    }, [loadZone, loadFavorites])
+    }, [loadZone])
   );
 
   useEffect(() => {
     loadZone();
-    loadFavorites();
-  }, [loadZone, loadFavorites]);
+  }, [loadZone]);
 
   // CORRIGÉ : Initialiser l'édition pour tous les volets quand la zone change
   useEffect(() => {
@@ -226,7 +219,7 @@ export default function ZoneDetailScreen() {
         counter++;
       }
 
-      const newShutter = await storage.createShutter(zone.id, {
+      const newShutter = await createShutter(zone.id, {
         name: newName,
         type: copiedShutter.type,
         referenceFlow: copiedShutter.referenceFlow,
@@ -257,7 +250,7 @@ export default function ZoneDetailScreen() {
           text: strings.delete,
           style: 'destructive',
           onPress: async () => {
-            await storage.deleteShutter(shutter.id);
+            await deleteShutter(shutter.id);
             loadZone();
           }
         }
@@ -296,7 +289,7 @@ export default function ZoneDetailScreen() {
           style: 'destructive',
           onPress: async () => {
             for (const shutterId of selectedShutters) {
-              await storage.deleteShutter(shutterId);
+              await deleteShutter(shutterId);
             }
             setSelectedShutters(new Set());
             setSelectionMode(false);
@@ -319,36 +312,20 @@ export default function ZoneDetailScreen() {
       }
     }
     
-    setFavoriteShutters(newFavorites);
-    await storage.setFavoriteShutters(Array.from(newFavorites));
+    await setFavoriteShutters(Array.from(newFavorites));
     setSelectedShutters(new Set());
     setSelectionMode(false);
   };
 
   const handleToggleFavorite = async (shutterId: string) => {
-    setFavoriteShutters(prev => {
-      const newFavorites = new Set(prev);
-      if (newFavorites.has(shutterId)) {
-        newFavorites.delete(shutterId);
-      } else {
-        newFavorites.add(shutterId);
-      }
-      return newFavorites;
-    });
+    const newFavorites = new Set(favoriteShutters);
+    if (newFavorites.has(shutterId)) {
+      newFavorites.delete(shutterId);
+    } else {
+      newFavorites.add(shutterId);
+    }
     
-    // Sauvegarder de manière asynchrone sans bloquer l'UI
-    setTimeout(async () => {
-      try {
-        const currentFavorites = Array.from(favoriteShutters);
-        if (favoriteShutters.has(shutterId)) {
-          await storage.setFavoriteShutters(currentFavorites.filter(id => id !== shutterId));
-        } else {
-          await storage.setFavoriteShutters([...currentFavorites, shutterId]);
-        }
-      } catch (error) {
-        console.error('Erreur lors de la sauvegarde des favoris:', error);
-      }
-    }, 0);
+    await setFavoriteShutters(Array.from(newFavorites));
   };
 
   // CORRIGÉ : Fonctions pour l'édition directe des débits avec mise à jour instantanée
@@ -421,7 +398,7 @@ export default function ZoneDetailScreen() {
     if (hasChanged) {
       try {
         // CORRIGÉ : Sauvegarde automatique ET mise à jour instantanée de l'état local
-        await storage.updateShutter(shutter.id, {
+        await updateShutter(shutter.id, {
           referenceFlow: refFlow,
           measuredFlow: measFlow,
         });
@@ -455,7 +432,7 @@ export default function ZoneDetailScreen() {
         }));
       }
     }
-  }, [editingFlows, storage]);
+  }, [editingFlows, updateShutter]);
 
   // Fonctions pour éditer le nom
   const openNameEditModal = (shutter: Shutter) => {
@@ -470,7 +447,7 @@ export default function ZoneDetailScreen() {
     if (!nameEditModal.shutter || !nameEditModal.name.trim()) return;
 
     try {
-      await storage.updateShutter(nameEditModal.shutter.id, {
+      await updateShutter(nameEditModal.shutter.id, {
         name: nameEditModal.name.trim(),
       });
       
@@ -494,7 +471,7 @@ export default function ZoneDetailScreen() {
     if (!remarksEditModal.shutter) return;
 
     try {
-      await storage.updateShutter(remarksEditModal.shutter.id, {
+      await updateShutter(remarksEditModal.shutter.id, {
         remarks: remarksEditModal.remarks.trim() || undefined,
       });
       

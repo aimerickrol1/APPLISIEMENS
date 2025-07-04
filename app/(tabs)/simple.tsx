@@ -14,25 +14,11 @@ import { useTheme } from '@/contexts/ThemeContext';
 export default function SimpleCalculatorScreen() {
   const { strings } = useLanguage();
   const { theme } = useTheme();
-  const storage = useStorage();
+  const { quickCalcHistory, addQuickCalcHistory, clearQuickCalcHistory } = useStorage();
   const [referenceFlow, setReferenceFlow] = useState('');
   const [measuredFlow, setMeasuredFlow] = useState('');
-  const [history, setHistory] = useState<QuickCalcHistoryItem[]>([]);
 
   const scrollViewRef = useRef<ScrollView>(null);
-
-  useEffect(() => {
-    loadHistory();
-  }, []);
-
-  const loadHistory = async () => {
-    try {
-      const historyData = await storage.getQuickCalcHistory();
-      setHistory(historyData);
-    } catch (error) {
-      console.error('Erreur lors du chargement de l\'historique:', error);
-    }
-  };
 
   const getCompliance = () => {
     const ref = parseFloat(referenceFlow);
@@ -54,15 +40,13 @@ export default function SimpleCalculatorScreen() {
     const measured = parseFloat(measuredFlow);
 
     try {
-      await storage.addQuickCalcHistory({
+      await addQuickCalcHistory({
         referenceFlow: ref,
         measuredFlow: measured,
         deviation: compliance.deviation,
         status: compliance.status,
         color: compliance.color
       });
-      
-      loadHistory();
     } catch (error) {
       console.error('Erreur lors de la sauvegarde dans l\'historique:', error);
     }
@@ -70,8 +54,7 @@ export default function SimpleCalculatorScreen() {
 
   const clearHistory = async () => {
     try {
-      await storage.clearQuickCalcHistory();
-      setHistory([]);
+      await clearQuickCalcHistory();
     } catch (error) {
       console.error('Erreur lors de l\'effacement de l\'historique:', error);
     }
@@ -244,7 +227,7 @@ export default function SimpleCalculatorScreen() {
               <Clock size={18} color={theme.colors.primary} />
               <Text style={styles.historyTitle}>Historique des calculs</Text>
             </View>
-            {history.length > 0 && (
+            {quickCalcHistory.length > 0 && (
               <TouchableOpacity 
                 style={styles.clearHistoryButton}
                 onPress={clearHistory}
@@ -255,7 +238,7 @@ export default function SimpleCalculatorScreen() {
             )}
           </View>
 
-          {history.length === 0 ? (
+          {quickCalcHistory.length === 0 ? (
             <View style={styles.emptyHistoryContainer}>
               <Text style={styles.emptyHistoryText}>
                 Aucun calcul effectué récemment
@@ -272,7 +255,7 @@ export default function SimpleCalculatorScreen() {
                 <Text style={styles.compactLabel}>Résultat</Text>
               </View>
 
-              {history.map((item, index) => (
+              {quickCalcHistory.map((item, index) => (
                 <TouchableOpacity
                   key={item.id}
                   style={styles.compactHistoryItem}

@@ -16,8 +16,7 @@ import { router } from 'expo-router';
 export default function ExportScreen() {
   const { strings } = useLanguage();
   const { theme } = useTheme();
-  const storage = useStorage();
-  const [projects, setProjects] = useState<Project[]>([]);
+  const { projects } = useStorage();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [exportLoading, setExportLoading] = useState<string | null>(null);
@@ -27,20 +26,15 @@ export default function ExportScreen() {
     try {
       setError(null);
       console.log('Chargement des projets...');
-      
-      const projectList = await storage.getProjects();
-      console.log('Projets chargés:', projectList.length);
-      
-      setProjects(projectList);
+      console.log('Projets chargés:', projects.length);
     } catch (error) {
       console.error('Erreur lors du chargement des projets:', error);
       setError('Erreur lors du chargement des projets');
-      setProjects([]);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [storage]);
+  }, [projects]);
 
   useEffect(() => {
     loadProjects();

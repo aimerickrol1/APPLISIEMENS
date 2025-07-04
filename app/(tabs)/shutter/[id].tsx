@@ -15,7 +15,7 @@ import { useAndroidBackButton } from '@/utils/BackHandler';
 export default function ShutterDetailScreen() {
   const { strings } = useLanguage();
   const { theme } = useTheme();
-  const { storage } = useStorage();
+  const { projects, updateShutter, deleteShutter } = useStorage();
   const { id, from } = useLocalSearchParams<{ id: string; from?: string }>();
   const [shutter, setShutter] = useState<Shutter | null>(null);
   const [zone, setZone] = useState<FunctionalZone | null>(null);
@@ -41,7 +41,6 @@ export default function ShutterDetailScreen() {
 
   const loadShutter = useCallback(async () => {
     try {
-      const projects = await storage.getProjects();
       for (const proj of projects) {
         for (const bldg of proj.buildings) {
           for (const z of bldg.functionalZones) {
@@ -61,7 +60,7 @@ export default function ShutterDetailScreen() {
     } finally {
       setLoading(false);
     }
-  }, [id, storage]);
+  }, [id, projects]);
 
   useFocusEffect(
     useCallback(() => {
@@ -123,7 +122,7 @@ export default function ShutterDetailScreen() {
           text: strings.delete,
           style: 'destructive',
           onPress: async () => {
-            await storage.deleteShutter(shutter.id);
+            await deleteShutter(shutter.id);
             handleBack();
           }
         }
@@ -184,7 +183,7 @@ export default function ShutterDetailScreen() {
     
     if (hasChanged) {
       try {
-        await storage.updateShutter(shutter.id, {
+        await updateShutter(shutter.id, {
           referenceFlow: refFlow,
           measuredFlow: measFlow,
         });
@@ -210,7 +209,7 @@ export default function ShutterDetailScreen() {
         }));
       }
     }
-  }, [editingFlows, shutter, storage]);
+  }, [editingFlows, shutter, updateShutter]);
 
   const styles = createStyles(theme);
 
