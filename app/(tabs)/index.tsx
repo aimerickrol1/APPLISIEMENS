@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Modal, ScrollView, TextInput, ToastAndroid, Platform } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
-import { Plus, Building, Settings, Star, Trash2, SquareCheck as CheckSquare, Square, X, Minus, Calendar, Layers, Wind, ShieldAlert, Combine } from 'lucide-react-native';
+import { Plus, Building, Settings, Star, Trash2, SquareCheck as CheckSquare, Square, X, Minus, Calendar, Layers } from 'lucide-react-native';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { DateInput } from '@/components/DateInput';
 import { Project } from '@/types';
-import { useStorage } from '@/contexts/StorageContext';
+import { storage } from '@/utils/storage';
 import { calculateCompliance } from '@/utils/compliance';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -32,15 +32,12 @@ interface PredefinedStructure {
   buildings: PredefinedBuilding[];
 }
 
-// Type pour les modes de projet
-type ProjectMode = 'smoke' | 'compartment' | 'complete';
-
 export default function ProjectsScreen() {
   const { strings } = useLanguage();
   const { theme } = useTheme();
-  const { projects, favoriteProjects: storedFavorites, createProject, deleteProject, setFavoriteProjects, createBuilding, createFunctionalZone, createShutter } = useStorage();
+  const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
-  const [favoriteProjectsSet, setFavoriteProjectsSet] = useState<Set<string>>(new Set());
+  const [favoriteProjects, setFavoriteProjects] = useState<Set<string>>(new Set());
   
   // États pour le mode sélection
   const [selectionMode, setSelectionMode] = useState(false);
@@ -56,13 +53,6 @@ export default function ProjectsScreen() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [errors, setErrors] = useState<{ name?: string; startDate?: string; endDate?: string }>({});
-  
-  // NOUVEAU : État pour le mode de projet
-  const [projectMode, setProjectMode] = useState<ProjectMode>('smoke');
-
-  // NOUVEAU : États pour la structure prédéfinie avancée
-  const [createWithStructure, setCreateWithStructure] = useState(false);
-  const [buildingStructures, setBuildingStructures] = useState<BuildingStructure[]>([]);
 
   // États pour la prédéfinition de structure
   const [predefinedStructure, setPredefinedStructure] = useState<PredefinedStructure>({
@@ -75,11 +65,6 @@ export default function ProjectsScreen() {
 
   // Utiliser le hook pour gérer le double appui sur le bouton retour pour quitter
   useDoubleBackToExit();
-
-  // Convertir l'array de favoris en Set pour une recherche plus efficace
-  useEffect(() => {
-    setFavoriteProjectsSet(new Set(storedFavorites));
-  }, [storedFavorites]);
 
   // NOUVEAU : Écouteur d'événement pour ouvrir le modal depuis la page export
   useEffect(() => {
@@ -98,12 +83,41 @@ export default function ProjectsScreen() {
     }
   }, []);
 
+  const loadProjects = useCallback(async () => {
+    try {
+      await storage.initialize();
+      const projectList = await storage.getProjects();
+      setProjects(projectList);
+    } catch (error) {
+      console.error('Erreur lors du chargement des projets:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const loadFavorites = useCallback(async () => {
+    try {
+      const favorites = await storage.getFavoriteProjects();
+      setFavoriteProjects(new Set(favorites));
+    } catch (error) {
+      console.error('Erreur lors du chargement des favoris:', error);
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadProjects();
+      loadFavorites();
+    }, [loadProjects, loadFavorites])
+  );
+
   useEffect(() => {
-    setLoading(false);
-  }, [projects]);
+    loadProjects();
+    loadFavorites();
+  }, [loadProjects, loadFavorites]);
 
   // Fonctions pour la prédéfinition de structure
-  const generateUniqueId = () => `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const generateUniqueId = () => ${Date.now()}_${Math.random().toString(36).substr(2, 9)};
 
   const togglePredefinedStructure = () => {
     setPredefinedStructure(prev => ({
@@ -116,7 +130,7 @@ export default function ProjectsScreen() {
   const addBuilding = () => {
     const newBuilding: PredefinedBuilding = {
       id: generateUniqueId(),
-      name: `Bâtiment ${predefinedStructure.buildings.length + 1}`,
+      name: Bâtiment ${predefinedStructure.buildings.length + 1},
       zones: []
     };
     
@@ -148,7 +162,7 @@ export default function ProjectsScreen() {
     
     const newZone: PredefinedZone = {
       id: generateUniqueId(),
-      name: `ZF${zoneNumber.toString().padStart(2, '0')}`,
+      name: ZF${zoneNumber.toString().padStart(2, '0')},
       highShutters: 0,
       lowShutters: 0
     };
@@ -280,7 +294,6 @@ export default function ProjectsScreen() {
     try {
       const projectData: any = {
         name: name.trim(),
-        mode: projectMode,
       };
 
       if (city.trim()) {
@@ -296,28 +309,28 @@ export default function ProjectsScreen() {
       }
 
       // Créer le projet
-      const project = await createProject(projectData);
+      const project = await storage.createProject(projectData);
 
       // Si la prédéfinition est activée, créer la structure
       if (predefinedStructure.enabled && predefinedStructure.buildings.length > 0) {
         for (const buildingData of predefinedStructure.buildings) {
           if (buildingData.name.trim()) {
-            const building = await createBuilding(project.id, {
+            const building = await storage.createBuilding(project.id, {
               name: buildingData.name.trim()
             });
 
             if (building && buildingData.zones.length > 0) {
               for (const zoneData of buildingData.zones) {
                 if (zoneData.name.trim()) {
-                  const zone = await createFunctionalZone(building.id, {
+                  const zone = await storage.createFunctionalZone(building.id, {
                     name: zoneData.name.trim()
                   });
 
                   if (zone) {
                     // Créer les volets hauts (VH)
                     for (let i = 1; i <= zoneData.highShutters; i++) {
-                      await createShutter(zone.id, {
-                        name: `VH${i.toString().padStart(2, '0')}`,
+                      await storage.createShutter(zone.id, {
+                        name: VH${i.toString().padStart(2, '0')},
                         type: 'high',
                         referenceFlow: 0,
                         measuredFlow: 0
@@ -326,8 +339,8 @@ export default function ProjectsScreen() {
 
                     // Créer les volets bas (VB)
                     for (let i = 1; i <= zoneData.lowShutters; i++) {
-                      await createShutter(zone.id, {
-                        name: `VB${i.toString().padStart(2, '0')}`,
+                      await storage.createShutter(zone.id, {
+                        name: VB${i.toString().padStart(2, '0')},
                         type: 'low',
                         referenceFlow: 0,
                         measuredFlow: 0
@@ -344,9 +357,10 @@ export default function ProjectsScreen() {
       // Réinitialiser le formulaire
       resetForm();
       setCreateModalVisible(false);
+      loadProjects();
 
       // Naviguer vers le projet créé
-      router.push(`/(tabs)/project/${project.id}`);
+      router.push(/(tabs)/project/${project.id});
     } catch (error) {
       Alert.alert('Erreur', 'Impossible de créer le projet. Veuillez réessayer.');
     } finally {
@@ -360,14 +374,10 @@ export default function ProjectsScreen() {
     setStartDate('');
     setEndDate('');
     setErrors({});
-    setProjectMode('smoke');
     setPredefinedStructure({
       enabled: false,
       buildings: []
     });
-    // NOUVEAU : Reset de la structure prédéfinie
-    setCreateWithStructure(false);
-    setBuildingStructures([]);
   };
 
   const handleCreateModal = () => {
@@ -375,55 +385,17 @@ export default function ProjectsScreen() {
     setCreateModalVisible(true);
   };
 
-  const handleSubmitProject = async () => {
-    if (!validateForm()) return;
-
-    setFormLoading(true);
-    try {
-      console.log('🚀 Création du projet:', name.trim());
-      
-      const projectData: any = {
-        name: name.trim(),
-        mode: projectMode,
-      };
-
-      if (city.trim()) {
-        projectData.city = city.trim();
-      }
-
-      if (startDate && isValidDate(startDate)) {
-        projectData.startDate = parseDate(startDate);
-      }
-
-      if (endDate && isValidDate(endDate)) {
-        projectData.endDate = parseDate(endDate);
-      }
-
-      const project = await createProject(projectData);
-        
-      setCreateModalVisible(false);
-      resetForm();
-        
-      router.push(`/(tabs)/project/${project.id}`);
-    } catch (error) {
-      console.error('❌ Erreur lors de la création du projet:', error);
-      Alert.alert('Erreur', 'Impossible de créer le projet. Veuillez réessayer.');
-    } finally {
-      setFormLoading(false);
-    }
-  };
-
   // Fonctions pour les favoris et sélection
   const handleToggleFavorite = async (projectId: string) => {
-    const newFavorites = new Set(favoriteProjectsSet);
+    const newFavorites = new Set(favoriteProjects);
     if (newFavorites.has(projectId)) {
       newFavorites.delete(projectId);
     } else {
       newFavorites.add(projectId);
     }
     
-    setFavoriteProjectsSet(newFavorites);
-    await setFavoriteProjects(Array.from(newFavorites));
+    setFavoriteProjects(newFavorites);
+    await storage.setFavoriteProjects(Array.from(newFavorites));
   };
 
   const handleSelectionMode = () => {
@@ -446,7 +418,7 @@ export default function ProjectsScreen() {
 
     Alert.alert(
       'Supprimer les projets',
-      `Êtes-vous sûr de vouloir supprimer ${selectedProjects.size} projet${selectedProjects.size > 1 ? 's' : ''} ?`,
+      Êtes-vous sûr de vouloir supprimer ${selectedProjects.size} projet${selectedProjects.size > 1 ? 's' : ''} ?,
       [
         { text: 'Annuler', style: 'cancel' },
         {
@@ -454,10 +426,11 @@ export default function ProjectsScreen() {
           style: 'destructive',
           onPress: async () => {
             for (const projectId of selectedProjects) {
-              await deleteProject(projectId);
+              await storage.deleteProject(projectId);
             }
             setSelectedProjects(new Set());
             setSelectionMode(false);
+            loadProjects();
           }
         }
       ]
@@ -467,7 +440,7 @@ export default function ProjectsScreen() {
   const handleBulkFavorite = async () => {
     if (selectedProjects.size === 0) return;
 
-    const newFavorites = new Set(favoriteProjectsSet);
+    const newFavorites = new Set(favoriteProjects);
     for (const projectId of selectedProjects) {
       if (newFavorites.has(projectId)) {
         newFavorites.delete(projectId);
@@ -476,8 +449,8 @@ export default function ProjectsScreen() {
       }
     }
     
-    setFavoriteProjectsSet(newFavorites);
-    await setFavoriteProjects(Array.from(newFavorites));
+    setFavoriteProjects(newFavorites);
+    await storage.setFavoriteProjects(Array.from(newFavorites));
     setSelectedProjects(new Set());
     setSelectionMode(false);
   };
@@ -486,21 +459,22 @@ export default function ProjectsScreen() {
     if (selectionMode) {
       handleProjectSelection(project.id);
     } else {
-      router.push(`/(tabs)/project/${project.id}`);
+      router.push(/(tabs)/project/${project.id});
     }
   };
 
   const handleDeleteProject = async (project: Project) => {
     Alert.alert(
       'Supprimer le projet',
-      `Êtes-vous sûr de vouloir supprimer le projet "${project.name}" ?`,
+      Êtes-vous sûr de vouloir supprimer le projet "${project.name}" ?,
       [
         { text: 'Annuler', style: 'cancel' },
         {
           text: 'Supprimer',
           style: 'destructive',
           onPress: async () => {
-            await deleteProject(project.id);
+            await storage.deleteProject(project.id);
+            loadProjects();
           }
         }
       ]
@@ -508,7 +482,7 @@ export default function ProjectsScreen() {
   };
 
   const handleEditProject = (project: Project) => {
-    router.push(`/(tabs)/project/edit/${project.id}`);
+    router.push(/(tabs)/project/edit/${project.id});
   };
 
   // NOUVEAU : Fonction pour calculer les statistiques détaillées du projet
@@ -555,48 +529,10 @@ export default function ProjectsScreen() {
     };
   };
 
-  // Calculer les statistiques de conformité
-  const getComplianceStats = (project: Project) => {
-    let compliant = 0;
-    let acceptable = 0;
-    let nonCompliant = 0;
-
-    project.buildings.forEach(building => {
-      building.functionalZones.forEach(zone => {
-        zone.shutters.forEach(shutter => {
-          const compliance = calculateCompliance(shutter.referenceFlow, shutter.measuredFlow);
-          switch (compliance.status) {
-            case 'compliant':
-              compliant++;
-              break;
-            case 'acceptable':
-              acceptable++;
-              break;
-            case 'non-compliant':
-              nonCompliant++;
-              break;
-          }
-        });
-      });
-    });
-
-    return { compliant, acceptable, nonCompliant };
-  };
-
-  // Calculer les totaux de la structure prédéfinie
-  const getStructureTotals = () => {
-    const totalBuildings = buildingStructures.length;
-    const totalZones = buildingStructures.reduce((total, building) => total + building.zones.length, 0);
-    const totalShutters = buildingStructures.reduce((total, building) => 
-      total + building.zones.reduce((zoneTotal, zone) => zoneTotal + zone.shutterCount, 0), 0);
-    
-    return { totalBuildings, totalZones, totalShutters };
-  };
-
   // Trier les projets : favoris en premier
   const sortedProjects = [...projects].sort((a, b) => {
-    const aIsFavorite = favoriteProjectsSet.has(a.id);
-    const bIsFavorite = favoriteProjectsSet.has(b.id);
+    const aIsFavorite = favoriteProjects.has(a.id);
+    const bIsFavorite = favoriteProjects.has(b.id);
     
     if (aIsFavorite && !bIsFavorite) return -1;
     if (!aIsFavorite && bIsFavorite) return 1;
@@ -605,7 +541,7 @@ export default function ProjectsScreen() {
 
   const renderProject = ({ item }: { item: Project }) => {
     const isSelected = selectedProjects.has(item.id);
-    const isFavorite = favoriteProjectsSet.has(item.id);
+    const isFavorite = favoriteProjects.has(item.id);
     const stats = getProjectStats(item);
 
     return (
@@ -993,101 +929,8 @@ export default function ProjectsScreen() {
             <ScrollView 
               ref={modalScrollViewRef}
               style={styles.modalBody} 
-              showsVerticalScrollIndicator={false}>
-              
-              {/* NOUVEAU : Sélection du mode de projet */}
-              <View style={styles.modeSelectionContainer}>
-                <Text style={styles.modeSelectionTitle}>Mode du projet</Text>
-                
-                <View style={styles.modeButtonsContainer}>
-                  <TouchableOpacity 
-                    style={[
-                      styles.modeButton, 
-                      projectMode === 'smoke' && styles.modeButtonActive
-                    ]}
-                    onPress={() => setProjectMode('smoke')}
-                  >
-                    <Wind size={24} color={projectMode === 'smoke' ? '#ffffff' : theme.colors.primary} />
-                    <Text style={[
-                      styles.modeButtonTitle,
-                      projectMode === 'smoke' && styles.modeButtonTitleActive
-                    ]}>
-                      Désenfumage
-                    </Text>
-                    <Text style={[
-                      styles.modeButtonDesc,
-                      projectMode === 'smoke' && styles.modeButtonDescActive
-                    ]}>
-                      Zones et volets
-                    </Text>
-                  </TouchableOpacity>
-                  
-                  <TouchableOpacity 
-                    style={[
-                      styles.modeButton, 
-                      projectMode === 'compartment' && styles.modeButtonActive
-                    ]}
-                    onPress={() => setProjectMode('compartment')}
-                  >
-                    <ShieldAlert size={24} color={projectMode === 'compartment' ? '#ffffff' : theme.colors.primary} />
-                    <Text style={[
-                      styles.modeButtonTitle,
-                      projectMode === 'compartment' && styles.modeButtonTitleActive
-                    ]}>
-                      Compartimentage
-                    </Text>
-                    <Text style={[
-                      styles.modeButtonDesc,
-                      projectMode === 'compartment' && styles.modeButtonDescActive
-                    ]}>
-                      Zones et DAS
-                    </Text>
-                  </TouchableOpacity>
-                  
-                  <TouchableOpacity 
-                    style={[
-                      styles.modeButton, 
-                      projectMode === 'complete' && styles.modeButtonActive
-                    ]}
-                    onPress={() => setProjectMode('complete')}
-                  >
-                    <Combine size={24} color={projectMode === 'complete' ? '#ffffff' : theme.colors.primary} />
-                    <Text style={[
-                      styles.modeButtonTitle,
-                      projectMode === 'complete' && styles.modeButtonTitleActive
-                    ]}>
-                      Complet
-                    </Text>
-                    <Text style={[
-                      styles.modeButtonDesc,
-                      projectMode === 'complete' && styles.modeButtonDescActive
-                    ]}>
-                      Tous les éléments
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-                
-                <View style={styles.modeDescriptionContainer}>
-                  {projectMode === 'smoke' && (
-                    <Text style={styles.modeDescription}>
-                      <Text style={styles.modeDescriptionHighlight}>Mode Désenfumage :</Text> Gestion des zones de désenfumage (ZF) avec volets hauts (VH) et bas (VB). Idéal pour les projets de contrôle de fumée.
-                    </Text>
-                  )}
-                  
-                  {projectMode === 'compartment' && (
-                    <Text style={styles.modeDescription}>
-                      <Text style={styles.modeDescriptionHighlight}>Mode Compartimentage :</Text> Gestion des zones de compartimentage (ZC) avec dispositifs actionnés de sécurité (DAS) comme les portes et clapets coupe-feu.
-                    </Text>
-                  )}
-                  
-                  {projectMode === 'complete' && (
-                    <Text style={styles.modeDescription}>
-                      <Text style={styles.modeDescriptionHighlight}>Mode Complet :</Text> Combine les fonctionnalités de désenfumage et de compartimentage dans un même projet pour une gestion complète.
-                    </Text>
-                  )}
-                </View>
-              </View>
-              
+              showsVerticalScrollIndicator={false}
+            >
               <Input
                 label="Nom du projet *"
                 value={name}
@@ -1471,78 +1314,6 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   modalButton: {
     flex: 1,
-  },
-  
-  // NOUVEAU : Styles pour la sélection de mode
-  modeSelectionContainer: {
-    marginBottom: 24,
-    backgroundColor: theme.colors.surfaceSecondary,
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  modeSelectionTitle: {
-    fontSize: 16,
-    fontFamily: 'Inter-SemiBold',
-    color: theme.colors.text,
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  modeButtonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 8,
-    marginBottom: 16,
-  },
-  modeButton: {
-    flex: 1,
-    backgroundColor: theme.colors.surface,
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: theme.colors.border,
-  },
-  modeButtonActive: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
-  },
-  modeButtonTitle: {
-    fontSize: 14,
-    fontFamily: 'Inter-Bold',
-    color: theme.colors.text,
-    marginTop: 12,
-    marginBottom: 4,
-  },
-  modeButtonTitleActive: {
-    color: '#ffffff',
-  },
-  modeButtonDesc: {
-    fontSize: 12,
-    fontFamily: 'Inter-Regular',
-    color: theme.colors.textSecondary,
-    textAlign: 'center',
-  },
-  modeButtonDescActive: {
-    color: '#ffffff',
-  },
-  modeDescriptionContainer: {
-    backgroundColor: theme.colors.primary + '15',
-    borderRadius: 8,
-    padding: 12,
-    borderLeftWidth: 3,
-    borderLeftColor: theme.colors.primary,
-  },
-  modeDescription: {
-    fontSize: 13,
-    fontFamily: 'Inter-Regular',
-    color: theme.colors.textSecondary,
-    lineHeight: 18,
-  },
-  modeDescriptionHighlight: {
-    fontFamily: 'Inter-SemiBold',
-    color: theme.colors.primary,
   },
 
   // Styles pour la prédéfinition de structure
