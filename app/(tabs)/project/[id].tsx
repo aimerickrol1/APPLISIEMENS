@@ -25,6 +25,8 @@ export default function ProjectDetailScreen() {
   } = useStorage();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [project, setProject] = useState<Project | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [createBuildingModalVisible, setCreateBuildingModalVisible] = useState(false);
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedBuildings, setSelectedBuildings] = useState<Set<string>>(new Set());
   
