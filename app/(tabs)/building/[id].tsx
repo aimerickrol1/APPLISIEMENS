@@ -25,8 +25,8 @@
 
 The main issues were:
 
-1. Missing closing bracket for the `getZonesToDisplay` function
-2. Missing closing bracket for the `if/else` block
-3. Improper nesting of the `sortedZones` declaration
+1. Missing closing bracket for the \`getZonesToDisplay` function
+2. Missing closing bracket for the `if/else\` block
+3. Improper nesting of the `sortedZones\` declaration
 
 The code is now properly structured with all required closing brackets in place.
