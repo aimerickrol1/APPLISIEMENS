@@ -21,6 +21,9 @@ export default function ProjectsScreen() {
     createProject, 
     deleteProject, 
     setFavoriteProjects,
+    createBuilding,
+    createFunctionalZone,
+    createShutter,
     isLoading 
   } = useStorage();
   
@@ -37,6 +40,12 @@ export default function ProjectsScreen() {
   const [endDate, setEndDate] = useState('');
   const [formLoading, setFormLoading] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; startDate?: string; endDate?: string }>({});
+
+  // NOUVEAU : États pour la structure prédéfinie
+  const [createWithStructure, setCreateWithStructure] = useState(false);
+  const [buildingCount, setBuildingCount] = useState(1);
+  const [zoneCount, setZoneCount] = useState(1);
+  const [shutterCount, setShutterCount] = useState(5);
 
   // Convert favoriteProjects array to Set for .has() method
   const favoriteProjectsSet = new Set(favoriteProjects);
@@ -77,6 +86,11 @@ export default function ProjectsScreen() {
     setStartDate('');
     setEndDate('');
     setErrors({});
+    // NOUVEAU : Reset des options de structure
+    setCreateWithStructure(false);
+    setBuildingCount(1);
+    setZoneCount(1);
+    setShutterCount(5);
   };
 
   const handleCreateProject = () => {
@@ -199,6 +213,62 @@ export default function ProjectsScreen() {
     return new Date(year, month - 1, day);
   };
 
+  // NOUVEAU : Fonction pour créer la structure prédéfinie
+  const createProjectStructure = async (project: Project) => {
+    try {
+      console.log('🏗️ Création de la structure prédéfinie...');
+      
+      for (let b = 1; b <= buildingCount; b++) {
+        const buildingName = buildingCount === 1 ? 'Bâtiment principal' : `Bâtiment ${b}`;
+        const building = await createBuilding(project.id, {
+          name: buildingName,
+          description: `Bâtiment ${b} du projet ${project.name}`
+        });
+
+        if (building) {
+          console.log(`✅ Bâtiment créé: ${building.name}`);
+          
+          for (let z = 1; z <= zoneCount; z++) {
+            const zoneNumber = String(z).padStart(2, '0');
+            const zoneName = `ZF${zoneNumber}`;
+            const zone = await createFunctionalZone(building.id, {
+              name: zoneName,
+              description: `Zone fonctionnelle ${z} du ${building.name}`
+            });
+
+            if (zone) {
+              console.log(`✅ Zone créée: ${zone.name}`);
+              
+              for (let s = 1; s <= shutterCount; s++) {
+                const shutterNumber = String(s).padStart(2, '0');
+                const shutterType = s <= Math.ceil(shutterCount / 2) ? 'high' : 'low';
+                const shutterPrefix = shutterType === 'high' ? 'VH' : 'VB';
+                const shutterName = `${shutterPrefix}${shutterNumber}`;
+                
+                const shutter = await createShutter(zone.id, {
+                  name: shutterName,
+                  type: shutterType,
+                  referenceFlow: 0,
+                  measuredFlow: 0,
+                  remarks: `Volet ${shutterType === 'high' ? 'haut' : 'bas'} ${s} de la ${zone.name}`
+                });
+
+                if (shutter) {
+                  console.log(`✅ Volet créé: ${shutter.name}`);
+                }
+              }
+            }
+          }
+        }
+      }
+      
+      console.log('🎉 Structure prédéfinie créée avec succès !');
+    } catch (error) {
+      console.error('❌ Erreur lors de la création de la structure:', error);
+      Alert.alert('Erreur', 'Erreur lors de la création de la structure prédéfinie');
+    }
+  };
+
   const handleSubmitProject = async () => {
     if (!validateForm()) return;
 
@@ -226,6 +296,12 @@ export default function ProjectsScreen() {
       
       if (project) {
         console.log('✅ Projet créé avec succès:', project.id);
+        
+        // NOUVEAU : Créer la structure prédéfinie si demandée
+        if (createWithStructure) {
+          await createProjectStructure(project);
+        }
+        
         setCreateModalVisible(false);
         resetForm();
         
@@ -528,7 +604,7 @@ export default function ProjectsScreen() {
         }
       />
 
-      {/* NOUVEAU : Encart d'information sur le taux de conformité */}
+      {/* Encart d'information sur le taux de conformité */}
       <TouchableOpacity 
         style={styles.complianceInfoCard}
         onPress={() => setComplianceInfoModalVisible(true)}
@@ -599,7 +675,7 @@ export default function ProjectsScreen() {
         )}
       </View>
 
-      {/* Modal de création de projet */}
+      {/* Modal de création de projet avec structure prédéfinie */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -649,6 +725,99 @@ export default function ProjectsScreen() {
                 placeholder="JJ/MM/AAAA"
                 error={errors.endDate}
               />
+
+              {/* NOUVEAU : Section structure prédéfinie */}
+              <View style={styles.structureSection}>
+                <TouchableOpacity 
+                  style={styles.structureToggle}
+                  onPress={() => setCreateWithStructure(!createWithStructure)}
+                >
+                  <View style={styles.structureToggleContent}>
+                    {createWithStructure ? (
+                      <CheckSquare size={20} color={theme.colors.primary} />
+                    ) : (
+                      <Square size={20} color={theme.colors.textTertiary} />
+                    )}
+                    <Text style={styles.structureToggleText}>
+                      Créer avec une structure prédéfinie
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+                
+                <Text style={styles.structureDescription}>
+                  Génère automatiquement des bâtiments, zones et volets pour commencer rapidement
+                </Text>
+
+                {createWithStructure && (
+                  <View style={styles.structureOptions}>
+                    <View style={styles.structureRow}>
+                      <Text style={styles.structureLabel}>Nombre de bâtiments :</Text>
+                      <View style={styles.counterContainer}>
+                        <TouchableOpacity 
+                          style={styles.counterButton}
+                          onPress={() => setBuildingCount(Math.max(1, buildingCount - 1))}
+                        >
+                          <Text style={styles.counterButtonText}>-</Text>
+                        </TouchableOpacity>
+                        <Text style={styles.counterValue}>{buildingCount}</Text>
+                        <TouchableOpacity 
+                          style={styles.counterButton}
+                          onPress={() => setBuildingCount(Math.min(5, buildingCount + 1))}
+                        >
+                          <Text style={styles.counterButtonText}>+</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+
+                    <View style={styles.structureRow}>
+                      <Text style={styles.structureLabel}>Zones par bâtiment :</Text>
+                      <View style={styles.counterContainer}>
+                        <TouchableOpacity 
+                          style={styles.counterButton}
+                          onPress={() => setZoneCount(Math.max(1, zoneCount - 1))}
+                        >
+                          <Text style={styles.counterButtonText}>-</Text>
+                        </TouchableOpacity>
+                        <Text style={styles.counterValue}>{zoneCount}</Text>
+                        <TouchableOpacity 
+                          style={styles.counterButton}
+                          onPress={() => setZoneCount(Math.min(10, zoneCount + 1))}
+                        >
+                          <Text style={styles.counterButtonText}>+</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+
+                    <View style={styles.structureRow}>
+                      <Text style={styles.structureLabel}>Volets par zone :</Text>
+                      <View style={styles.counterContainer}>
+                        <TouchableOpacity 
+                          style={styles.counterButton}
+                          onPress={() => setShutterCount(Math.max(1, shutterCount - 1))}
+                        >
+                          <Text style={styles.counterButtonText}>-</Text>
+                        </TouchableOpacity>
+                        <Text style={styles.counterValue}>{shutterCount}</Text>
+                        <TouchableOpacity 
+                          style={styles.counterButton}
+                          onPress={() => setShutterCount(Math.min(20, shutterCount + 1))}
+                        >
+                          <Text style={styles.counterButtonText}>+</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+
+                    <View style={styles.structurePreview}>
+                      <Text style={styles.structurePreviewTitle}>Aperçu de la structure :</Text>
+                      <Text style={styles.structurePreviewText}>
+                        • {buildingCount} bâtiment{buildingCount > 1 ? 's' : ''}{'\n'}
+                        • {buildingCount * zoneCount} zone{buildingCount * zoneCount > 1 ? 's' : ''} au total{'\n'}
+                        • {buildingCount * zoneCount * shutterCount} volet{buildingCount * zoneCount * shutterCount > 1 ? 's' : ''} au total
+                      </Text>
+                    </View>
+                  </View>
+                )}
+              </View>
             </ScrollView>
 
             <View style={styles.modalFooter}>
@@ -669,7 +838,7 @@ export default function ProjectsScreen() {
         </View>
       </Modal>
 
-      {/* NOUVEAU : Modal d'information sur le taux de conformité */}
+      {/* Modal d'information sur le taux de conformité */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -693,7 +862,7 @@ export default function ProjectsScreen() {
               <Text style={styles.modalText}>
                 <Text style={styles.modalBold}>Le taux de conformité affiché dans l'aperçu des projets n'a aucune valeur réglementaire.</Text>
                 {'\n\n'}
-                Il s'agit uniquement d\'un indicateur visuel pour aider à suivre globalement l'état des volets d\'un projet.
+                Il s'agit uniquement d'un indicateur visuel pour aider à suivre globalement l'état des volets d'un projet.
                 {'\n\n'}
                 Ce taux n'est défini nulle part dans la norme NF S61-933.
                 {'\n\n'}
@@ -766,7 +935,7 @@ const createStyles = (theme: any) => StyleSheet.create({
   actionButton: {
     padding: 8,
   },
-  // NOUVEAU : Styles pour l'encart d'information sur le taux de conformité
+  // Styles pour l'encart d'information sur le taux de conformité
   complianceInfoCard: {
     backgroundColor: theme.colors.warning + '20',
     borderLeftWidth: 4,
@@ -1014,9 +1183,8 @@ const createStyles = (theme: any) => StyleSheet.create({
     borderRadius: 20,
     width: '100%',
     maxWidth: 400,
-    maxHeight: '80%',
+    maxHeight: '90%',
   },
-  // NOUVEAU : Modal spécifique pour l'information sur le taux de conformité
   complianceModalContent: {
     backgroundColor: theme.colors.surface,
     borderRadius: 16,
@@ -1045,7 +1213,7 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   modalBody: {
     padding: 20,
-    maxHeight: 400,
+    maxHeight: 500,
   },
   modalScrollView: {
     maxHeight: 400,
@@ -1070,5 +1238,93 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   modalButton: {
     flex: 1,
+  },
+  // NOUVEAU : Styles pour la section structure prédéfinie
+  structureSection: {
+    marginTop: 16,
+    padding: 16,
+    backgroundColor: theme.colors.surfaceSecondary,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  structureToggle: {
+    marginBottom: 8,
+  },
+  structureToggleContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  structureToggleText: {
+    fontSize: 16,
+    fontFamily: 'Inter-SemiBold',
+    color: theme.colors.text,
+  },
+  structureDescription: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: theme.colors.textSecondary,
+    marginBottom: 16,
+    lineHeight: 20,
+  },
+  structureOptions: {
+    gap: 16,
+  },
+  structureRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  structureLabel: {
+    fontSize: 14,
+    fontFamily: 'Inter-Medium',
+    color: theme.colors.text,
+    flex: 1,
+  },
+  counterContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  counterButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: theme.colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  counterButtonText: {
+    fontSize: 18,
+    fontFamily: 'Inter-Bold',
+    color: '#ffffff',
+  },
+  counterValue: {
+    fontSize: 16,
+    fontFamily: 'Inter-Bold',
+    color: theme.colors.text,
+    minWidth: 24,
+    textAlign: 'center',
+  },
+  structurePreview: {
+    marginTop: 16,
+    padding: 12,
+    backgroundColor: theme.colors.primary + '20',
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: theme.colors.primary,
+  },
+  structurePreviewTitle: {
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
+    color: theme.colors.primary,
+    marginBottom: 8,
+  },
+  structurePreviewText: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: theme.colors.primary,
+    lineHeight: 20,
   },
 });
