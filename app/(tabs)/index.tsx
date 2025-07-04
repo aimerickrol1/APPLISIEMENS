@@ -299,49 +299,58 @@ export default function ProjectsScreen() {
               name: buildingData.name.trim()
             });
 
-            if (building && buildingData.zones.length > 0) {
-              console.log(`✅ Bâtiment créé avec ID: ${building.id}`);
-              
-              for (const zoneData of buildingData.zones) {
-                if (zoneData.name.trim()) {
-                  console.log(`🏢 Création de la zone: ${zoneData.name}`);
-                  const zone = await createFunctionalZone(building.id, {
-                    name: zoneData.name.trim()
-                  });
+            // CORRIGÉ : Séparer la vérification de création du bâtiment de la vérification des zones
+            if (!building) {
+              console.error(`❌ Erreur: Échec de la création du bâtiment "${buildingData.name}"`);
+              continue; // Passer au bâtiment suivant
+            }
 
-                  if (zone) {
-                    console.log(`✅ Zone créée avec ID: ${zone.id}`);
-                    
-                    // Créer les volets hauts (VH)
-                    for (let i = 1; i <= zoneData.highShutters; i++) {
-                      console.log(`🔼 Création du volet haut VH${i.toString().padStart(2, '0')}`);
-                      const shutterHigh = await createShutter(zone.id, {
-                        name: `VH${i.toString().padStart(2, '0')}`,
-                        type: 'high',
-                        referenceFlow: 0,
-                        measuredFlow: 0
-                      });
-                      console.log(`✅ Volet haut créé avec ID: ${shutterHigh?.id}`);
-                    }
+            console.log(`✅ Bâtiment créé avec ID: ${building.id}`);
 
-                    // Créer les volets bas (VB)
-                    for (let i = 1; i <= zoneData.lowShutters; i++) {
-                      console.log(`🔽 Création du volet bas VB${i.toString().padStart(2, '0')}`);
-                      const shutterLow = await createShutter(zone.id, {
-                        name: `VB${i.toString().padStart(2, '0')}`,
-                        type: 'low',
-                        referenceFlow: 0,
-                        measuredFlow: 0
-                      });
-                      console.log(`✅ Volet bas créé avec ID: ${shutterLow?.id}`);
-                    }
-                  } else {
-                    console.error('❌ Erreur: Zone non créée');
+            // Vérifier s'il y a des zones à créer
+            if (buildingData.zones.length === 0) {
+              console.log(`ℹ️ Aucune zone définie pour le bâtiment "${buildingData.name}"`);
+              continue; // Passer au bâtiment suivant
+            }
+
+            // Créer les zones
+            for (const zoneData of buildingData.zones) {
+              if (zoneData.name.trim()) {
+                console.log(`🏢 Création de la zone: ${zoneData.name}`);
+                const zone = await createFunctionalZone(building.id, {
+                  name: zoneData.name.trim()
+                });
+
+                if (zone) {
+                  console.log(`✅ Zone créée avec ID: ${zone.id}`);
+                  
+                  // Créer les volets hauts (VH)
+                  for (let i = 1; i <= zoneData.highShutters; i++) {
+                    console.log(`🔼 Création du volet haut VH${i.toString().padStart(2, '0')}`);
+                    const shutterHigh = await createShutter(zone.id, {
+                      name: `VH${i.toString().padStart(2, '0')}`,
+                      type: 'high',
+                      referenceFlow: 0,
+                      measuredFlow: 0
+                    });
+                    console.log(`✅ Volet haut créé avec ID: ${shutterHigh?.id}`);
                   }
+
+                  // Créer les volets bas (VB)
+                  for (let i = 1; i <= zoneData.lowShutters; i++) {
+                    console.log(`🔽 Création du volet bas VB${i.toString().padStart(2, '0')}`);
+                    const shutterLow = await createShutter(zone.id, {
+                      name: `VB${i.toString().padStart(2, '0')}`,
+                      type: 'low',
+                      referenceFlow: 0,
+                      measuredFlow: 0
+                    });
+                    console.log(`✅ Volet bas créé avec ID: ${shutterLow?.id}`);
+                  }
+                } else {
+                  console.error(`❌ Erreur: Échec de la création de la zone "${zoneData.name}"`);
                 }
               }
-            } else {
-              console.error('❌ Erreur: Bâtiment non créé');
             }
           }
         }
