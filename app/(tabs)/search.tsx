@@ -549,7 +549,7 @@ export default function SearchScreen() {
                 </View>
               </View>
 
-              {/* NOUVEAU : Filtre par niveau de conformité */}
+              {/* NOUVEAU : Filtre par niveau de conformité - HORIZONTAL */}
               <View style={styles.complianceFilterSection}>
                 <Text style={styles.complianceFilterTitle}>📊 Niveau de conformité</Text>
                 <View style={styles.complianceFilterButtons}>
@@ -1032,57 +1032,58 @@ const createStyles = (theme: any) => StyleSheet.create({
     height: 8,
     borderRadius: 4,
   },
-  // NOUVEAU : Styles pour le filtre de conformité
+  // CORRIGÉ : Styles pour le filtre de conformité - HORIZONTAL
   complianceFilterSection: {
     backgroundColor: theme.colors.surfaceSecondary,
     borderRadius: 8,
     padding: 16,
     borderWidth: 1,
     borderColor: theme.colors.border,
+    marginTop: 12,
   },
   complianceFilterTitle: {
     fontSize: 14,
     fontFamily: 'Inter-SemiBold',
-    color: theme.colors.text,
+    color: theme.colors.primary,
     marginBottom: 12,
   },
   complianceFilterButtons: {
-    flexDirection: 'column',
+    flexDirection: 'row',
     gap: 8,
   },
   complianceFilterButton: {
+    flex: 1,
     paddingVertical: 10,
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
     borderRadius: 8,
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   complianceFilterButtonActive: {
-    backgroundColor: theme.colors.primary + '20',
+    backgroundColor: theme.colors.primary,
     borderColor: theme.colors.primary,
   },
   complianceFilterButtonContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 4,
   },
   complianceFilterButtonText: {
-    fontSize: 13,
+    fontSize: 10,
     fontFamily: 'Inter-Medium',
     color: theme.colors.textSecondary,
+    textAlign: 'center',
   },
   complianceFilterButtonTextActive: {
-    color: theme.colors.primary,
-    fontFamily: 'Inter-SemiBold',
+    color: '#ffffff',
   },
   complianceFilterIndicator: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginRight: 8,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
   searchContainer: {
     backgroundColor: theme.colors.surface,
