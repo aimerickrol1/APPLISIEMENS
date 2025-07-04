@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Alert, Linking, Platform } from 'react-native';
-import { Info, ChevronRight, Shield, Smartphone, CircleCheck as CheckCircle, FileText, Calculator, Sparkles, X, TriangleAlert as AlertTriangle } from 'lucide-react-native';
+import { Info, ChevronRight, Shield, Smartphone, CircleCheck as CheckCircle, FileText, Calculator, Sparkles, X } from 'lucide-react-native';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/Button';
 import * as WebBrowser from 'expo-web-browser';
@@ -14,7 +14,6 @@ export default function AboutScreen() {
   const [privacyModalVisible, setPrivacyModalVisible] = useState(false);
   const [calculationsModalVisible, setCalculationsModalVisible] = useState(false);
   const [upcomingFeaturesModalVisible, setUpcomingFeaturesModalVisible] = useState(false);
-  const [complianceRateModalVisible, setComplianceRateModalVisible] = useState(false);
 
   const appVersion = "1.1.0";
 
@@ -34,10 +33,6 @@ export default function AboutScreen() {
     setUpcomingFeaturesModalVisible(true);
   };
 
-  const handleComplianceRatePress = () => {
-    setComplianceRateModalVisible(true);
-  };
-
   const handleContactPress = () => {
     Alert.alert(
       strings.contact,
@@ -55,7 +50,7 @@ export default function AboutScreen() {
       } else {
         const result = await WebBrowser.openBrowserAsync(pdfUrl);
         
-        if (result.type === 'cancel' || result.type === 'dismiss') {
+        if (result.type === 'cancel' || result.type === 'dismiss')  {
           console.log('Navigateur fermé');
         }
       }
@@ -149,14 +144,6 @@ export default function AboutScreen() {
             'Formules et algorithmes utilisés',
             handleCalculationsPress
           )}
-
-          {/* NOUVEAU : Encart d'information sur le taux de conformité */}
-          {renderInfoItem(
-            <AlertTriangle size={20} color={theme.colors.warning} />,
-            'Taux de conformité affiché',
-            'Indicateur visuel sans valeur réglementaire',
-            handleComplianceRatePress
-          )}
         </View>
 
         {/* Section Prochaines nouveautés */}
@@ -237,124 +224,6 @@ export default function AboutScreen() {
               onPress={() => setPrivacyModalVisible(false)}
               style={styles.modalButton}
             />
-          </View>
-        </View>
-      </Modal>
-
-      {/* NOUVEAU : Modal Taux de conformité */}
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={complianceRateModalVisible}
-        onRequestClose={() => setComplianceRateModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.complianceRateModalContent}>
-            <View style={styles.modalHeader}>
-              <AlertTriangle size={32} color={theme.colors.warning} />
-              <Text style={styles.modalTitle}>Taux de conformité affiché</Text>
-              <TouchableOpacity 
-                onPress={() => setComplianceRateModalVisible(false)}
-                style={styles.closeButton}
-              >
-                <X size={20} color={theme.colors.textSecondary} />
-              </TouchableOpacity>
-            </View>
-            
-            <ScrollView 
-              style={styles.complianceRateScrollView} 
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.complianceRateScrollContent}
-            >
-              {/* Avertissement principal */}
-              <View style={styles.warningSection}>
-                <Text style={styles.warningTitle}>⚠️ Avertissement important</Text>
-                <Text style={styles.warningText}>
-                  Le taux de conformité affiché dans l'aperçu des projets <Text style={styles.warningBold}>n'a aucune valeur réglementaire</Text>.
-                  {'\n\n'}
-                  Il s'agit uniquement d\'un <Text style={styles.warningBold}>indicateur visuel</Text> pour aider à suivre globalement l'état des volets d'un projet.
-                  {'\n\n'}
-                  Ce taux <Text style={styles.warningBold}>n'est défini nulle part dans la norme NF S61-933</Text>.
-                </Text>
-              </View>
-
-              {/* Logique de calcul */}
-              <View style={styles.logicSection}>
-                <Text style={styles.logicTitle}>🧮 Logique de calcul utilisée</Text>
-                <Text style={styles.logicDescription}>
-                  Le taux affiché correspond au pourcentage de volets "Fonctionnels" par rapport au nombre total de volets du projet :
-                </Text>
-                
-                <View style={styles.formulaContainer}>
-                  <Text style={styles.formulaText}>
-                    Taux = (Nombre de volets fonctionnels / Nombre total de volets) × 100
-                  </Text>
-                </View>
-
-                <Text style={styles.logicNote}>
-                  Seuls les volets avec un statut "Fonctionnel" (écart ≤ ±10%) sont comptabilisés dans le numérateur.
-                </Text>
-              </View>
-
-              {/* Signification des couleurs */}
-              <View style={styles.colorsSection}>
-                <Text style={styles.colorsTitle}>🎨 Signification des couleurs</Text>
-                
-                <View style={styles.colorItem}>
-                  <View style={[styles.colorDot, { backgroundColor: '#10B981' }]} />
-                  <View style={styles.colorContent}>
-                    <Text style={styles.colorLabel}>Vert (≥ 80%)</Text>
-                    <Text style={styles.colorDescription}>
-                      Projet avec un bon niveau de conformité globale
-                    </Text>
-                  </View>
-                </View>
-
-                <View style={styles.colorItem}>
-                  <View style={[styles.colorDot, { backgroundColor: '#F59E0B' }]} />
-                  <View style={styles.colorContent}>
-                    <Text style={styles.colorLabel}>Orange (60% - 79%)</Text>
-                    <Text style={styles.colorDescription}>
-                      Projet avec un niveau de conformité moyen, attention requise
-                    </Text>
-                  </View>
-                </View>
-
-                <View style={styles.colorItem}>
-                  <View style={[styles.colorDot, { backgroundColor: '#EF4444' }]} />
-                  <View style={styles.colorContent}>
-                    <Text style={styles.colorLabel}>Rouge ({'<'} 60%)</Text>
-                    <Text style={styles.colorDescription}>
-                      Projet nécessitant une attention particulière
-                    </Text>
-                  </View>
-                </View>
-              </View>
-
-              {/* Rappel réglementaire */}
-              <View style={styles.reminderSection}>
-                <Text style={styles.reminderTitle}>📋 Rappel réglementaire</Text>
-                <Text style={styles.reminderText}>
-                  La conformité réglementaire se base uniquement sur l'évaluation individuelle de chaque volet selon les critères de la norme NF S61-933 Annexe H :
-                  {'\n\n'}
-                  • <Text style={{ color: '#10B981', fontWeight: 'bold' }}>Fonctionnel</Text> : écart ≤ ±10%
-                  {'\n'}
-                  • <Text style={{ color: '#F59E0B', fontWeight: 'bold' }}>Acceptable</Text> : écart entre ±10% et ±20%
-                  {'\n'}
-                  • <Text style={{ color: '#EF4444', fontWeight: 'bold' }}>Non conforme</Text> : écart > ±20%
-                  {'\n\n'}
-                  Chaque volet doit être évalué individuellement selon ces critères officiels.
-                </Text>
-              </View>
-            </ScrollView>
-
-            <View style={styles.modalFooter}>
-              <Button
-                title="J'ai compris"
-                onPress={() => setComplianceRateModalVisible(false)}
-                style={styles.modalButton}
-              />
-            </View>
           </View>
         </View>
       </Modal>
@@ -813,16 +682,6 @@ const createStyles = (theme: any) => StyleSheet.create({
     maxHeight: '85%',
     marginVertical: 40,
   },
-  // NOUVEAU : Modal du taux de conformité
-  complianceRateModalContent: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 16,
-    padding: 20,
-    width: '100%',
-    maxWidth: 650,
-    maxHeight: '85%',
-    marginVertical: 40,
-  },
   modalHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -860,14 +719,6 @@ const createStyles = (theme: any) => StyleSheet.create({
   upcomingScrollContent: {
     paddingBottom: 20,
   },
-  // NOUVEAU : ScrollView pour le taux de conformité
-  complianceRateScrollView: {
-    maxHeight: 500,
-    paddingBottom: 10,
-  },
-  complianceRateScrollContent: {
-    paddingBottom: 20,
-  },
   modalText: {
     fontSize: 14,
     fontFamily: 'Inter-Regular',
@@ -885,119 +736,6 @@ const createStyles = (theme: any) => StyleSheet.create({
   modalFooter: {
     marginTop: 16,
     paddingTop: 12,
-  },
-
-  // NOUVEAU : Styles pour le modal du taux de conformité
-  warningSection: {
-    backgroundColor: theme.colors.warning + '20',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
-    borderLeftWidth: 4,
-    borderLeftColor: theme.colors.warning,
-  },
-  warningTitle: {
-    fontSize: 16,
-    fontFamily: 'Inter-SemiBold',
-    color: theme.colors.warning,
-    marginBottom: 12,
-  },
-  warningText: {
-    fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: theme.colors.warning,
-    lineHeight: 20,
-  },
-  warningBold: {
-    fontFamily: 'Inter-SemiBold',
-  },
-  logicSection: {
-    marginBottom: 20,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.separator,
-  },
-  logicTitle: {
-    fontSize: 16,
-    fontFamily: 'Inter-SemiBold',
-    color: theme.colors.text,
-    marginBottom: 12,
-  },
-  logicDescription: {
-    fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: theme.colors.textSecondary,
-    lineHeight: 20,
-    marginBottom: 12,
-  },
-  logicNote: {
-    fontSize: 13,
-    fontFamily: 'Inter-Regular',
-    color: theme.colors.textSecondary,
-    lineHeight: 18,
-    fontStyle: 'italic',
-    marginTop: 8,
-  },
-  colorsSection: {
-    marginBottom: 20,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.separator,
-  },
-  colorsTitle: {
-    fontSize: 16,
-    fontFamily: 'Inter-SemiBold',
-    color: theme.colors.text,
-    marginBottom: 16,
-  },
-  colorItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 16,
-    backgroundColor: theme.colors.surfaceSecondary,
-    borderRadius: 8,
-    padding: 12,
-  },
-  colorDot: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    marginRight: 12,
-    marginTop: 2,
-  },
-  colorContent: {
-    flex: 1,
-  },
-  colorLabel: {
-    fontSize: 14,
-    fontFamily: 'Inter-SemiBold',
-    color: theme.colors.text,
-    marginBottom: 4,
-  },
-  colorDescription: {
-    fontSize: 13,
-    fontFamily: 'Inter-Regular',
-    color: theme.colors.textSecondary,
-    lineHeight: 18,
-  },
-  reminderSection: {
-    backgroundColor: theme.colors.primary + '20',
-    borderRadius: 12,
-    padding: 16,
-    borderLeftWidth: 4,
-    borderLeftColor: theme.colors.primary,
-  },
-  reminderTitle: {
-    fontSize: 16,
-    fontFamily: 'Inter-SemiBold',
-    color: theme.colors.primary,
-    marginBottom: 12,
-  },
-  reminderText: {
-    fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: theme.colors.primary,
-    lineHeight: 20,
   },
 
   // Styles pour le contenu des calculs
