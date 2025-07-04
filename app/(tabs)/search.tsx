@@ -14,12 +14,16 @@ import { useFocusEffect } from '@react-navigation/native';
 
 type SearchMode = 'simple' | 'hierarchical';
 type ShutterTypeFilter = 'all' | 'high' | 'low';
+// NOUVEAU : Type pour le filtre de conformité
+type ComplianceFilterType = 'all' | 'compliant' | 'acceptable' | 'non-compliant';
 
 interface HierarchicalFilter {
   projectId?: string;
   buildingId?: string;
   zoneId?: string;
   shutterType?: ShutterTypeFilter;
+  // NOUVEAU : Ajout du filtre de conformité
+  complianceType?: ComplianceFilterType;
 }
 
 export default function SearchScreen() {
@@ -102,8 +106,17 @@ export default function SearchScreen() {
             }
 
             for (const shutter of zone.shutters) {
+              // Filtre par type de volet
               if (hierarchicalFilter.shutterType && hierarchicalFilter.shutterType !== 'all') {
                 if (shutter.type !== hierarchicalFilter.shutterType) {
+                  continue;
+                }
+              }
+
+              // NOUVEAU : Filtre par niveau de conformité
+              if (hierarchicalFilter.complianceType && hierarchicalFilter.complianceType !== 'all') {
+                const compliance = calculateCompliance(shutter.referenceFlow, shutter.measuredFlow);
+                if (compliance.status !== hierarchicalFilter.complianceType) {
                   continue;
                 }
               }
@@ -200,6 +213,33 @@ export default function SearchScreen() {
     return { high, low, total };
   };
 
+  // NOUVEAU : Obtenir les statistiques de conformité
+  const getComplianceStats = () => {
+    const zone = getSelectedZone();
+    if (!zone) return { compliant: 0, acceptable: 0, nonCompliant: 0 };
+    
+    let compliant = 0;
+    let acceptable = 0;
+    let nonCompliant = 0;
+    
+    zone.shutters.forEach(shutter => {
+      const compliance = calculateCompliance(shutter.referenceFlow, shutter.measuredFlow);
+      switch (compliance.status) {
+        case 'compliant':
+          compliant++;
+          break;
+        case 'acceptable':
+          acceptable++;
+          break;
+        case 'non-compliant':
+          nonCompliant++;
+          break;
+      }
+    });
+    
+    return { compliant, acceptable, nonCompliant };
+  };
+
   const renderModeSelector = () => (
     <View style={styles.modeSelectorContainer}>
       <Text style={styles.modeSelectorTitle}>Mode de recherche</Text>
@@ -251,13 +291,14 @@ export default function SearchScreen() {
     const selectedBuilding = getSelectedBuilding();
     const selectedZone = getSelectedZone();
     const shutterStats = getZoneShutterStats();
+    const complianceStats = getComplianceStats();
 
     return (
       <View style={styles.hierarchicalContainer}>
         <View style={styles.hierarchicalHeader}>
           <Target size={20} color={theme.colors.primary} />
           <Text style={styles.hierarchicalTitle}>Filtres hiérarchiques</Text>
-          {(hierarchicalFilter.projectId || hierarchicalFilter.buildingId || hierarchicalFilter.zoneId || hierarchicalFilter.shutterType) && (
+          {(hierarchicalFilter.projectId || hierarchicalFilter.buildingId || hierarchicalFilter.zoneId || hierarchicalFilter.shutterType || hierarchicalFilter.complianceType) && (
             <TouchableOpacity style={styles.clearAllButton} onPress={clearHierarchicalFilter}>
               <X size={16} color={theme.colors.error} />
             </TouchableOpacity>
@@ -363,7 +404,8 @@ export default function SearchScreen() {
                         ...prev,
                         buildingId: building.id,
                         zoneId: undefined,
-                        shutterType: undefined
+                        shutterType: undefined,
+                        complianceType: undefined
                       }));
                       setExpandedSections({ projects: false, buildings: false, zones: false });
                     }}
@@ -425,7 +467,8 @@ export default function SearchScreen() {
                       setHierarchicalFilter(prev => ({
                         ...prev,
                         zoneId: zone.id,
-                        shutterType: 'all'
+                        shutterType: 'all',
+                        complianceType: 'all'
                       }));
                       setExpandedSections({ projects: false, buildings: false, zones: false });
                     }}
@@ -448,61 +491,139 @@ export default function SearchScreen() {
           </View>
 
           {selectedZone && (
-            <View style={styles.shutterTypeFilterSection}>
-              <Text style={styles.shutterTypeFilterTitle}>🔲 Type de volet</Text>
-              <View style={styles.shutterTypeButtons}>
-                <TouchableOpacity
-                  style={[
-                    styles.shutterTypeButton,
-                    (!hierarchicalFilter.shutterType || hierarchicalFilter.shutterType === 'all') && styles.shutterTypeButtonActive
-                  ]}
-                  onPress={() => setHierarchicalFilter(prev => ({ ...prev, shutterType: 'all' }))}
-                >
-                  <Text style={[
-                    styles.shutterTypeButtonText,
-                    (!hierarchicalFilter.shutterType || hierarchicalFilter.shutterType === 'all') && styles.shutterTypeButtonTextActive
-                  ]}>
-                    Tous ({shutterStats.total})
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[
-                    styles.shutterTypeButton,
-                    hierarchicalFilter.shutterType === 'high' && styles.shutterTypeButtonActive
-                  ]}
-                  onPress={() => setHierarchicalFilter(prev => ({ ...prev, shutterType: 'high' }))}
-                >
-                  <View style={styles.shutterTypeButtonContent}>
-                    <View style={[styles.shutterTypeIndicator, { backgroundColor: '#10B981' }]} />
+            <>
+              {/* Filtre par type de volet */}
+              <View style={styles.shutterTypeFilterSection}>
+                <Text style={styles.shutterTypeFilterTitle}>🔲 Type de volet</Text>
+                <View style={styles.shutterTypeButtons}>
+                  <TouchableOpacity
+                    style={[
+                      styles.shutterTypeButton,
+                      (!hierarchicalFilter.shutterType || hierarchicalFilter.shutterType === 'all') && styles.shutterTypeButtonActive
+                    ]}
+                    onPress={() => setHierarchicalFilter(prev => ({ ...prev, shutterType: 'all' }))}
+                  >
                     <Text style={[
                       styles.shutterTypeButtonText,
-                      hierarchicalFilter.shutterType === 'high' && styles.shutterTypeButtonTextActive
+                      (!hierarchicalFilter.shutterType || hierarchicalFilter.shutterType === 'all') && styles.shutterTypeButtonTextActive
                     ]}>
-                      VH ({shutterStats.high})
+                      Tous ({shutterStats.total})
                     </Text>
-                  </View>
-                </TouchableOpacity>
+                  </TouchableOpacity>
 
-                <TouchableOpacity
-                  style={[
-                    styles.shutterTypeButton,
-                    hierarchicalFilter.shutterType === 'low' && styles.shutterTypeButtonActive
-                  ]}
-                  onPress={() => setHierarchicalFilter(prev => ({ ...prev, shutterType: 'low' }))}
-                >
-                  <View style={styles.shutterTypeButtonContent}>
-                    <View style={[styles.shutterTypeIndicator, { backgroundColor: '#F59E0B' }]} />
-                    <Text style={[
-                      styles.shutterTypeButtonText,
-                      hierarchicalFilter.shutterType === 'low' && styles.shutterTypeButtonTextActive
-                    ]}>
-                      VB ({shutterStats.low})
-                    </Text>
-                  </View>
-                </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.shutterTypeButton,
+                      hierarchicalFilter.shutterType === 'high' && styles.shutterTypeButtonActive
+                    ]}
+                    onPress={() => setHierarchicalFilter(prev => ({ ...prev, shutterType: 'high' }))}
+                  >
+                    <View style={styles.shutterTypeButtonContent}>
+                      <View style={[styles.shutterTypeIndicator, { backgroundColor: '#10B981' }]} />
+                      <Text style={[
+                        styles.shutterTypeButtonText,
+                        hierarchicalFilter.shutterType === 'high' && styles.shutterTypeButtonTextActive
+                      ]}>
+                        VH ({shutterStats.high})
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.shutterTypeButton,
+                      hierarchicalFilter.shutterType === 'low' && styles.shutterTypeButtonActive
+                    ]}
+                    onPress={() => setHierarchicalFilter(prev => ({ ...prev, shutterType: 'low' }))}
+                  >
+                    <View style={styles.shutterTypeButtonContent}>
+                      <View style={[styles.shutterTypeIndicator, { backgroundColor: '#F59E0B' }]} />
+                      <Text style={[
+                        styles.shutterTypeButtonText,
+                        hierarchicalFilter.shutterType === 'low' && styles.shutterTypeButtonTextActive
+                      ]}>
+                        VB ({shutterStats.low})
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
+
+              {/* NOUVEAU : Filtre par niveau de conformité */}
+              <View style={styles.complianceFilterSection}>
+                <Text style={styles.complianceFilterTitle}>📊 Niveau de conformité</Text>
+                <View style={styles.complianceFilterButtons}>
+                  <TouchableOpacity
+                    style={[
+                      styles.complianceFilterButton,
+                      (!hierarchicalFilter.complianceType || hierarchicalFilter.complianceType === 'all') && styles.complianceFilterButtonActive
+                    ]}
+                    onPress={() => setHierarchicalFilter(prev => ({ ...prev, complianceType: 'all' }))}
+                  >
+                    <Text style={[
+                      styles.complianceFilterButtonText,
+                      (!hierarchicalFilter.complianceType || hierarchicalFilter.complianceType === 'all') && styles.complianceFilterButtonTextActive
+                    ]}>
+                      Tous ({shutterStats.total})
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.complianceFilterButton,
+                      hierarchicalFilter.complianceType === 'compliant' && styles.complianceFilterButtonActive
+                    ]}
+                    onPress={() => setHierarchicalFilter(prev => ({ ...prev, complianceType: 'compliant' }))}
+                  >
+                    <View style={styles.complianceFilterButtonContent}>
+                      <View style={[styles.complianceFilterIndicator, { backgroundColor: '#10B981' }]} />
+                      <Text style={[
+                        styles.complianceFilterButtonText,
+                        hierarchicalFilter.complianceType === 'compliant' && styles.complianceFilterButtonTextActive
+                      ]}>
+                        Fonctionnel ({complianceStats.compliant})
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.complianceFilterButton,
+                      hierarchicalFilter.complianceType === 'acceptable' && styles.complianceFilterButtonActive
+                    ]}
+                    onPress={() => setHierarchicalFilter(prev => ({ ...prev, complianceType: 'acceptable' }))}
+                  >
+                    <View style={styles.complianceFilterButtonContent}>
+                      <View style={[styles.complianceFilterIndicator, { backgroundColor: '#F59E0B' }]} />
+                      <Text style={[
+                        styles.complianceFilterButtonText,
+                        hierarchicalFilter.complianceType === 'acceptable' && styles.complianceFilterButtonTextActive
+                      ]}>
+                        Acceptable ({complianceStats.acceptable})
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.complianceFilterButton,
+                      hierarchicalFilter.complianceType === 'non-compliant' && styles.complianceFilterButtonActive
+                    ]}
+                    onPress={() => setHierarchicalFilter(prev => ({ ...prev, complianceType: 'non-compliant' }))}
+                  >
+                    <View style={styles.complianceFilterButtonContent}>
+                      <View style={[styles.complianceFilterIndicator, { backgroundColor: '#EF4444' }]} />
+                      <Text style={[
+                        styles.complianceFilterButtonText,
+                        hierarchicalFilter.complianceType === 'non-compliant' && styles.complianceFilterButtonTextActive
+                      ]}>
+                        Non conforme ({complianceStats.nonCompliant})
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </>
           )}
         </View>
       </View>
@@ -590,7 +711,21 @@ export default function SearchScreen() {
       
       if (hierarchicalFilter.shutterType && hierarchicalFilter.shutterType !== 'all') {
         const typeLabel = hierarchicalFilter.shutterType === 'high' ? 'volets hauts' : 'volets bas';
-        scope += ` (${typeLabel} uniquement)`;
+        scope += ` (${typeLabel}`;
+        
+        if (hierarchicalFilter.complianceType && hierarchicalFilter.complianceType !== 'all') {
+          const complianceLabel = 
+            hierarchicalFilter.complianceType === 'compliant' ? 'fonctionnels' :
+            hierarchicalFilter.complianceType === 'acceptable' ? 'acceptables' : 'non conformes';
+          scope += `, ${complianceLabel}`;
+        }
+        
+        scope += ')';
+      } else if (hierarchicalFilter.complianceType && hierarchicalFilter.complianceType !== 'all') {
+        const complianceLabel = 
+          hierarchicalFilter.complianceType === 'compliant' ? 'fonctionnels' :
+          hierarchicalFilter.complianceType === 'acceptable' ? 'acceptables' : 'non conformes';
+        scope += ` (volets ${complianceLabel})`;
       }
       
       return scope;
@@ -896,6 +1031,58 @@ const createStyles = (theme: any) => StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
+  },
+  // NOUVEAU : Styles pour le filtre de conformité
+  complianceFilterSection: {
+    backgroundColor: theme.colors.surfaceSecondary,
+    borderRadius: 8,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  complianceFilterTitle: {
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
+    color: theme.colors.text,
+    marginBottom: 12,
+  },
+  complianceFilterButtons: {
+    flexDirection: 'column',
+    gap: 8,
+  },
+  complianceFilterButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  complianceFilterButtonActive: {
+    backgroundColor: theme.colors.primary + '20',
+    borderColor: theme.colors.primary,
+  },
+  complianceFilterButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  complianceFilterButtonText: {
+    fontSize: 13,
+    fontFamily: 'Inter-Medium',
+    color: theme.colors.textSecondary,
+  },
+  complianceFilterButtonTextActive: {
+    color: theme.colors.primary,
+    fontFamily: 'Inter-SemiBold',
+  },
+  complianceFilterIndicator: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 8,
   },
   searchContainer: {
     backgroundColor: theme.colors.surface,

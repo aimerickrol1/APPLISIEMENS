@@ -12,6 +12,9 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAndroidBackButton } from '@/utils/BackHandler';
 
+// Type pour le filtre de conformité
+type ComplianceFilterType = 'all' | 'compliant' | 'acceptable' | 'non-compliant';
+
 export default function ZoneDetailScreen() {
   const { strings } = useLanguage();
   const { theme } = useTheme();
@@ -64,9 +67,11 @@ export default function ZoneDetailScreen() {
     return true;
   });
 
-  // États pour le filtre
+  // États pour les filtres
   const [filterVisible, setFilterVisible] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'high' | 'low'>('all');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'high' | 'low'>('all');
+  // NOUVEAU : Filtre de conformité
+  const [complianceFilter, setComplianceFilter] = useState<ComplianceFilterType>('all');
 
   // États pour le mode sélection
   const [selectionMode, setSelectionMode] = useState(false);
@@ -527,15 +532,17 @@ export default function ZoneDetailScreen() {
     
     let filtered = zone.shutters;
     
-    switch (filter) {
-      case 'high':
-        filtered = zone.shutters.filter(s => s.type === 'high');
-        break;
-      case 'low':
-        filtered = zone.shutters.filter(s => s.type === 'low');
-        break;
-      default:
-        filtered = zone.shutters;
+    // Filtrer par type de volet (VH/VB)
+    if (typeFilter !== 'all') {
+      filtered = filtered.filter(s => s.type === typeFilter);
+    }
+
+    // NOUVEAU : Filtrer par niveau de conformité
+    if (complianceFilter !== 'all') {
+      filtered = filtered.filter(s => {
+        const compliance = calculateCompliance(s.referenceFlow, s.measuredFlow);
+        return compliance.status === complianceFilter;
+      });
     }
 
     // Trier les favoris en premier
@@ -558,6 +565,32 @@ export default function ZoneDetailScreen() {
     const total = zone.shutters.length;
     
     return { high, low, total };
+  };
+
+  // NOUVEAU : Obtenir les statistiques de conformité
+  const getComplianceCounts = () => {
+    if (!zone) return { compliant: 0, acceptable: 0, nonCompliant: 0 };
+    
+    let compliant = 0;
+    let acceptable = 0;
+    let nonCompliant = 0;
+    
+    zone.shutters.forEach(shutter => {
+      const compliance = calculateCompliance(shutter.referenceFlow, shutter.measuredFlow);
+      switch (compliance.status) {
+        case 'compliant':
+          compliant++;
+          break;
+        case 'acceptable':
+          acceptable++;
+          break;
+        case 'non-compliant':
+          nonCompliant++;
+          break;
+      }
+    });
+    
+    return { compliant, acceptable, nonCompliant };
   };
 
   const renderShutter = ({ item }: { item: Shutter }) => {
@@ -745,6 +778,7 @@ export default function ZoneDetailScreen() {
 
   const filteredShutters = getFilteredShutters();
   const shutterCounts = getShutterCounts();
+  const complianceCounts = getComplianceCounts();
 
   return (
     <View style={styles.container}>
@@ -830,33 +864,81 @@ export default function ZoneDetailScreen() {
 
         {/* Barre de filtre */}
         {filterVisible && (
-          <View style={styles.filterBar}>
-            <TouchableOpacity
-              style={[styles.filterButton, filter === 'all' && styles.filterButtonActive]}
-              onPress={() => setFilter('all')}
-            >
-              <Text style={[styles.filterButtonText, filter === 'all' && styles.filterButtonTextActive]}>
-                {strings.all} ({shutterCounts.total})
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.filterButton, filter === 'high' && styles.filterButtonActive]}
-              onPress={() => setFilter('high')}
-            >
-              <View style={[styles.filterIndicator, { backgroundColor: '#10B981' }]} />
-              <Text style={[styles.filterButtonText, filter === 'high' && styles.filterButtonTextActive]}>
-                VH ({shutterCounts.high})
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.filterButton, filter === 'low' && styles.filterButtonActive]}
-              onPress={() => setFilter('low')}
-            >
-              <View style={[styles.filterIndicator, { backgroundColor: '#F59E0B' }]} />
-              <Text style={[styles.filterButtonText, filter === 'low' && styles.filterButtonTextActive]}>
-                VB ({shutterCounts.low})
-              </Text>
-            </TouchableOpacity>
+          <View style={styles.filtersContainer}>
+            {/* Filtre par type de volet (VH/VB) */}
+            <View style={styles.filterBar}>
+              <TouchableOpacity
+                style={[styles.filterButton, typeFilter === 'all' && styles.filterButtonActive]}
+                onPress={() => setTypeFilter('all')}
+              >
+                <Text style={[styles.filterButtonText, typeFilter === 'all' && styles.filterButtonTextActive]}>
+                  {strings.all} ({shutterCounts.total})
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.filterButton, typeFilter === 'high' && styles.filterButtonActive]}
+                onPress={() => setTypeFilter('high')}
+              >
+                <View style={[styles.filterIndicator, { backgroundColor: '#10B981' }]} />
+                <Text style={[styles.filterButtonText, typeFilter === 'high' && styles.filterButtonTextActive]}>
+                  VH ({shutterCounts.high})
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.filterButton, typeFilter === 'low' && styles.filterButtonActive]}
+                onPress={() => setTypeFilter('low')}
+              >
+                <View style={[styles.filterIndicator, { backgroundColor: '#F59E0B' }]} />
+                <Text style={[styles.filterButtonText, typeFilter === 'low' && styles.filterButtonTextActive]}>
+                  VB ({shutterCounts.low})
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* NOUVEAU : Filtre par niveau de conformité */}
+            <View style={styles.complianceFilterBar}>
+              <Text style={styles.complianceFilterTitle}>Niveau de conformité</Text>
+              <View style={styles.complianceFilterButtons}>
+                <TouchableOpacity
+                  style={[styles.complianceFilterButton, complianceFilter === 'all' && styles.complianceFilterButtonActive]}
+                  onPress={() => setComplianceFilter('all')}
+                >
+                  <Text style={[styles.complianceFilterButtonText, complianceFilter === 'all' && styles.complianceFilterButtonTextActive]}>
+                    Tous ({shutterCounts.total})
+                  </Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={[styles.complianceFilterButton, complianceFilter === 'compliant' && styles.complianceFilterButtonActive]}
+                  onPress={() => setComplianceFilter('compliant')}
+                >
+                  <View style={[styles.complianceFilterIndicator, { backgroundColor: '#10B981' }]} />
+                  <Text style={[styles.complianceFilterButtonText, complianceFilter === 'compliant' && styles.complianceFilterButtonTextActive]}>
+                    Fonctionnel ({complianceCounts.compliant})
+                  </Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={[styles.complianceFilterButton, complianceFilter === 'acceptable' && styles.complianceFilterButtonActive]}
+                  onPress={() => setComplianceFilter('acceptable')}
+                >
+                  <View style={[styles.complianceFilterIndicator, { backgroundColor: '#F59E0B' }]} />
+                  <Text style={[styles.complianceFilterButtonText, complianceFilter === 'acceptable' && styles.complianceFilterButtonTextActive]}>
+                    Acceptable ({complianceCounts.acceptable})
+                  </Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={[styles.complianceFilterButton, complianceFilter === 'non-compliant' && styles.complianceFilterButtonActive]}
+                  onPress={() => setComplianceFilter('non-compliant')}
+                >
+                  <View style={[styles.complianceFilterIndicator, { backgroundColor: '#EF4444' }]} />
+                  <Text style={[styles.complianceFilterButtonText, complianceFilter === 'non-compliant' && styles.complianceFilterButtonTextActive]}>
+                    Non conforme ({complianceCounts.nonCompliant})
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
         )}
 
@@ -874,9 +956,9 @@ export default function ZoneDetailScreen() {
           </View>
         ) : filteredShutters.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyTitle}>Aucun volet de ce type</Text>
+            <Text style={styles.emptyTitle}>Aucun volet correspondant aux filtres</Text>
             <Text style={styles.emptySubtitle}>
-              Aucun volet {filter === 'high' ? 'haut' : 'bas'} dans cette zone
+              Modifiez les filtres pour voir plus de volets
             </Text>
           </View>
         ) : (
@@ -1105,14 +1187,18 @@ const createStyles = (theme: any) => StyleSheet.create({
     color: theme.colors.success,
     flex: 1,
   },
-  // Styles pour la barre de filtre
+  // NOUVEAU : Conteneur pour tous les filtres
+  filtersContainer: {
+    backgroundColor: theme.colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+    paddingBottom: 8,
+  },
+  // Styles pour la barre de filtre par type
   filterBar: {
     flexDirection: 'row',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: theme.colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
     gap: 8,
   },
   filterButton: {
@@ -1144,6 +1230,50 @@ const createStyles = (theme: any) => StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
+  },
+  // NOUVEAU : Styles pour le filtre de conformité
+  complianceFilterBar: {
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+  },
+  complianceFilterTitle: {
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
+    color: theme.colors.text,
+    marginBottom: 8,
+  },
+  complianceFilterButtons: {
+    flexDirection: 'column',
+    gap: 8,
+  },
+  complianceFilterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: theme.colors.surfaceSecondary,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    gap: 8,
+  },
+  complianceFilterButtonActive: {
+    backgroundColor: theme.colors.primary + '20',
+    borderColor: theme.colors.primary,
+  },
+  complianceFilterButtonText: {
+    fontSize: 14,
+    fontFamily: 'Inter-Medium',
+    color: theme.colors.textSecondary,
+  },
+  complianceFilterButtonTextActive: {
+    color: theme.colors.primary,
+    fontFamily: 'Inter-SemiBold',
+  },
+  complianceFilterIndicator: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
   },
   emptyContainer: {
     flex: 1,
