@@ -36,8 +36,8 @@ export default function ProjectsScreen() {
   const { strings } = useLanguage();
   const { theme } = useTheme();
   const { 
-    projects, 
-    favoriteProjects: favProjects, 
+    projects,
+    favoriteProjects: favProjects,
     createProject, 
     deleteProject, 
     setFavoriteProjects,
@@ -48,13 +48,13 @@ export default function ProjectsScreen() {
   } = useStorage();
   
   const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [favoriteProjects, setFavoriteProjectsState] = useState<Set<string>>(new Set());
   
   // États pour le mode sélection
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedProjects, setSelectedProjects] = useState<Set<string>>(new Set());
 
-  // États pour le modal de création
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
   
@@ -77,6 +77,16 @@ export default function ProjectsScreen() {
   // Utiliser le hook pour gérer le double appui sur le bouton retour pour quitter
   useDoubleBackToExit();
   
+  // Convertir favoriteProjects array to Set pour .has() method
+  useEffect(() => {
+    setFavoriteProjectsState(new Set(favProjects));
+  }, [favProjects]);
+
+  useEffect(() => {
+    setLoading(false);
+  }, [projects]);
+
+  // Fonctions pour la prédéfinition de structure
   // Convertir favoriteProjects array to Set pour .has() method
   useEffect(() => {
     setFavoriteProjectsState(new Set(favProjects));
@@ -681,17 +691,29 @@ export default function ProjectsScreen() {
           </View>
         )}
 
-        {/* Date de création */}
-        <View style={styles.projectFooter}>
-          <Text style={styles.createdText}>
-            Créé le {new Date(item.createdAt).toLocaleDateString('fr-FR', { 
-              day: 'numeric', 
-              month: 'short', 
-              year: 'numeric' 
-            })}
-          </Text>
+      <View style={styles.complianceInfoCard}>
+        <Text style={styles.complianceInfoTitle}>⚠️ À propos du taux de conformité</Text>
+        <Text style={styles.complianceInfoText}>
+          Le taux de conformité affiché n'a aucune valeur réglementaire. Il s'agit simplement d'un indicateur visuel pour aider à suivre globalement les volets d'un projet.
+        </Text>
+        <Text style={styles.complianceInfoText}>
+          Ce taux n'est défini nulle part dans la norme NF S61-933. La norme impose uniquement que chaque volet respecte un écart de ±15% entre le débit mesuré et le débit de référence.
+        </Text>
+        <View style={styles.complianceColorLegend}>
+          <View style={styles.colorLegendItem}>
+            <View style={[styles.colorDot, { backgroundColor: '#10B981' }]}/>
+            <Text style={styles.colorLegendText}>≥80% : Majorité des volets fonctionnels</Text>
+          </View>
+          <View style={styles.colorLegendItem}>
+            <View style={[styles.colorDot, { backgroundColor: '#F59E0B' }]}/>
+            <Text style={styles.colorLegendText}>60-79% : Situation intermédiaire</Text>
+          </View>
+          <View style={styles.colorLegendItem}>
+            <View style={[styles.colorDot, { backgroundColor: '#EF4444' }]}/>
+            <Text style={styles.colorLegendText}>{'<'}60% : Attention requise</Text>
+          </View>
         </View>
-      </TouchableOpacity>
+      </View>
     );
   };
 
@@ -950,61 +972,6 @@ export default function ProjectsScreen() {
                 label="Ville (optionnel)"
                 value={city}
                 onChangeText={setCity}
-                placeholder="Ex: Paris, Lyon, Marseille"
-              />
-
-              <DateInput
-                label="Date de début (optionnel)"
-                value={startDate}
-                onChangeText={setStartDate}
-                placeholder="JJ/MM/AAAA"
-                error={errors.startDate}
-              />
-
-              <DateInput
-                label="Date de fin (optionnel)"
-                value={endDate}
-                onChangeText={setEndDate}
-                placeholder="JJ/MM/AAAA"
-                error={errors.endDate}
-              />
-
-              {/* Section prédéfinition de structure */}
-              <View style={styles.predefinedToggleSection}>
-                <View style={styles.toggleHeader}>
-                  <Text style={styles.toggleTitle}>🏗️ Prédéfinir la structure (optionnel)</Text>
-                  <TouchableOpacity
-                    style={[styles.toggle, predefinedStructure.enabled && styles.toggleActive]}
-                    onPress={togglePredefinedStructure}
-                  >
-                    <View style={[styles.toggleThumb, predefinedStructure.enabled && styles.toggleThumbActive]} />
-                  </TouchableOpacity>
-                </View>
-                <Text style={styles.toggleDescription}>
-                  Créez automatiquement vos bâtiments, zones et volets
-                </Text>
-              </View>
-
-              {renderPredefinedStructure()}
-            </ScrollView>
-
-            <View style={styles.modalFooter}>
-              <Button
-                title="Annuler"
-                onPress={() => setCreateModalVisible(false)}
-                variant="secondary"
-                style={styles.modalButton}
-              />
-              <Button
-                title="Créer le projet"
-                onPress={handleCreateProject}
-                disabled={formLoading}
-                style={styles.modalButton}
-              />
-            </View>
-          </View>
-        </View>
-      </Modal>
     </View>
   );
 }
@@ -1043,7 +1010,7 @@ const createStyles = (theme: any) => StyleSheet.create({
     fontFamily: 'Inter-Medium',
     color: theme.colors.textSecondary,
   },
-  // Styles pour l'encart d'information sur le taux de conformité
+  // Encart d'information sur le taux de conformité
   complianceInfoCard: {
     backgroundColor: theme.colors.warning + '15',
     borderLeftWidth: 4,
@@ -1478,9 +1445,9 @@ const createStyles = (theme: any) => StyleSheet.create({
     marginLeft: 6,
   },
   zoneContainer: {
-    backgroundColor: theme.colors.surface,
+    marginVertical: 12,
+    padding: 16,
     borderRadius: 8,
-    padding: 12,
     marginBottom: 8,
     borderWidth: 1,
     borderColor: theme.colors.border,
@@ -1554,15 +1521,39 @@ const createStyles = (theme: any) => StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 12,
     backgroundColor: theme.colors.primary + '20',
-    borderWidth: 2,
-    borderColor: theme.colors.primary,
-    borderStyle: 'dashed',
-    marginTop: 8,
+  complianceInfoTitle: {
+    fontSize: 15,
+    fontFamily: 'Inter-SemiBold',
+    color: theme.colors.warning,
+    marginBottom: 8,
   },
   addBuildingText: {
-    fontSize: 16,
-    fontFamily: 'Inter-SemiBold',
-    color: theme.colors.primary,
-    marginLeft: 8,
+    fontSize: 13,
+    fontFamily: 'Inter-Regular',
+    color: theme.colors.textSecondary,
+    marginBottom: 8,
+    lineHeight: 18,
+  },
+  complianceColorLegend: {
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.warning + '30',
+  },
+  colorLegendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 4,
+  },
+  colorDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 8,
+  },
+  colorLegendText: {
+    fontSize: 12,
+    fontFamily: 'Inter-Medium',
+    color: theme.colors.textSecondary,
   },
 });
