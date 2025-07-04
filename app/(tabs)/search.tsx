@@ -14,7 +14,7 @@ import { useFocusEffect } from '@react-navigation/native';
 
 type SearchMode = 'simple' | 'hierarchical';
 type ShutterTypeFilter = 'all' | 'high' | 'low';
-// NOUVEAU : Type pour le filtre de conformité
+// Type pour le filtre de conformité
 type ComplianceFilterType = 'all' | 'compliant' | 'acceptable' | 'non-compliant';
 
 interface HierarchicalFilter {
@@ -22,7 +22,7 @@ interface HierarchicalFilter {
   buildingId?: string;
   zoneId?: string;
   shutterType?: ShutterTypeFilter;
-  // NOUVEAU : Ajout du filtre de conformité
+  // Ajout du filtre de conformité
   complianceType?: ComplianceFilterType;
 }
 
@@ -113,7 +113,7 @@ export default function SearchScreen() {
                 }
               }
 
-              // NOUVEAU : Filtre par niveau de conformité
+              // Filtre par niveau de conformité
               if (hierarchicalFilter.complianceType && hierarchicalFilter.complianceType !== 'all') {
                 const compliance = calculateCompliance(shutter.referenceFlow, shutter.measuredFlow);
                 if (compliance.status !== hierarchicalFilter.complianceType) {
@@ -213,7 +213,7 @@ export default function SearchScreen() {
     return { high, low, total };
   };
 
-  // NOUVEAU : Obtenir les statistiques de conformité
+  // Obtenir les statistiques de conformité
   const getComplianceStats = () => {
     const zone = getSelectedZone();
     if (!zone) return { compliant: 0, acceptable: 0, nonCompliant: 0 };
@@ -549,7 +549,7 @@ export default function SearchScreen() {
                 </View>
               </View>
 
-              {/* NOUVEAU : Filtre par niveau de conformité - HORIZONTAL */}
+              {/* Filtre par niveau de conformité - HORIZONTAL avec points colorés uniquement */}
               <View style={styles.complianceFilterSection}>
                 <Text style={styles.complianceFilterTitle}>📊 Niveau de conformité</Text>
                 <View style={styles.complianceFilterButtons}>
@@ -575,15 +575,7 @@ export default function SearchScreen() {
                     ]}
                     onPress={() => setHierarchicalFilter(prev => ({ ...prev, complianceType: 'compliant' }))}
                   >
-                    <View style={styles.complianceFilterButtonContent}>
-                      <View style={[styles.complianceFilterIndicator, { backgroundColor: '#10B981' }]} />
-                      <Text style={[
-                        styles.complianceFilterButtonText,
-                        hierarchicalFilter.complianceType === 'compliant' && styles.complianceFilterButtonTextActive
-                      ]}>
-                        Fonctionnel ({complianceStats.compliant})
-                      </Text>
-                    </View>
+                    <View style={[styles.complianceDot, { backgroundColor: '#10B981' }]} />
                   </TouchableOpacity>
 
                   <TouchableOpacity
@@ -593,15 +585,7 @@ export default function SearchScreen() {
                     ]}
                     onPress={() => setHierarchicalFilter(prev => ({ ...prev, complianceType: 'acceptable' }))}
                   >
-                    <View style={styles.complianceFilterButtonContent}>
-                      <View style={[styles.complianceFilterIndicator, { backgroundColor: '#F59E0B' }]} />
-                      <Text style={[
-                        styles.complianceFilterButtonText,
-                        hierarchicalFilter.complianceType === 'acceptable' && styles.complianceFilterButtonTextActive
-                      ]}>
-                        Acceptable ({complianceStats.acceptable})
-                      </Text>
-                    </View>
+                    <View style={[styles.complianceDot, { backgroundColor: '#F59E0B' }]} />
                   </TouchableOpacity>
 
                   <TouchableOpacity
@@ -611,15 +595,7 @@ export default function SearchScreen() {
                     ]}
                     onPress={() => setHierarchicalFilter(prev => ({ ...prev, complianceType: 'non-compliant' }))}
                   >
-                    <View style={styles.complianceFilterButtonContent}>
-                      <View style={[styles.complianceFilterIndicator, { backgroundColor: '#EF4444' }]} />
-                      <Text style={[
-                        styles.complianceFilterButtonText,
-                        hierarchicalFilter.complianceType === 'non-compliant' && styles.complianceFilterButtonTextActive
-                      ]}>
-                        Non conforme ({complianceStats.nonCompliant})
-                      </Text>
-                    </View>
+                    <View style={[styles.complianceDot, { backgroundColor: '#EF4444' }]} />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -1032,7 +1008,7 @@ const createStyles = (theme: any) => StyleSheet.create({
     height: 8,
     borderRadius: 4,
   },
-  // CORRIGÉ : Styles pour le filtre de conformité - HORIZONTAL
+  // Styles pour le filtre de conformité - HORIZONTAL avec points uniquement
   complianceFilterSection: {
     backgroundColor: theme.colors.surfaceSecondary,
     borderRadius: 8,
@@ -1053,8 +1029,7 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   complianceFilterButton: {
     flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 8,
+    height: 40,
     borderRadius: 8,
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
@@ -1066,13 +1041,8 @@ const createStyles = (theme: any) => StyleSheet.create({
     backgroundColor: theme.colors.primary,
     borderColor: theme.colors.primary,
   },
-  complianceFilterButtonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
   complianceFilterButtonText: {
-    fontSize: 10,
+    fontSize: 12,
     fontFamily: 'Inter-Medium',
     color: theme.colors.textSecondary,
     textAlign: 'center',
@@ -1080,10 +1050,11 @@ const createStyles = (theme: any) => StyleSheet.create({
   complianceFilterButtonTextActive: {
     color: '#ffffff',
   },
-  complianceFilterIndicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+  // Point coloré pour le filtre de conformité
+  complianceDot: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
   },
   searchContainer: {
     backgroundColor: theme.colors.surface,

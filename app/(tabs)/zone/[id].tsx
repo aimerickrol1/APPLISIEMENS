@@ -224,7 +224,7 @@ export default function ZoneDetailScreen() {
         counter++;
       }
 
-      const newShutter = await storage.createShutter(zone.id, {
+      const newShutter = await createShutter(zone.id, {
         name: newName,
         type: copiedShutter.type,
         referenceFlow: copiedShutter.referenceFlow,
@@ -324,7 +324,7 @@ export default function ZoneDetailScreen() {
 
   const handleToggleFavorite = async (shutterId: string) => {
     setFavoriteShutters(prev => {
-      const newFavorites = new Set(prev);
+      const newFavorites = new Set(favoriteShuttersSet);
       if (newFavorites.has(shutterId)) {
         newFavorites.delete(shutterId);
       } else {
@@ -871,7 +871,7 @@ export default function ZoneDetailScreen() {
               </View>
             </View>
 
-            {/* NOUVEAU : Filtre par niveau de conformité - HORIZONTAL */}
+            {/* MODIFIÉ : Filtre par niveau de conformité - HORIZONTAL avec points colorés uniquement */}
             <View style={styles.filterSection}>
               <Text style={styles.filterSectionTitle}>Niveau de conformité</Text>
               <View style={styles.filterButtons}>
@@ -883,38 +883,29 @@ export default function ZoneDetailScreen() {
                     Tous ({complianceCounts.total})
                   </Text>
                 </TouchableOpacity>
+                
+                {/* Bouton Fonctionnel - point vert uniquement */}
                 <TouchableOpacity
                   style={[styles.filterButton, complianceFilter === 'compliant' && styles.filterButtonActive]}
                   onPress={() => setComplianceFilter('compliant')}
                 >
-                  <View style={styles.filterButtonContent}>
-                    <View style={[styles.filterIndicator, { backgroundColor: '#10B981' }]} />
-                    <Text style={[styles.filterButtonText, complianceFilter === 'compliant' && styles.filterButtonTextActive]}>
-                      Fonctionnel ({complianceCounts.compliant})
-                    </Text>
-                  </View>
+                  <View style={[styles.complianceDot, { backgroundColor: '#10B981' }]} />
                 </TouchableOpacity>
+                
+                {/* Bouton Acceptable - point orange uniquement */}
                 <TouchableOpacity
                   style={[styles.filterButton, complianceFilter === 'acceptable' && styles.filterButtonActive]}
                   onPress={() => setComplianceFilter('acceptable')}
                 >
-                  <View style={styles.filterButtonContent}>
-                    <View style={[styles.filterIndicator, { backgroundColor: '#F59E0B' }]} />
-                    <Text style={[styles.filterButtonText, complianceFilter === 'acceptable' && styles.filterButtonTextActive]}>
-                      Acceptable ({complianceCounts.acceptable})
-                    </Text>
-                  </View>
+                  <View style={[styles.complianceDot, { backgroundColor: '#F59E0B' }]} />
                 </TouchableOpacity>
+                
+                {/* Bouton Non conforme - point rouge uniquement */}
                 <TouchableOpacity
                   style={[styles.filterButton, complianceFilter === 'non-compliant' && styles.filterButtonActive]}
                   onPress={() => setComplianceFilter('non-compliant')}
                 >
-                  <View style={styles.filterButtonContent}>
-                    <View style={[styles.filterIndicator, { backgroundColor: '#EF4444' }]} />
-                    <Text style={[styles.filterButtonText, complianceFilter === 'non-compliant' && styles.filterButtonTextActive]}>
-                      Non conforme ({complianceCounts.nonCompliant})
-                    </Text>
-                  </View>
+                  <View style={[styles.complianceDot, { backgroundColor: '#EF4444' }]} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -1191,7 +1182,7 @@ const createStyles = (theme: any) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
+    paddingVertical: 10,
     paddingHorizontal: 12,
     borderRadius: 8,
     backgroundColor: theme.colors.surfaceSecondary,
@@ -1221,6 +1212,12 @@ const createStyles = (theme: any) => StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
+  },
+  // Point coloré pour le filtre de conformité
+  complianceDot: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
   },
   emptyContainer: {
     flex: 1,
