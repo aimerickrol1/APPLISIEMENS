@@ -130,7 +130,7 @@ export default function ProjectsScreen() {
   const addBuilding = () => {
     const newBuilding: PredefinedBuilding = {
       id: generateUniqueId(),
-      name: Bâtiment ${predefinedStructure.buildings.length + 1},
+      name: `Bâtiment ${predefinedStructure.buildings.length + 1}`,
       zones: []
     };
     
@@ -162,7 +162,7 @@ export default function ProjectsScreen() {
     
     const newZone: PredefinedZone = {
       id: generateUniqueId(),
-      name: ZF${zoneNumber.toString().padStart(2, '0')},
+      name: `ZF${zoneNumber.toString().padStart(2, '0')}`,
       highShutters: 0,
       lowShutters: 0
     };
@@ -330,7 +330,7 @@ export default function ProjectsScreen() {
                     // Créer les volets hauts (VH)
                     for (let i = 1; i <= zoneData.highShutters; i++) {
                       await storage.createShutter(zone.id, {
-                        name: VH${i.toString().padStart(2, '0')},
+                        name: `VH${i.toString().padStart(2, '0')}`,
                         type: 'high',
                         referenceFlow: 0,
                         measuredFlow: 0
@@ -340,7 +340,7 @@ export default function ProjectsScreen() {
                     // Créer les volets bas (VB)
                     for (let i = 1; i <= zoneData.lowShutters; i++) {
                       await storage.createShutter(zone.id, {
-                        name: VB${i.toString().padStart(2, '0')},
+                        name: `VB${i.toString().padStart(2, '0')}`,
                         type: 'low',
                         referenceFlow: 0,
                         measuredFlow: 0
@@ -418,7 +418,7 @@ export default function ProjectsScreen() {
 
     Alert.alert(
       'Supprimer les projets',
-      Êtes-vous sûr de vouloir supprimer ${selectedProjects.size} projet${selectedProjects.size > 1 ? 's' : ''} ?,
+      `Êtes-vous sûr de vouloir supprimer ${selectedProjects.size} projet${selectedProjects.size > 1 ? 's' : ''} ?`,
       [
         { text: 'Annuler', style: 'cancel' },
         {
@@ -466,7 +466,7 @@ export default function ProjectsScreen() {
   const handleDeleteProject = async (project: Project) => {
     Alert.alert(
       'Supprimer le projet',
-      Êtes-vous sûr de vouloir supprimer le projet "${project.name}" ?,
+      `Êtes-vous sûr de vouloir supprimer le projet "${project.name}" ?`,
       [
         { text: 'Annuler', style: 'cancel' },
         {
