@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Modal, ScrollView, RefreshControl } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
-import { Plus, Settings, Building, Star, Trash2, SquareCheck as CheckSquare, Square, X, AlertTriangle } from 'lucide-react-native';
+import { Plus, Settings, Building, Star, Trash2, SquareCheck as CheckSquare, Square, X, TriangleAlert as AlertTriangle } from 'lucide-react-native';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
@@ -693,7 +693,7 @@ export default function ProjectsScreen() {
               <Text style={styles.modalText}>
                 <Text style={styles.modalBold}>Le taux de conformité affiché dans l'aperçu des projets n'a aucune valeur réglementaire.</Text>
                 {'\n\n'}
-                Il s'agit uniquement d'un indicateur visuel pour aider à suivre globalement l'état des volets d'un projet.
+                Il s'agit uniquement d\'un indicateur visuel pour aider à suivre globalement l'état des volets d\'un projet.
                 {'\n\n'}
                 Ce taux n'est défini nulle part dans la norme NF S61-933.
                 {'\n\n'}
