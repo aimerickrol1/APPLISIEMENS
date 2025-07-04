@@ -864,6 +864,31 @@ export default function ProjectsScreen() {
         </View>
       )}
 
+      {/* Encart d'information sur le taux de conformité */}
+      <View style={styles.complianceInfoCard}>
+        <Text style={styles.complianceInfoTitle}>⚠️ À propos du taux de conformité</Text>
+        <Text style={styles.complianceInfoText}>
+          Le taux de conformité affiché n'a aucune valeur réglementaire. Il s'agit simplement d'un indicateur visuel pour aider à suivre globalement les volets d'un projet.
+        </Text>
+        <Text style={styles.complianceInfoText}>
+          Ce taux n'est défini nulle part dans la norme NF S61-933. La norme impose uniquement que chaque volet respecte un écart de ±15% entre le débit mesuré et le débit de référence.
+        </Text>
+        <View style={styles.complianceColorLegend}>
+          <View style={styles.colorLegendItem}>
+            <View style={[styles.colorDot, { backgroundColor: '#10B981' }]}/>
+            <Text style={styles.colorLegendText}>≥80% : Majorité des volets fonctionnels</Text>
+          </View>
+          <View style={styles.colorLegendItem}>
+            <View style={[styles.colorDot, { backgroundColor: '#F59E0B' }]}/>
+            <Text style={styles.colorLegendText}>60-79% : Situation intermédiaire</Text>
+          </View>
+          <View style={styles.colorLegendItem}>
+            <View style={[styles.colorDot, { backgroundColor: '#EF4444' }]}/>
+            <Text style={styles.colorLegendText}>{'<'}60% : Attention requise</Text>
+          </View>
+        </View>
+      </View>
+
       <View style={styles.content}>
         {projects.length === 0 ? (
           <View style={styles.emptyContainer}>
@@ -1014,6 +1039,51 @@ const createStyles = (theme: any) => StyleSheet.create({
     backgroundColor: theme.colors.surfaceSecondary,
   },
   selectionButtonText: {
+    fontSize: 12,
+    fontFamily: 'Inter-Medium',
+    color: theme.colors.textSecondary,
+  },
+  // Styles pour l'encart d'information sur le taux de conformité
+  complianceInfoCard: {
+    backgroundColor: theme.colors.warning + '15',
+    borderLeftWidth: 4,
+    borderLeftColor: theme.colors.warning,
+    marginHorizontal: 16,
+    marginVertical: 12,
+    padding: 16,
+    borderRadius: 8,
+  },
+  complianceInfoTitle: {
+    fontSize: 15,
+    fontFamily: 'Inter-SemiBold',
+    color: theme.colors.warning,
+    marginBottom: 8,
+  },
+  complianceInfoText: {
+    fontSize: 13,
+    fontFamily: 'Inter-Regular',
+    color: theme.colors.textSecondary,
+    marginBottom: 8,
+    lineHeight: 18,
+  },
+  complianceColorLegend: {
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.warning + '30',
+  },
+  colorLegendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 4,
+  },
+  colorDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 8,
+  },
+  colorLegendText: {
     fontSize: 12,
     fontFamily: 'Inter-Medium',
     color: theme.colors.textSecondary,
