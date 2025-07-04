@@ -6,11 +6,25 @@ import { Header } from '@/components/Header';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { DateInput } from '@/components/DateInput';
+import { NumericInput } from '@/components/NumericInput';
 import { Project } from '@/types';
 import { useStorage } from '@/contexts/StorageContext';
 import { calculateCompliance } from '@/utils/compliance';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
+
+// NOUVEAU : Interface pour la structure de bâtiment
+interface BuildingStructure {
+  id: string;
+  name: string;
+  zones: ZoneStructure[];
+}
+
+interface ZoneStructure {
+  id: string;
+  name: string;
+  shutterCount: number;
+}
 
 export default function ProjectsScreen() {
   const { strings } = useLanguage();
@@ -41,11 +55,17 @@ export default function ProjectsScreen() {
   const [formLoading, setFormLoading] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; startDate?: string; endDate?: string }>({});
 
-  // NOUVEAU : États pour la structure prédéfinie
+  // NOUVEAU : États pour la structure prédéfinie avancée
   const [createWithStructure, setCreateWithStructure] = useState(false);
-  const [buildingCount, setBuildingCount] = useState(1);
-  const [zoneCount, setZoneCount] = useState(1);
-  const [shutterCount, setShutterCount] = useState(5);
+  const [buildingStructures, setBuildingStructures] = useState<BuildingStructure[]>([
+    {
+      id: '1',
+      name: 'Bâtiment principal',
+      zones: [
+        { id: '1', name: 'ZF01', shutterCount: 5 }
+      ]
+    }
+  ]);
 
   // Convert favoriteProjects array to Set for .has() method
   const favoriteProjectsSet = new Set(favoriteProjects);
@@ -86,11 +106,17 @@ export default function ProjectsScreen() {
     setStartDate('');
     setEndDate('');
     setErrors({});
-    // NOUVEAU : Reset des options de structure
+    // NOUVEAU : Reset de la structure prédéfinie
     setCreateWithStructure(false);
-    setBuildingCount(1);
-    setZoneCount(1);
-    setShutterCount(5);
+    setBuildingStructures([
+      {
+        id: '1',
+        name: 'Bâtiment principal',
+        zones: [
+          { id: '1', name: 'ZF01', shutterCount: 5 }
+        ]
+      }
+    ]);
   };
 
   const handleCreateProject = () => {
@@ -213,35 +239,110 @@ export default function ProjectsScreen() {
     return new Date(year, month - 1, day);
   };
 
-  // NOUVEAU : Fonction pour créer la structure prédéfinie
-  const createProjectStructure = async (project: Project) => {
+  // NOUVEAU : Fonctions pour gérer la structure prédéfinie avancée
+  const addBuilding = () => {
+    const newId = (buildingStructures.length + 1).toString();
+    const newBuilding: BuildingStructure = {
+      id: newId,
+      name: `Bâtiment ${newId}`,
+      zones: [
+        { id: '1', name: 'ZF01', shutterCount: 5 }
+      ]
+    };
+    setBuildingStructures([...buildingStructures, newBuilding]);
+  };
+
+  const removeBuilding = (buildingId: string) => {
+    if (buildingStructures.length > 1) {
+      setBuildingStructures(buildingStructures.filter(b => b.id !== buildingId));
+    }
+  };
+
+  const updateBuildingName = (buildingId: string, name: string) => {
+    setBuildingStructures(buildingStructures.map(b => 
+      b.id === buildingId ? { ...b, name } : b
+    ));
+  };
+
+  const addZone = (buildingId: string) => {
+    setBuildingStructures(buildingStructures.map(building => {
+      if (building.id === buildingId) {
+        const newZoneId = (building.zones.length + 1).toString();
+        const zoneNumber = String(building.zones.length + 1).padStart(2, '0');
+        const newZone: ZoneStructure = {
+          id: newZoneId,
+          name: `ZF${zoneNumber}`,
+          shutterCount: 5
+        };
+        return { ...building, zones: [...building.zones, newZone] };
+      }
+      return building;
+    }));
+  };
+
+  const removeZone = (buildingId: string, zoneId: string) => {
+    setBuildingStructures(buildingStructures.map(building => {
+      if (building.id === buildingId && building.zones.length > 1) {
+        return { ...building, zones: building.zones.filter(z => z.id !== zoneId) };
+      }
+      return building;
+    }));
+  };
+
+  const updateZoneName = (buildingId: string, zoneId: string, name: string) => {
+    setBuildingStructures(buildingStructures.map(building => {
+      if (building.id === buildingId) {
+        return {
+          ...building,
+          zones: building.zones.map(zone => 
+            zone.id === zoneId ? { ...zone, name } : zone
+          )
+        };
+      }
+      return building;
+    }));
+  };
+
+  const updateZoneShutterCount = (buildingId: string, zoneId: string, count: number) => {
+    setBuildingStructures(buildingStructures.map(building => {
+      if (building.id === buildingId) {
+        return {
+          ...building,
+          zones: building.zones.map(zone => 
+            zone.id === zoneId ? { ...zone, shutterCount: count } : zone
+          )
+        };
+      }
+      return building;
+    }));
+  };
+
+  // NOUVEAU : Fonction pour créer la structure prédéfinie avancée
+  const createAdvancedProjectStructure = async (project: Project) => {
     try {
-      console.log('🏗️ Création de la structure prédéfinie...');
+      console.log('🏗️ Création de la structure prédéfinie avancée...');
       
-      for (let b = 1; b <= buildingCount; b++) {
-        const buildingName = buildingCount === 1 ? 'Bâtiment principal' : `Bâtiment ${b}`;
+      for (const buildingStructure of buildingStructures) {
         const building = await createBuilding(project.id, {
-          name: buildingName,
-          description: `Bâtiment ${b} du projet ${project.name}`
+          name: buildingStructure.name,
+          description: `${buildingStructure.name} du projet ${project.name}`
         });
 
         if (building) {
           console.log(`✅ Bâtiment créé: ${building.name}`);
           
-          for (let z = 1; z <= zoneCount; z++) {
-            const zoneNumber = String(z).padStart(2, '0');
-            const zoneName = `ZF${zoneNumber}`;
+          for (const zoneStructure of buildingStructure.zones) {
             const zone = await createFunctionalZone(building.id, {
-              name: zoneName,
-              description: `Zone fonctionnelle ${z} du ${building.name}`
+              name: zoneStructure.name,
+              description: `Zone ${zoneStructure.name} du ${building.name}`
             });
 
             if (zone) {
               console.log(`✅ Zone créée: ${zone.name}`);
               
-              for (let s = 1; s <= shutterCount; s++) {
+              for (let s = 1; s <= zoneStructure.shutterCount; s++) {
                 const shutterNumber = String(s).padStart(2, '0');
-                const shutterType = s <= Math.ceil(shutterCount / 2) ? 'high' : 'low';
+                const shutterType = s <= Math.ceil(zoneStructure.shutterCount / 2) ? 'high' : 'low';
                 const shutterPrefix = shutterType === 'high' ? 'VH' : 'VB';
                 const shutterName = `${shutterPrefix}${shutterNumber}`;
                 
@@ -262,7 +363,7 @@ export default function ProjectsScreen() {
         }
       }
       
-      console.log('🎉 Structure prédéfinie créée avec succès !');
+      console.log('🎉 Structure prédéfinie avancée créée avec succès !');
     } catch (error) {
       console.error('❌ Erreur lors de la création de la structure:', error);
       Alert.alert('Erreur', 'Erreur lors de la création de la structure prédéfinie');
@@ -297,9 +398,9 @@ export default function ProjectsScreen() {
       if (project) {
         console.log('✅ Projet créé avec succès:', project.id);
         
-        // NOUVEAU : Créer la structure prédéfinie si demandée
+        // NOUVEAU : Créer la structure prédéfinie avancée si demandée
         if (createWithStructure) {
-          await createProjectStructure(project);
+          await createAdvancedProjectStructure(project);
         }
         
         setCreateModalVisible(false);
@@ -398,6 +499,16 @@ export default function ProjectsScreen() {
       nonCompliantCount,
       complianceRate
     };
+  };
+
+  // Calculer les totaux de la structure prédéfinie
+  const getStructureTotals = () => {
+    const totalBuildings = buildingStructures.length;
+    const totalZones = buildingStructures.reduce((total, building) => total + building.zones.length, 0);
+    const totalShutters = buildingStructures.reduce((total, building) => 
+      total + building.zones.reduce((zoneTotal, zone) => zoneTotal + zone.shutterCount, 0), 0);
+    
+    return { totalBuildings, totalZones, totalShutters };
   };
 
   // Trier les projets : favoris en premier
@@ -585,6 +696,8 @@ export default function ProjectsScreen() {
     );
   }
 
+  const structureTotals = getStructureTotals();
+
   return (
     <View style={styles.container}>
       <Header
@@ -675,7 +788,7 @@ export default function ProjectsScreen() {
         )}
       </View>
 
-      {/* Modal de création de projet avec structure prédéfinie */}
+      {/* Modal de création de projet avec structure prédéfinie avancée */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -726,7 +839,7 @@ export default function ProjectsScreen() {
                 error={errors.endDate}
               />
 
-              {/* NOUVEAU : Section structure prédéfinie */}
+              {/* NOUVEAU : Section structure prédéfinie avancée */}
               <View style={styles.structureSection}>
                 <TouchableOpacity 
                   style={styles.structureToggle}
@@ -745,75 +858,104 @@ export default function ProjectsScreen() {
                 </TouchableOpacity>
                 
                 <Text style={styles.structureDescription}>
-                  Génère automatiquement des bâtiments, zones et volets pour commencer rapidement
+                  Configurez précisément la structure de votre projet : bâtiments, zones et volets
                 </Text>
 
                 {createWithStructure && (
                   <View style={styles.structureOptions}>
-                    <View style={styles.structureRow}>
-                      <Text style={styles.structureLabel}>Nombre de bâtiments :</Text>
-                      <View style={styles.counterContainer}>
-                        <TouchableOpacity 
-                          style={styles.counterButton}
-                          onPress={() => setBuildingCount(Math.max(1, buildingCount - 1))}
-                        >
-                          <Text style={styles.counterButtonText}>-</Text>
-                        </TouchableOpacity>
-                        <Text style={styles.counterValue}>{buildingCount}</Text>
-                        <TouchableOpacity 
-                          style={styles.counterButton}
-                          onPress={() => setBuildingCount(Math.min(5, buildingCount + 1))}
-                        >
-                          <Text style={styles.counterButtonText}>+</Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-
-                    <View style={styles.structureRow}>
-                      <Text style={styles.structureLabel}>Zones par bâtiment :</Text>
-                      <View style={styles.counterContainer}>
-                        <TouchableOpacity 
-                          style={styles.counterButton}
-                          onPress={() => setZoneCount(Math.max(1, zoneCount - 1))}
-                        >
-                          <Text style={styles.counterButtonText}>-</Text>
-                        </TouchableOpacity>
-                        <Text style={styles.counterValue}>{zoneCount}</Text>
-                        <TouchableOpacity 
-                          style={styles.counterButton}
-                          onPress={() => setZoneCount(Math.min(10, zoneCount + 1))}
-                        >
-                          <Text style={styles.counterButtonText}>+</Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-
-                    <View style={styles.structureRow}>
-                      <Text style={styles.structureLabel}>Volets par zone :</Text>
-                      <View style={styles.counterContainer}>
-                        <TouchableOpacity 
-                          style={styles.counterButton}
-                          onPress={() => setShutterCount(Math.max(1, shutterCount - 1))}
-                        >
-                          <Text style={styles.counterButtonText}>-</Text>
-                        </TouchableOpacity>
-                        <Text style={styles.counterValue}>{shutterCount}</Text>
-                        <TouchableOpacity 
-                          style={styles.counterButton}
-                          onPress={() => setShutterCount(Math.min(20, shutterCount + 1))}
-                        >
-                          <Text style={styles.counterButtonText}>+</Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-
+                    {/* Aperçu des totaux */}
                     <View style={styles.structurePreview}>
-                      <Text style={styles.structurePreviewTitle}>Aperçu de la structure :</Text>
+                      <Text style={styles.structurePreviewTitle}>📊 Aperçu de la structure :</Text>
                       <Text style={styles.structurePreviewText}>
-                        • {buildingCount} bâtiment{buildingCount > 1 ? 's' : ''}{'\n'}
-                        • {buildingCount * zoneCount} zone{buildingCount * zoneCount > 1 ? 's' : ''} au total{'\n'}
-                        • {buildingCount * zoneCount * shutterCount} volet{buildingCount * zoneCount * shutterCount > 1 ? 's' : ''} au total
+                        • {structureTotals.totalBuildings} bâtiment{structureTotals.totalBuildings > 1 ? 's' : ''}{'\n'}
+                        • {structureTotals.totalZones} zone{structureTotals.totalZones > 1 ? 's' : ''} au total{'\n'}
+                        • {structureTotals.totalShutters} volet{structureTotals.totalShutters > 1 ? 's' : ''} au total
                       </Text>
+                    </View>
+
+                    {/* Configuration des bâtiments */}
+                    <View style={styles.buildingsSection}>
+                      <View style={styles.buildingsSectionHeader}>
+                        <Text style={styles.buildingsSectionTitle}>🏢 Bâtiments ({buildingStructures.length})</Text>
+                        <TouchableOpacity 
+                          style={styles.addButton}
+                          onPress={addBuilding}
+                          disabled={buildingStructures.length >= 5}
+                        >
+                          <Plus size={16} color={buildingStructures.length >= 5 ? theme.colors.textTertiary : theme.colors.primary} />
+                          <Text style={[styles.addButtonText, { 
+                            color: buildingStructures.length >= 5 ? theme.colors.textTertiary : theme.colors.primary 
+                          }]}>
+                            Ajouter
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+
+                      {buildingStructures.map((building, buildingIndex) => (
+                        <View key={building.id} style={styles.buildingCard}>
+                          <View style={styles.buildingHeader}>
+                            <Input
+                              value={building.name}
+                              onChangeText={(text) => updateBuildingName(building.id, text)}
+                              placeholder="Nom du bâtiment"
+                              style={styles.buildingNameInput}
+                            />
+                            {buildingStructures.length > 1 && (
+                              <TouchableOpacity 
+                                style={styles.removeButton}
+                                onPress={() => removeBuilding(building.id)}
+                              >
+                                <X size={16} color={theme.colors.error} />
+                              </TouchableOpacity>
+                            )}
+                          </View>
+
+                          {/* Zones du bâtiment */}
+                          <View style={styles.zonesSection}>
+                            <View style={styles.zonesSectionHeader}>
+                              <Text style={styles.zonesSectionTitle}>Zones ({building.zones.length})</Text>
+                              <TouchableOpacity 
+                                style={styles.addZoneButton}
+                                onPress={() => addZone(building.id)}
+                                disabled={building.zones.length >= 10}
+                              >
+                                <Plus size={12} color={building.zones.length >= 10 ? theme.colors.textTertiary : theme.colors.success} />
+                              </TouchableOpacity>
+                            </View>
+
+                            {building.zones.map((zone, zoneIndex) => (
+                              <View key={zone.id} style={styles.zoneCard}>
+                                <View style={styles.zoneRow}>
+                                  <Input
+                                    value={zone.name}
+                                    onChangeText={(text) => updateZoneName(building.id, zone.id, text)}
+                                    placeholder="Nom de la zone"
+                                    style={styles.zoneNameInput}
+                                  />
+                                  
+                                  <NumericInput
+                                    label="Volets"
+                                    value={zone.shutterCount}
+                                    onValueChange={(count) => updateZoneShutterCount(building.id, zone.id, count)}
+                                    min={1}
+                                    max={50}
+                                    style={styles.shutterCountInput}
+                                  />
+
+                                  {building.zones.length > 1 && (
+                                    <TouchableOpacity 
+                                      style={styles.removeZoneButton}
+                                      onPress={() => removeZone(building.id, zone.id)}
+                                    >
+                                      <X size={12} color={theme.colors.error} />
+                                    </TouchableOpacity>
+                                  )}
+                                </View>
+                              </View>
+                            ))}
+                          </View>
+                        </View>
+                      ))}
                     </View>
                   </View>
                 )}
@@ -862,7 +1004,7 @@ export default function ProjectsScreen() {
               <Text style={styles.modalText}>
                 <Text style={styles.modalBold}>Le taux de conformité affiché dans l'aperçu des projets n'a aucune valeur réglementaire.</Text>
                 {'\n\n'}
-                Il s'agit uniquement d\'un indicateur visuel pour aider à suivre globalement l'état des volets d\'un projet.
+                Il s'agit uniquement d'un indicateur visuel pour aider à suivre globalement l'état des volets d'un projet.
                 {'\n\n'}
                 Ce taux n'est défini nulle part dans la norme NF S61-933.
                 {'\n\n'}
@@ -1182,8 +1324,8 @@ const createStyles = (theme: any) => StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderRadius: 20,
     width: '100%',
-    maxWidth: 400,
-    maxHeight: '90%',
+    maxWidth: 500,
+    maxHeight: '95%',
   },
   complianceModalContent: {
     backgroundColor: theme.colors.surface,
@@ -1213,7 +1355,7 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   modalBody: {
     padding: 20,
-    maxHeight: 500,
+    maxHeight: 600,
   },
   modalScrollView: {
     maxHeight: 400,
@@ -1239,7 +1381,7 @@ const createStyles = (theme: any) => StyleSheet.create({
   modalButton: {
     flex: 1,
   },
-  // NOUVEAU : Styles pour la section structure prédéfinie
+  // NOUVEAU : Styles pour la structure prédéfinie avancée
   structureSection: {
     marginTop: 16,
     padding: 16,
@@ -1271,44 +1413,7 @@ const createStyles = (theme: any) => StyleSheet.create({
   structureOptions: {
     gap: 16,
   },
-  structureRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  structureLabel: {
-    fontSize: 14,
-    fontFamily: 'Inter-Medium',
-    color: theme.colors.text,
-    flex: 1,
-  },
-  counterContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  counterButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: theme.colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  counterButtonText: {
-    fontSize: 18,
-    fontFamily: 'Inter-Bold',
-    color: '#ffffff',
-  },
-  counterValue: {
-    fontSize: 16,
-    fontFamily: 'Inter-Bold',
-    color: theme.colors.text,
-    minWidth: 24,
-    textAlign: 'center',
-  },
   structurePreview: {
-    marginTop: 16,
     padding: 12,
     backgroundColor: theme.colors.primary + '20',
     borderRadius: 8,
@@ -1326,5 +1431,96 @@ const createStyles = (theme: any) => StyleSheet.create({
     fontFamily: 'Inter-Regular',
     color: theme.colors.primary,
     lineHeight: 20,
+  },
+  buildingsSection: {
+    gap: 12,
+  },
+  buildingsSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  buildingsSectionTitle: {
+    fontSize: 16,
+    fontFamily: 'Inter-SemiBold',
+    color: theme.colors.text,
+  },
+  addButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    backgroundColor: theme.colors.surface,
+  },
+  addButtonText: {
+    fontSize: 12,
+    fontFamily: 'Inter-Medium',
+  },
+  buildingCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: 8,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  buildingHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  buildingNameInput: {
+    flex: 1,
+    marginBottom: 0,
+  },
+  removeButton: {
+    padding: 4,
+    borderRadius: 4,
+    backgroundColor: theme.colors.error + '20',
+  },
+  zonesSection: {
+    gap: 8,
+  },
+  zonesSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  zonesSectionTitle: {
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
+    color: theme.colors.textSecondary,
+  },
+  addZoneButton: {
+    padding: 4,
+    borderRadius: 4,
+    backgroundColor: theme.colors.success + '20',
+  },
+  zoneCard: {
+    backgroundColor: theme.colors.surfaceSecondary,
+    borderRadius: 6,
+    padding: 8,
+  },
+  zoneRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  zoneNameInput: {
+    flex: 1,
+    marginBottom: 0,
+  },
+  shutterCountInput: {
+    width: 120,
+    marginBottom: 0,
+  },
+  removeZoneButton: {
+    padding: 4,
+    borderRadius: 4,
+    backgroundColor: theme.colors.error + '20',
   },
 });
