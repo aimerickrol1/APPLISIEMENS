@@ -117,7 +117,7 @@ export default function ProjectsScreen() {
   }, [loadProjects, loadFavorites]);
 
   // Fonctions pour la prédéfinition de structure
-  const generateUniqueId = () => ${Date.now()}_${Math.random().toString(36).substr(2, 9)};
+  const generateUniqueId = () => `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
   const togglePredefinedStructure = () => {
     setPredefinedStructure(prev => ({
