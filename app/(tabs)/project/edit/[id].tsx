@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
+import { Wind, ShieldAlert, Combine } from 'lucide-react-native';
 import { Header } from '@/components/Header';
 import { Input } from '@/components/Input';
 import { DateInput } from '@/components/DateInput';
@@ -21,6 +22,7 @@ export default function EditProjectScreen() {
   const [city, setCity] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [mode, setMode] = useState<'smoke' | 'compartment' | 'complete'>('smoke');
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [errors, setErrors] = useState<{ name?: string; startDate?: string; endDate?: string }>({});
@@ -51,6 +53,7 @@ export default function EditProjectScreen() {
         setProject(foundProject);
         setName(foundProject.name);
         setCity(foundProject.city || '');
+        setMode(foundProject.mode || 'smoke');
         setStartDate(foundProject.startDate ? formatDate(new Date(foundProject.startDate)) : '');
         setEndDate(foundProject.endDate ? formatDate(new Date(foundProject.endDate)) : '');
       } else {
@@ -133,6 +136,7 @@ export default function EditProjectScreen() {
       
       const updateData: any = {
         name: name.trim(),
+        mode: mode,
         city: city.trim() || undefined,
       };
 
@@ -204,6 +208,45 @@ export default function EditProjectScreen() {
         contentContainerStyle={styles.contentContainer}
         keyboardShouldPersistTaps="handled"
       >
+        {/* Affichage du mode (non modifiable après création) */}
+        <View style={styles.modeDisplayContainer}>
+          <Text style={styles.modeDisplayTitle}>Mode du projet</Text>
+          
+          <View style={styles.modeDisplay}>
+            {mode === 'smoke' && (
+              <View style={styles.modeDisplayContent}>
+                <Wind size={24} color={theme.colors.primary} />
+                <View style={styles.modeDisplayTextContainer}>
+                  <Text style={styles.modeDisplayName}>Désenfumage</Text>
+                  <Text style={styles.modeDisplayDesc}>Zones et volets</Text>
+                </View>
+              </View>
+            )}
+            
+            {mode === 'compartment' && (
+              <View style={styles.modeDisplayContent}>
+                <ShieldAlert size={24} color={theme.colors.primary} />
+                <View style={styles.modeDisplayTextContainer}>
+                  <Text style={styles.modeDisplayName}>Compartimentage</Text>
+                  <Text style={styles.modeDisplayDesc}>Zones et DAS</Text>
+                </View>
+              </View>
+            )}
+            
+            {mode === 'complete' && (
+              <View style={styles.modeDisplayContent}>
+                <Combine size={24} color={theme.colors.primary} />
+                <View style={styles.modeDisplayTextContainer}>
+                  <Text style={styles.modeDisplayName}>Complet</Text>
+                  <Text style={styles.modeDisplayDesc}>Désenfumage et compartimentage</Text>
+                </View>
+              </View>
+            )}
+            
+            <Text style={styles.modeDisplayNote}>Le mode ne peut pas être modifié après la création</Text>
+          </View>
+        </View>
+        
         <Input
           label={`${strings.projectName} *`}
           value={name}
@@ -283,5 +326,50 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   buttonContainer: {
     marginTop: 24,
+  },
+  // Styles pour l'affichage du mode (non modifiable)
+  modeDisplayContainer: {
+    marginBottom: 24,
+  },
+  modeDisplayTitle: {
+    fontSize: 14,
+    fontFamily: 'Inter-Medium',
+    color: theme.colors.textSecondary,
+    marginBottom: 8,
+  },
+  modeDisplay: {
+    backgroundColor: theme.colors.surfaceSecondary,
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  modeDisplayContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  modeDisplayTextContainer: {
+    marginLeft: 16,
+  },
+  modeDisplayName: {
+    fontSize: 16,
+    fontFamily: 'Inter-SemiBold',
+    color: theme.colors.text,
+    marginBottom: 4,
+  },
+  modeDisplayDesc: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: theme.colors.textSecondary,
+  },
+  modeDisplayNote: {
+    fontSize: 12,
+    fontFamily: 'Inter-Italic',
+    color: theme.colors.textTertiary,
+    fontStyle: 'italic',
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+    paddingTop: 12,
   },
 });

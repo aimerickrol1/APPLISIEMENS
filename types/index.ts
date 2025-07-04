@@ -1,6 +1,7 @@
 export interface Project {
   id: string;
   name: string;
+  mode: 'smoke' | 'compartment' | 'complete';
   city?: string;
   startDate?: Date;
   endDate?: Date;
@@ -48,6 +49,26 @@ export interface ComplianceResult {
 
 export type ShutterType = 'high' | 'low';
 export type ComplianceStatus = 'compliant' | 'acceptable' | 'non-compliant';
+
+// Types pour le compartimentage
+export interface CompartmentZone {
+  id: string;
+  buildingId: string;
+  name: string;
+  description?: string;
+  createdAt: Date;
+  devices: SafetyDevice[];
+}
+
+export interface SafetyDevice {
+  id: string;
+  zoneId: string;
+  name: string;
+  type: 'door' | 'damper'; // PCF (Porte Coupe-Feu) ou CCF (Clapet Coupe-Feu)
+  remarks?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 // Search result interface
 export interface SearchResult {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Modal, ScrollView, TextInput, ToastAndroid, Platform } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
-import { Plus, Building, Settings, Star, Trash2, SquareCheck as CheckSquare, Square, X, Minus, Calendar, Layers } from 'lucide-react-native';
+import { Plus, Building, Settings, Star, Trash2, SquareCheck as CheckSquare, Square, X, Minus, Calendar, Layers, Wind, ShieldAlert, Combine } from 'lucide-react-native';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
@@ -32,6 +32,9 @@ interface PredefinedStructure {
   buildings: PredefinedBuilding[];
 }
 
+// Type pour les modes de projet
+type ProjectMode = 'smoke' | 'compartment' | 'complete';
+
 export default function ProjectsScreen() {
   const { strings } = useLanguage();
   const { theme } = useTheme();
@@ -53,6 +56,9 @@ export default function ProjectsScreen() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [errors, setErrors] = useState<{ name?: string; startDate?: string; endDate?: string }>({});
+  
+  // NOUVEAU : État pour le mode de projet
+  const [projectMode, setProjectMode] = useState<ProjectMode>('smoke');
 
   // États pour la prédéfinition de structure
   const [predefinedStructure, setPredefinedStructure] = useState<PredefinedStructure>({
@@ -270,6 +276,7 @@ export default function ProjectsScreen() {
     try {
       const projectData: any = {
         name: name.trim(),
+        mode: projectMode,
       };
 
       if (city.trim()) {
@@ -349,6 +356,7 @@ export default function ProjectsScreen() {
     setStartDate('');
     setEndDate('');
     setErrors({});
+    setProjectMode('smoke');
     setPredefinedStructure({
       enabled: false,
       buildings: []
@@ -902,8 +910,101 @@ export default function ProjectsScreen() {
             <ScrollView 
               ref={modalScrollViewRef}
               style={styles.modalBody} 
-              showsVerticalScrollIndicator={false}
-            >
+              showsVerticalScrollIndicator={false}>
+              
+              {/* NOUVEAU : Sélection du mode de projet */}
+              <View style={styles.modeSelectionContainer}>
+                <Text style={styles.modeSelectionTitle}>Mode du projet</Text>
+                
+                <View style={styles.modeButtonsContainer}>
+                  <TouchableOpacity 
+                    style={[
+                      styles.modeButton, 
+                      projectMode === 'smoke' && styles.modeButtonActive
+                    ]}
+                    onPress={() => setProjectMode('smoke')}
+                  >
+                    <Wind size={24} color={projectMode === 'smoke' ? '#ffffff' : theme.colors.primary} />
+                    <Text style={[
+                      styles.modeButtonTitle,
+                      projectMode === 'smoke' && styles.modeButtonTitleActive
+                    ]}>
+                      Désenfumage
+                    </Text>
+                    <Text style={[
+                      styles.modeButtonDesc,
+                      projectMode === 'smoke' && styles.modeButtonDescActive
+                    ]}>
+                      Zones et volets
+                    </Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={[
+                      styles.modeButton, 
+                      projectMode === 'compartment' && styles.modeButtonActive
+                    ]}
+                    onPress={() => setProjectMode('compartment')}
+                  >
+                    <ShieldAlert size={24} color={projectMode === 'compartment' ? '#ffffff' : theme.colors.primary} />
+                    <Text style={[
+                      styles.modeButtonTitle,
+                      projectMode === 'compartment' && styles.modeButtonTitleActive
+                    ]}>
+                      Compartimentage
+                    </Text>
+                    <Text style={[
+                      styles.modeButtonDesc,
+                      projectMode === 'compartment' && styles.modeButtonDescActive
+                    ]}>
+                      Zones et DAS
+                    </Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={[
+                      styles.modeButton, 
+                      projectMode === 'complete' && styles.modeButtonActive
+                    ]}
+                    onPress={() => setProjectMode('complete')}
+                  >
+                    <Combine size={24} color={projectMode === 'complete' ? '#ffffff' : theme.colors.primary} />
+                    <Text style={[
+                      styles.modeButtonTitle,
+                      projectMode === 'complete' && styles.modeButtonTitleActive
+                    ]}>
+                      Complet
+                    </Text>
+                    <Text style={[
+                      styles.modeButtonDesc,
+                      projectMode === 'complete' && styles.modeButtonDescActive
+                    ]}>
+                      Tous les éléments
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                
+                <View style={styles.modeDescriptionContainer}>
+                  {projectMode === 'smoke' && (
+                    <Text style={styles.modeDescription}>
+                      <Text style={styles.modeDescriptionHighlight}>Mode Désenfumage :</Text> Gestion des zones de désenfumage (ZF) avec volets hauts (VH) et bas (VB). Idéal pour les projets de contrôle de fumée.
+                    </Text>
+                  )}
+                  
+                  {projectMode === 'compartment' && (
+                    <Text style={styles.modeDescription}>
+                      <Text style={styles.modeDescriptionHighlight}>Mode Compartimentage :</Text> Gestion des zones de compartimentage (ZC) avec dispositifs actionnés de sécurité (DAS) comme les portes et clapets coupe-feu.
+                    </Text>
+                  )}
+                  
+                  {projectMode === 'complete' && (
+                    <Text style={styles.modeDescription}>
+                      <Text style={styles.modeDescriptionHighlight}>Mode Complet :</Text> Combine les fonctionnalités de désenfumage et de compartimentage dans un même projet pour une gestion complète.
+                    </Text>
+                  )}
+                </View>
+              </View>
+              
               <Input
                 label="Nom du projet *"
                 value={name}
@@ -1287,6 +1388,78 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   modalButton: {
     flex: 1,
+  },
+  
+  // NOUVEAU : Styles pour la sélection de mode
+  modeSelectionContainer: {
+    marginBottom: 24,
+    backgroundColor: theme.colors.surfaceSecondary,
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  modeSelectionTitle: {
+    fontSize: 16,
+    fontFamily: 'Inter-SemiBold',
+    color: theme.colors.text,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  modeButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 8,
+    marginBottom: 16,
+  },
+  modeButton: {
+    flex: 1,
+    backgroundColor: theme.colors.surface,
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: theme.colors.border,
+  },
+  modeButtonActive: {
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
+  },
+  modeButtonTitle: {
+    fontSize: 14,
+    fontFamily: 'Inter-Bold',
+    color: theme.colors.text,
+    marginTop: 12,
+    marginBottom: 4,
+  },
+  modeButtonTitleActive: {
+    color: '#ffffff',
+  },
+  modeButtonDesc: {
+    fontSize: 12,
+    fontFamily: 'Inter-Regular',
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
+  },
+  modeButtonDescActive: {
+    color: '#ffffff',
+  },
+  modeDescriptionContainer: {
+    backgroundColor: theme.colors.primary + '15',
+    borderRadius: 8,
+    padding: 12,
+    borderLeftWidth: 3,
+    borderLeftColor: theme.colors.primary,
+  },
+  modeDescription: {
+    fontSize: 13,
+    fontFamily: 'Inter-Regular',
+    color: theme.colors.textSecondary,
+    lineHeight: 18,
+  },
+  modeDescriptionHighlight: {
+    fontFamily: 'Inter-SemiBold',
+    color: theme.colors.primary,
   },
 
   // Styles pour la prédéfinition de structure

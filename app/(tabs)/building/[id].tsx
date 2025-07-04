@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Modal, TextInput } from 'react-native';
 import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
-import { Plus, Settings, Wind, Star, Trash2, SquareCheck as CheckSquare, Square, X } from 'lucide-react-native';
+import { Plus, Settings, Wind, Star, Trash2, SquareCheck as CheckSquare, Square, X, ShieldAlert } from 'lucide-react-native';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/Button';
 import { Project, Building, FunctionalZone } from '@/types';
@@ -38,6 +38,9 @@ export default function BuildingDetailScreen() {
     zone: FunctionalZone | null;
     name: string;
   }>({ visible: false, zone: null, name: '' });
+  
+  // État pour afficher l'onglet actif (désenfumage ou compartimentage)
+  const [activeTab, setActiveTab] = useState<'smoke' | 'compartment'>('smoke');
 
   // Référence pour l'auto-focus
   const nameInputRef = useRef<TextInput>(null);
@@ -432,7 +435,50 @@ export default function BuildingDetailScreen() {
         title={building.name}
         subtitle={locationInfo}
         onBack={handleBack}
-        rightComponent={
+        rightComponent={project.mode === 'complete' ? (
+          <View style={styles.headerContainer}>
+            {/* Onglets pour le mode complet */}
+            <View style={styles.tabButtons}>
+              <TouchableOpacity 
+                style={[styles.tabButton, activeTab === 'smoke' && styles.tabButtonActive]} 
+                onPress={() => setActiveTab('smoke')}
+              >
+                <Wind size={16} color={activeTab === 'smoke' ? theme.colors.primary : theme.colors.textSecondary} />
+                <Text style={[styles.tabButtonText, activeTab === 'smoke' && styles.tabButtonTextActive]}>
+                  Désenfumage
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.tabButton, activeTab === 'compartment' && styles.tabButtonActive]} 
+                onPress={() => setActiveTab('compartment')}
+              >
+                <ShieldAlert size={16} color={activeTab === 'compartment' ? theme.colors.primary : theme.colors.textSecondary} />
+                <Text style={[styles.tabButtonText, activeTab === 'compartment' && styles.tabButtonTextActive]}>
+                  Compartimentage
+                </Text>
+              </TouchableOpacity>
+            </View>
+            
+            {/* Première ligne avec les boutons principaux */}
+            <View style={styles.headerActions}>
+              <TouchableOpacity onPress={handleEditBuilding} style={styles.actionButton}>
+                <Settings size={20} color={theme.colors.primary} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleCreateZone} style={styles.actionButton}>
+                <Plus size={24} color={theme.colors.primary} />
+              </TouchableOpacity>
+            </View>
+            
+            {/* Deuxième ligne avec le bouton sélection */}
+            <View style={styles.selectionRow}>
+              <TouchableOpacity onPress={handleSelectionMode} style={styles.selectionButton}>
+                <Text style={styles.selectionButtonText}>
+                  {selectionMode ? strings.cancel : 'Sélect.'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ) : (
           <View style={styles.headerContainer}>
             {/* Première ligne avec les boutons principaux */}
             <View style={styles.headerActions}>
@@ -453,7 +499,7 @@ export default function BuildingDetailScreen() {
               </TouchableOpacity>
             </View>
           </View>
-        }
+        )}
       />
 
       {/* Barre d'outils de sélection */}
@@ -598,6 +644,35 @@ const createStyles = (theme: any) => StyleSheet.create({
   // Styles pour le conteneur d'en-tête à deux niveaux
   headerContainer: {
     alignItems: 'flex-end',
+  },
+  // NOUVEAU : Styles pour les onglets en mode complet
+  tabButtons: {
+    flexDirection: 'row',
+    marginBottom: 8,
+    borderRadius: 8,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  tabButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: theme.colors.surfaceSecondary,
+    gap: 4,
+  },
+  tabButtonActive: {
+    backgroundColor: theme.colors.primary + '20',
+  },
+  tabButtonText: {
+    fontSize: 12,
+    fontFamily: 'Inter-Medium',
+    color: theme.colors.textSecondary,
+  },
+  tabButtonTextActive: {
+    color: theme.colors.primary,
+    fontFamily: 'Inter-SemiBold',
   },
   headerActions: {
     flexDirection: 'row',

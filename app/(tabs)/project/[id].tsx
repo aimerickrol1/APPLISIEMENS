@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Modal, ScrollView, TextInput } from 'react-native';
 import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
-import { Plus, Settings, Building, Wind, Star, Trash2, SquareCheck as CheckSquare, Square, X } from 'lucide-react-native';
+import { Plus, Settings, Building, Wind, Star, Trash2, SquareCheck as CheckSquare, Square, X, ShieldAlert } from 'lucide-react-native';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
@@ -42,6 +42,9 @@ export default function ProjectDetailScreen() {
     building: BuildingType | null;
     name: string;
   }>({ visible: false, building: null, name: '' });
+  
+  // État pour afficher l'onglet actif (désenfumage ou compartimentage)
+  const [activeTab, setActiveTab] = useState<'smoke' | 'compartment'>('smoke');
 
   // NOUVEAU : Référence pour l'auto-focus
   const nameInputRef = useRef<TextInput>(null);
@@ -542,7 +545,41 @@ export default function ProjectDetailScreen() {
         title={project.name}
         subtitle={project.city}
         onBack={handleBack}
-        rightComponent={
+        rightComponent={project.mode === 'complete' ? (
+          <View style={styles.headerActions}>
+            <View style={styles.tabButtons}>
+              <TouchableOpacity 
+                style={[styles.tabButton, activeTab === 'smoke' && styles.tabButtonActive]} 
+                onPress={() => setActiveTab('smoke')}
+              >
+                <Wind size={16} color={activeTab === 'smoke' ? theme.colors.primary : theme.colors.textSecondary} />
+                <Text style={[styles.tabButtonText, activeTab === 'smoke' && styles.tabButtonTextActive]}>
+                  Désenfumage
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.tabButton, activeTab === 'compartment' && styles.tabButtonActive]} 
+                onPress={() => setActiveTab('compartment')}
+              >
+                <ShieldAlert size={16} color={activeTab === 'compartment' ? theme.colors.primary : theme.colors.textSecondary} />
+                <Text style={[styles.tabButtonText, activeTab === 'compartment' && styles.tabButtonTextActive]}>
+                  Compartimentage
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity onPress={handleSelectionMode} style={styles.selectionButton}>
+              <Text style={styles.selectionButtonText}>
+                {selectionMode ? strings.cancel : 'Sélect.'}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleEditProject} style={styles.actionButton}>
+              <Settings size={18} color={theme.colors.primary} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleCreateBuilding} style={styles.actionButton}>
+              <Plus size={22} color={theme.colors.primary} />
+            </TouchableOpacity>
+          </View>
+        ) : (
           <View style={styles.headerActions}>
             <TouchableOpacity onPress={handleSelectionMode} style={styles.selectionButton}>
               <Text style={styles.selectionButtonText}>
@@ -556,7 +593,7 @@ export default function ProjectDetailScreen() {
               <Plus size={22} color={theme.colors.primary} />
             </TouchableOpacity>
           </View>
-        }
+        )}
       />
 
       {selectionMode && (
@@ -770,7 +807,36 @@ const createStyles = (theme: any) => StyleSheet.create({
     color: theme.colors.textSecondary,
   },
   actionButton: {
-    padding: 6,
+    padding: 8,
+  },
+  // NOUVEAU : Styles pour les onglets en mode complet
+  tabButtons: {
+    flexDirection: 'row',
+    marginRight: 8,
+    borderRadius: 8,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  tabButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: theme.colors.surfaceSecondary,
+    gap: 4,
+  },
+  tabButtonActive: {
+    backgroundColor: theme.colors.primary + '20',
+  },
+  tabButtonText: {
+    fontSize: 12,
+    fontFamily: 'Inter-Medium',
+    color: theme.colors.textSecondary,
+  },
+  tabButtonTextActive: {
+    color: theme.colors.primary,
+    fontFamily: 'Inter-SemiBold',
   },
   selectionToolbar: {
     flexDirection: 'row',
