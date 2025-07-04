@@ -295,25 +295,19 @@ export default function SimpleCalculatorScreen() {
         <View style={styles.infoCard}>
           <Text style={styles.infoTitle}>NF S61-933 Annexe H</Text>
           <Text style={styles.infoText}>
-            <Text>{strings.nfStandardDesc}</Text>
-            <Text>{'\n\n'}</Text>
+            {strings.nfStandardDesc}
+            {'\n\n'}
             <Text>• </Text>
             <Text style={{ color: '#10B981', fontFamily: 'Inter-SemiBold' }}>{strings.compliant}</Text>
-            <Text> : </Text>
-            <Text>{strings.deviation}</Text>
-            <Text> ≤ ±10%</Text>
-            <Text>{'\n'}</Text>
+            <Text> : {strings.deviation} ≤ ±10%</Text>
+            {'\n'}
             <Text>• </Text>
             <Text style={{ color: '#F59E0B', fontFamily: 'Inter-SemiBold' }}>{strings.acceptable}</Text>
-            <Text> : </Text>
-            <Text>{strings.deviation}</Text>
-            <Text> ±10% - ±20%</Text>
-            <Text>{'\n'}</Text>
+            <Text> : {strings.deviation} ±10% - ±20%</Text>
+            {'\n'}
             <Text>• </Text>
             <Text style={{ color: '#EF4444', fontFamily: 'Inter-SemiBold' }}>{strings.nonCompliant}</Text>
-            <Text> : </Text>
-            <Text>{strings.deviation}</Text>
-            <Text> > ±20%</Text>
+            <Text> : {strings.deviation} > ±20%</Text>
           </Text>
         </View>
       </ScrollView>
