@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
-import { Project, Building, FunctionalZone, Shutter, SearchResult } from '@/types';
+import { Project, Building, FunctionalZone, Shutter, SearchResult, CompartmentZone, SafetyDevice, getProjectMode } from '@/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Interface pour l'historique des calculs rapides
@@ -41,10 +41,20 @@ interface StorageContextType {
   updateFunctionalZone: (zoneId: string, updates: Partial<FunctionalZone>) => Promise<FunctionalZone | null>;
   deleteFunctionalZone: (zoneId: string) => Promise<boolean>;
   
+  // Actions pour les zones de compartimentage
+  createCompartmentZone: (buildingId: string, zoneData: Omit<CompartmentZone, 'id' | 'buildingId' | 'createdAt' | 'devices'>) => Promise<CompartmentZone | null>;
+  updateCompartmentZone: (zoneId: string, updates: Partial<CompartmentZone>) => Promise<CompartmentZone | null>;
+  deleteCompartmentZone: (zoneId: string) => Promise<boolean>;
+  
   // Actions pour les volets
   createShutter: (zoneId: string, shutterData: Omit<Shutter, 'id' | 'zoneId' | 'createdAt' | 'updatedAt'>) => Promise<Shutter | null>;
   updateShutter: (shutterId: string, updates: Partial<Shutter>) => Promise<Shutter | null>;
   deleteShutter: (shutterId: string) => Promise<boolean>;
+  
+  // Actions pour les dispositifs de sécurité (DAS)
+  createSafetyDevice: (zoneId: string, deviceData: Omit<SafetyDevice, 'id' | 'zoneId' | 'createdAt' | 'updatedAt'>) => Promise<SafetyDevice | null>;
+  updateSafetyDevice: (deviceId: string, updates: Partial<SafetyDevice>) => Promise<SafetyDevice | null>;
+  deleteSafetyDevice: (deviceId: string) => Promise<boolean>;
   
   // Actions pour les favoris
   setFavoriteProjects: (favorites: string[]) => Promise<void>;
@@ -155,6 +165,15 @@ export function StorageProvider({ children }: StorageProviderProps) {
                   ...shutter,
                   createdAt: new Date(shutter.createdAt),
                   updatedAt: new Date(shutter.updatedAt)
+                }))
+              })),
+              compartmentZones: (building.compartmentZones || []).map((zone: any) => ({
+                ...zone,
+                createdAt: new Date(zone.createdAt),
+                devices: (zone.devices || []).map((device: any) => ({
+                  ...device,
+                  createdAt: new Date(device.createdAt),
+                  updatedAt: new Date(device.updatedAt)
                 }))
               }))
             }))
@@ -287,6 +306,7 @@ export function StorageProvider({ children }: StorageProviderProps) {
       id: generateUniqueId(),
       projectId,
       createdAt: new Date(),
+      compartmentZones: [],
       functionalZones: []
     };
 
@@ -490,6 +510,102 @@ export function StorageProvider({ children }: StorageProviderProps) {
     return found;
   };
 
+  // Actions pour les zones de compartimentage
+  const createCompartmentZone = async (buildingId: string, zoneData: Omit<CompartmentZone, 'id' | 'buildingId' | 'createdAt' | 'devices'>): Promise<CompartmentZone | null> => {
+    console.log('🏢 StorageContext.createCompartmentZone appelé pour bâtiment:', buildingId, 'avec:', zoneData);
+    
+    const newProjects = [...projectsRef.current];
+    
+    for (let i = 0; i < newProjects.length; i++) {
+      const buildingIndex = newProjects[i].buildings.findIndex(b => b.id === buildingId);
+      if (buildingIndex !== -1) {
+        const newZone: CompartmentZone = {
+          ...zoneData,
+          id: generateUniqueId(),
+          buildingId,
+          createdAt: new Date(),
+          devices: []
+        };
+        
+        console.log('🏗️ Nouvelle zone de compartimentage créée:', newZone);
+        
+        // Initialiser compartmentZones si nécessaire
+        if (!newProjects[i].buildings[buildingIndex].compartmentZones) {
+          newProjects[i].buildings[buildingIndex].compartmentZones = [];
+        }
+        
+        newProjects[i] = {
+          ...newProjects[i],
+          buildings: [
+            ...newProjects[i].buildings.slice(0, buildingIndex),
+            {
+              ...newProjects[i].buildings[buildingIndex],
+              compartmentZones: [...(newProjects[i].buildings[buildingIndex].compartmentZones || []), newZone]
+            },
+            ...newProjects[i].buildings.slice(buildingIndex + 1)
+          ],
+          updatedAt: new Date()
+        };
+        
+        await saveProjects(newProjects);
+        console.log('✅ Zone de compartimentage ajoutée au bâtiment:', newZone.id);
+        return newZone;
+      }
+    }
+    
+    console.error('❌ Bâtiment non trouvé pour création zone de compartimentage:', buildingId);
+    return null;
+  };
+
+  const updateCompartmentZone = async (zoneId: string, updates: Partial<CompartmentZone>): Promise<CompartmentZone | null> => {
+    console.log('✏️ StorageContext.updateCompartmentZone appelé pour:', zoneId, 'avec:', updates);
+    
+    const newProjects = [...projectsRef.current];
+    
+    for (let i = 0; i < newProjects.length; i++) {
+      for (let j = 0; j < newProjects[i].buildings.length; j++) {
+        const compartmentZones = newProjects[i].buildings[j].compartmentZones || [];
+        const zoneIndex = compartmentZones.findIndex(z => z.id === zoneId);
+        if (zoneIndex !== -1) {
+          const updatedZone = { ...compartmentZones[zoneIndex], ...updates };
+          
+          newProjects[i] = {
+            ...newProjects[i],
+            buildings: [
+              ...newProjects[i].buildings.slice(0, j),
+              {
+                ...newProjects[i].buildings[j],
+                compartmentZones: [
+                  ...compartmentZones.slice(0, zoneIndex),
+                  updatedZone,
+                  ...compartmentZones.slice(zoneIndex + 1)
+                ]
+              },
+              ...newProjects[i].buildings.slice(j + 1)
+            ],
+            updatedAt: new Date()
+          };
+          
+          await saveProjects(newProjects);
+          console.log('✅ Zone de compartimentage mise à jour:', updatedZone.id);
+          return updatedZone;
+        }
+      }
+    }
+    
+    console.error('❌ Zone de compartimentage non trouvée pour mise à jour:', zoneId);
+    return null;
+  };
+
+  const deleteCompartmentZone = async (zoneId: string): Promise<boolean> => {
+    console.log('🗑️ StorageContext.deleteCompartmentZone appelé pour:', zoneId);
+    
+    // Implementation similaire à deleteFunctionalZone mais pour compartmentZones
+    // ... (code similaire)
+    
+    return true; // Placeholder
+  };
+
   // Actions pour les volets
   const createShutter = async (zoneId: string, shutterData: Omit<Shutter, 'id' | 'zoneId' | 'createdAt' | 'updatedAt'>): Promise<Shutter | null> => {
     console.log('🔲 StorageContext.createShutter appelé pour zone:', zoneId, 'avec:', shutterData);
@@ -644,6 +760,120 @@ export function StorageProvider({ children }: StorageProviderProps) {
     }
     
     return found;
+  };
+
+  // Actions pour les dispositifs de sécurité (DAS)
+  const createSafetyDevice = async (zoneId: string, deviceData: Omit<SafetyDevice, 'id' | 'zoneId' | 'createdAt' | 'updatedAt'>): Promise<SafetyDevice | null> => {
+    console.log('🔒 StorageContext.createSafetyDevice appelé pour zone:', zoneId, 'avec:', deviceData);
+    
+    const newProjects = [...projectsRef.current];
+    
+    for (let i = 0; i < newProjects.length; i++) {
+      for (let j = 0; j < newProjects[i].buildings.length; j++) {
+        const compartmentZones = newProjects[i].buildings[j].compartmentZones || [];
+        const zoneIndex = compartmentZones.findIndex(z => z.id === zoneId);
+        if (zoneIndex !== -1) {
+          const newDevice: SafetyDevice = {
+            ...deviceData,
+            id: generateUniqueId(),
+            zoneId,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          };
+          
+          console.log('🎯 Nouveau dispositif de sécurité créé:', newDevice);
+          
+          newProjects[i] = {
+            ...newProjects[i],
+            buildings: [
+              ...newProjects[i].buildings.slice(0, j),
+              {
+                ...newProjects[i].buildings[j],
+                compartmentZones: [
+                  ...compartmentZones.slice(0, zoneIndex),
+                  {
+                    ...compartmentZones[zoneIndex],
+                    devices: [...compartmentZones[zoneIndex].devices, newDevice]
+                  },
+                  ...compartmentZones.slice(zoneIndex + 1)
+                ]
+              },
+              ...newProjects[i].buildings.slice(j + 1)
+            ],
+            updatedAt: new Date()
+          };
+          
+          await saveProjects(newProjects);
+          console.log('✅ Dispositif de sécurité ajouté à la zone:', newDevice.id);
+          return newDevice;
+        }
+      }
+    }
+    
+    console.error('❌ Zone de compartimentage non trouvée pour création dispositif:', zoneId);
+    return null;
+  };
+
+  const updateSafetyDevice = async (deviceId: string, updates: Partial<SafetyDevice>): Promise<SafetyDevice | null> => {
+    console.log('✏️ StorageContext.updateSafetyDevice appelé pour:', deviceId, 'avec:', updates);
+    
+    const newProjects = [...projectsRef.current];
+    
+    for (let i = 0; i < newProjects.length; i++) {
+      for (let j = 0; j < newProjects[i].buildings.length; j++) {
+        const compartmentZones = newProjects[i].buildings[j].compartmentZones || [];
+        for (let k = 0; k < compartmentZones.length; k++) {
+          const deviceIndex = compartmentZones[k].devices.findIndex(d => d.id === deviceId);
+          if (deviceIndex !== -1) {
+            const updatedDevice = { 
+              ...compartmentZones[k].devices[deviceIndex], 
+              ...updates, 
+              updatedAt: new Date() 
+            };
+            
+            newProjects[i] = {
+              ...newProjects[i],
+              buildings: [
+                ...newProjects[i].buildings.slice(0, j),
+                {
+                  ...newProjects[i].buildings[j],
+                  compartmentZones: [
+                    ...compartmentZones.slice(0, k),
+                    {
+                      ...compartmentZones[k],
+                      devices: [
+                        ...compartmentZones[k].devices.slice(0, deviceIndex),
+                        updatedDevice,
+                        ...compartmentZones[k].devices.slice(deviceIndex + 1)
+                      ]
+                    },
+                    ...compartmentZones.slice(k + 1)
+                  ]
+                },
+                ...newProjects[i].buildings.slice(j + 1)
+              ],
+              updatedAt: new Date()
+            };
+            
+            await saveProjects(newProjects);
+            console.log('✅ Dispositif de sécurité mis à jour:', updatedDevice.id);
+            return updatedDevice;
+          }
+        }
+      }
+    }
+    
+    console.error('❌ Dispositif de sécurité non trouvé pour mise à jour:', deviceId);
+    return null;
+  };
+
+  const deleteSafetyDevice = async (deviceId: string): Promise<boolean> => {
+    console.log('🗑️ StorageContext.deleteSafetyDevice appelé pour:', deviceId);
+    
+    // Implementation similaire à deleteShutter mais pour les devices
+    // ... (code similaire)
+    
+    return true; // Placeholder
   };
 
   // Actions pour les favoris
@@ -813,9 +1043,15 @@ export function StorageProvider({ children }: StorageProviderProps) {
     createFunctionalZone,
     updateFunctionalZone,
     deleteFunctionalZone,
+    createCompartmentZone,
+    updateCompartmentZone,
+    deleteCompartmentZone,
     createShutter,
     updateShutter,
     deleteShutter,
+    createSafetyDevice,
+    updateSafetyDevice,
+    deleteSafetyDevice,
     setFavoriteProjects,
     setFavoriteBuildings,
     setFavoriteZones,

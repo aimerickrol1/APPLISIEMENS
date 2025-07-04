@@ -4,7 +4,7 @@ import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import { Plus, Settings, Wind, Star, Trash2, SquareCheck as CheckSquare, Square, X, ShieldAlert } from 'lucide-react-native';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/Button';
-import { Project, Building, FunctionalZone } from '@/types';
+import { Project, Building, FunctionalZone, getProjectMode } from '@/types';
 import { useStorage } from '@/contexts/StorageContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -286,6 +286,27 @@ export default function BuildingDetailScreen() {
     return 0;
   }) : [];
 
+  // Déterminer le type de zones à afficher selon le mode du projet et l'onglet actif
+  const getZonesToDisplay = () => {
+    if (!building) return [];
+    
+    const projectMode = getProjectMode(project!);
+    
+    if (projectMode === 'complete') {
+      // En mode complet, filtrer selon l'onglet actif
+      if (activeTab === 'smoke') {
+        return building.functionalZones; // Zones de désenfumage
+      } else {
+  const zonesToDisplay = getZonesToDisplay();
+  const sortedZones = zonesToDisplay.sort((a, b) => {
+      }
+    } else if (projectMode === 'compartment') {
+      return building.compartmentZones || []; // Zones de compartimentage uniquement
+    } else {
+      return building.functionalZones; // Zones de désenfumage uniquement (mode smoke)
+    }
+  });
+
   const renderZone = ({ item }: { item: FunctionalZone }) => {
     const shutterDetails = getShutterDetails(item);
     const isSelected = selectedZones.has(item.id);
@@ -534,13 +555,18 @@ export default function BuildingDetailScreen() {
       )}
 
       <View style={styles.content}>
-        {building.functionalZones.length === 0 ? (
+        {zonesToDisplay.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Wind size={48} color={theme.colors.textTertiary} />
             <Text style={styles.emptyTitle}>{strings.noZones}</Text>
             <Text style={styles.emptySubtitle}>
               {strings.noZonesDesc}
             </Text>
+            {getProjectMode(project!) === 'complete' && (
+              <Text style={styles.emptySubtitleMode}>
+                Mode actuel : {activeTab === 'smoke' ? 'Désenfumage' : 'Compartimentage'}
+              </Text>
+            )}
             <Button
               title={strings.createZone}
               onPress={handleCreateZone}
@@ -749,6 +775,12 @@ const createStyles = (theme: any) => StyleSheet.create({
     textAlign: 'center',
     marginBottom: 24,
     lineHeight: 24,
+  },
+  emptySubtitleMode: {
+    fontSize: 14,
+    fontFamily: 'Inter-Medium',
+    color: theme.colors.primary,
+    marginBottom: 16,
   },
   createButton: {
     paddingHorizontal: 32,

@@ -4,6 +4,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Header } from '@/components/Header';
 import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
+import { Project, getProjectMode, getZonePrefix } from '@/types';
 import { useStorage } from '@/contexts/StorageContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -11,9 +12,15 @@ import { useTheme } from '@/contexts/ThemeContext';
 export default function CreateZoneScreen() {
   const { strings } = useLanguage();
   const { theme } = useTheme();
-  const { createFunctionalZone } = useStorage();
+  const { createFunctionalZone, projects } = useStorage();
   const { buildingId } = useLocalSearchParams<{ buildingId: string }>();
-  const [name, setName] = useState('ZF');
+  
+  // Déterminer le mode du projet pour définir le préfixe par défaut
+  const project = projects.find(p => p.buildings.some(b => b.id === buildingId));
+  const projectMode = project ? getProjectMode(project) : 'smoke';
+  const defaultPrefix = getZonePrefix(projectMode);
+  
+  const [name, setName] = useState(defaultPrefix);
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ name?: string }>({});
@@ -88,7 +95,7 @@ export default function CreateZoneScreen() {
           label={strings.zoneName + " *"}
           value={name}
           onChangeText={setName}
-          placeholder="Ex: ZF01, Zone Hall"
+          placeholder={`Ex: ${defaultPrefix}01, Zone Hall`}
           error={errors.name}
         />
 
@@ -96,7 +103,7 @@ export default function CreateZoneScreen() {
           label={strings.description + " (" + strings.optional + ")"}
           value={description}
           onChangeText={setDescription}
-          placeholder="Ex: Hall d'entrée principal"
+          placeholder={projectMode === 'compartment' ? "Ex: Zone de compartimentage principale" : "Ex: Hall d'entrée principal"}
           multiline
           numberOfLines={3}
         />

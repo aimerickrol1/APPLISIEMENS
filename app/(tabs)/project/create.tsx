@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert, KeyboardAvoidingView, Platform, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
 import { Wind, ShieldAlert, Combine } from 'lucide-react-native';
 import { Header } from '@/components/Header';
@@ -8,6 +8,7 @@ import { DateInput } from '@/components/DateInput';
 import { Button } from '@/components/Button';
 import { useStorage } from '@/contexts/StorageContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function CreateProjectScreen() {
   const { strings } = useLanguage();

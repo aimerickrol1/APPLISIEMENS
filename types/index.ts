@@ -1,13 +1,18 @@
 export interface Project {
   id: string;
   name: string;
-  mode: 'smoke' | 'compartment' | 'complete';
+  mode?: 'smoke' | 'compartment' | 'complete'; // Optionnel pour compatibilité avec projets existants
   city?: string;
   startDate?: Date;
   endDate?: Date;
   createdAt: Date;
   updatedAt: Date;
   buildings: Building[];
+}
+
+// Helper pour obtenir le mode d'un projet (défaut: smoke pour compatibilité)
+export function getProjectMode(project: Project): 'smoke' | 'compartment' | 'complete' {
+  return project.mode || 'smoke';
 }
 
 export interface Building {
@@ -17,6 +22,7 @@ export interface Building {
   description?: string;
   createdAt: Date;
   functionalZones: FunctionalZone[];
+  compartmentZones?: CompartmentZone[]; // Pour le mode compartimentage
 }
 
 export interface FunctionalZone {
@@ -50,7 +56,7 @@ export interface ComplianceResult {
 export type ShutterType = 'high' | 'low';
 export type ComplianceStatus = 'compliant' | 'acceptable' | 'non-compliant';
 
-// Types pour le compartimentage
+// Types pour le mode compartimentage
 export interface CompartmentZone {
   id: string;
   buildingId: string;
@@ -62,12 +68,20 @@ export interface CompartmentZone {
 
 export interface SafetyDevice {
   id: string;
-  zoneId: string;
+  zoneId: string; // ID de la CompartmentZone
   name: string;
   type: 'door' | 'damper'; // PCF (Porte Coupe-Feu) ou CCF (Clapet Coupe-Feu)
   remarks?: string;
   createdAt: Date;
   updatedAt: Date;
+}
+
+// Helper pour obtenir le préfixe des zones selon le mode
+export function getZonePrefix(mode: 'smoke' | 'compartment' | 'complete', zoneType?: 'smoke' | 'compartment'): string {
+  if (mode === 'complete' && zoneType) {
+    return zoneType === 'smoke' ? 'ZF' : 'ZC';
+  }
+  return mode === 'compartment' ? 'ZC' : 'ZF';
 }
 
 // Search result interface
