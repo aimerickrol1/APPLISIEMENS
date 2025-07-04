@@ -60,6 +60,10 @@ export default function ProjectsScreen() {
   // NOUVEAU : État pour le mode de projet
   const [projectMode, setProjectMode] = useState<ProjectMode>('smoke');
 
+  // NOUVEAU : États pour la structure prédéfinie avancée
+  const [createWithStructure, setCreateWithStructure] = useState(false);
+  const [buildingStructures, setBuildingStructures] = useState<BuildingStructure[]>([]);
+
   // États pour la prédéfinition de structure
   const [predefinedStructure, setPredefinedStructure] = useState<PredefinedStructure>({
     enabled: false,
@@ -361,6 +365,9 @@ export default function ProjectsScreen() {
       enabled: false,
       buildings: []
     });
+    // NOUVEAU : Reset de la structure prédéfinie
+    setCreateWithStructure(false);
+    setBuildingStructures([]);
   };
 
   const handleCreateModal = () => {
@@ -373,26 +380,9 @@ export default function ProjectsScreen() {
 
     setFormLoading(true);
     try {
-      const projectData: any = {
-        name: name.trim(),
-      };
-
-      if (city.trim()) {
-        projectData.city = city.trim();
-      }
-
-      if (startDate && isValidDate(startDate)) {
-        projectData.startDate = parseDate(startDate);
-      }
-
-      if (endDate && isValidDate(endDate)) {
-        projectData.endDate = parseDate(endDate);
-      }
-
-      const project = await createProject(projectData);
+      console.log('🚀 Création du projet:', name.trim());
       
-      if (project) {
-        console.log('✅ Projet créé avec succès:', project.id);
+      const project = await createProject(projectData);
         
         setCreateModalVisible(false);
         resetForm();
@@ -404,6 +394,7 @@ export default function ProjectsScreen() {
       Alert.alert('Erreur', 'Impossible de créer le projet. Veuillez réessayer.');
     } finally {
       setFormLoading(false);
+    }
     }
   };
 
@@ -575,6 +566,16 @@ export default function ProjectsScreen() {
     });
 
     return { compliant, acceptable, nonCompliant };
+  };
+
+  // Calculer les totaux de la structure prédéfinie
+  const getStructureTotals = () => {
+    const totalBuildings = buildingStructures.length;
+    const totalZones = buildingStructures.reduce((total, building) => total + building.zones.length, 0);
+    const totalShutters = buildingStructures.reduce((total, building) => 
+      total + building.zones.reduce((zoneTotal, zone) => zoneTotal + zone.shutterCount, 0), 0);
+    
+    return { totalBuildings, totalZones, totalShutters };
   };
 
   // Trier les projets : favoris en premier
