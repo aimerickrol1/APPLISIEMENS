@@ -720,12 +720,6 @@ export default function ProjectsScreen() {
         subtitle={strings.projectsSubtitle}
         rightComponent={
           <View style={styles.headerActions}>
-            <TouchableOpacity 
-              onPress={() => setComplianceInfoModalVisible(true)} 
-              style={styles.infoButton}
-            >
-              <AlertTriangle size={16} color={theme.colors.warning} />
-            </TouchableOpacity>
             <TouchableOpacity onPress={handleSelectionMode} style={styles.selectionButton}>
               <Text style={styles.selectionButtonText}>
                 {selectionMode ? strings.cancel : 'Sélect.'}
@@ -1070,11 +1064,6 @@ const createStyles = (theme: any) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-  },
-  infoButton: {
-    padding: 6,
-    borderRadius: 6,
-    backgroundColor: theme.colors.warning + '20',
   },
   selectionButton: {
     paddingHorizontal: 8,
