@@ -461,12 +461,14 @@ export default function ExportScreen() {
         
         .col-building { width: 15%; min-width: 100px; }
         .col-zone { width: 15%; min-width: 80px; }
-        .col-shutter { width: 15%; min-width: 80px; }
-        .col-ref-flow { width: 12%; min-width: 70px; text-align: center; }
-        .col-measured-flow { width: 12%; min-width: 70px; text-align: center; }
-        .col-deviation { width: 10%; min-width: 60px; text-align: center; }
-        .col-status { width: 12%; min-width: 80px; text-align: center; }
-        .col-remarks { width: 19%; min-width: 100px; }
+        .col-building { width: 12%; min-width: 80px; }
+        .col-zone { width: 15%; min-width: 80px; }
+        .col-shutter { width: 10%; min-width: 60px; }
+        .col-ref-flow { width: 11%; min-width: 65px; text-align: center; }
+        .col-measured-flow { width: 11%; min-width: 65px; text-align: center; }
+        .col-deviation { width: 9%; min-width: 55px; text-align: center; }
+        .col-status { width: 11%; min-width: 75px; text-align: center; }
+        .col-remarks { width: 26%; min-width: 130px; }
         
         .footer {
             margin-top: 60px;
