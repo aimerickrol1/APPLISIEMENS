@@ -382,19 +382,34 @@ export default function ProjectsScreen() {
     try {
       console.log('🚀 Création du projet:', name.trim());
       
+      const projectData: any = {
+        name: name.trim(),
+        mode: projectMode,
+      };
+
+      if (city.trim()) {
+        projectData.city = city.trim();
+      }
+
+      if (startDate && isValidDate(startDate)) {
+        projectData.startDate = parseDate(startDate);
+      }
+
+      if (endDate && isValidDate(endDate)) {
+        projectData.endDate = parseDate(endDate);
+      }
+
       const project = await createProject(projectData);
         
-        setCreateModalVisible(false);
-        resetForm();
+      setCreateModalVisible(false);
+      resetForm();
         
-        router.push(`/(tabs)/project/${project.id}`);
-      }
+      router.push(`/(tabs)/project/${project.id}`);
     } catch (error) {
       console.error('❌ Erreur lors de la création du projet:', error);
       Alert.alert('Erreur', 'Impossible de créer le projet. Veuillez réessayer.');
     } finally {
       setFormLoading(false);
-    }
     }
   };
 
