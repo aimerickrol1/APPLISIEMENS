@@ -145,17 +145,34 @@ export default function BuildingDetailScreen() {
     });
   };
 
-  // Fonction pour sauvegarder le changement de nom
+  // CORRIGÉ : Fonction pour sauvegarder le changement de nom avec mise à jour instantanée
   const saveNameChange = async () => {
     if (!nameEditModal.zone || !nameEditModal.name.trim()) return;
 
     try {
-      await updateFunctionalZone(nameEditModal.zone.id, {
+      const updatedZone = await updateFunctionalZone(nameEditModal.zone.id, {
         name: nameEditModal.name.trim(),
       });
       
-      setNameEditModal({ visible: false, zone: null, name: '' });
-      loadBuilding();
+      if (updatedZone) {
+        // CORRIGÉ : Mise à jour instantanée de l'état local du bâtiment
+        setBuilding(prevBuilding => {
+          if (!prevBuilding) return prevBuilding;
+          
+          return {
+            ...prevBuilding,
+            functionalZones: prevBuilding.functionalZones.map(z => 
+              z.id === nameEditModal.zone!.id 
+                ? { ...z, name: nameEditModal.name.trim() }
+                : z
+            )
+          };
+        });
+        
+        setNameEditModal({ visible: false, zone: null, name: '' });
+      } else {
+        Alert.alert(strings.error, 'Impossible de modifier le nom de la zone');
+      }
     } catch (error) {
       Alert.alert(strings.error, 'Impossible de modifier le nom de la zone');
     }

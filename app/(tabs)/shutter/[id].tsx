@@ -157,6 +157,7 @@ export default function ShutterDetailScreen() {
     });
   }, []);
 
+  // CORRIGÉ : Mise à jour instantanée de l'état local du volet
   const handleFlowBlur = useCallback(async (field: 'referenceFlow' | 'measuredFlow') => {
     if (!shutter) return;
 
@@ -183,22 +184,25 @@ export default function ShutterDetailScreen() {
     
     if (hasChanged) {
       try {
-        await updateShutter(shutter.id, {
+        const updatedShutter = await updateShutter(shutter.id, {
           referenceFlow: refFlow,
           measuredFlow: measFlow,
         });
         
-        setShutter(prevShutter => {
-          if (!prevShutter) return prevShutter;
-          return {
-            ...prevShutter,
-            referenceFlow: refFlow,
-            measuredFlow: measFlow,
-            updatedAt: new Date()
-          };
-        });
-        
-        console.log(`✅ Volet ${shutter.name} mis à jour instantanément: ${refFlow}/${measFlow}`);
+        if (updatedShutter) {
+          // CORRIGÉ : Mise à jour instantanée de l'état local du volet
+          setShutter(prevShutter => {
+            if (!prevShutter) return prevShutter;
+            return {
+              ...prevShutter,
+              referenceFlow: refFlow,
+              measuredFlow: measFlow,
+              updatedAt: new Date()
+            };
+          });
+          
+          console.log(`✅ Volet ${shutter.name} mis à jour instantanément: ${refFlow}/${measFlow}`);
+        }
         
       } catch (error) {
         console.error('Erreur lors de la sauvegarde automatique:', error);

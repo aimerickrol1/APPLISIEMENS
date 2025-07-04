@@ -235,7 +235,7 @@ export default function ProjectDetailScreen() {
     });
   };
 
-  // NOUVEAU : Fonction pour sauvegarder le changement de nom
+  // CORRIGÉ : Fonction pour sauvegarder le changement de nom avec mise à jour instantanée
   const saveNameChange = async () => {
     if (!nameEditModal.building || !nameEditModal.name.trim()) return;
 
@@ -248,8 +248,22 @@ export default function ProjectDetailScreen() {
       
       if (updatedBuilding) {
         console.log('✅ Nom du bâtiment modifié avec succès');
+        
+        // CORRIGÉ : Mise à jour instantanée de l'état local du projet
+        setProject(prevProject => {
+          if (!prevProject) return prevProject;
+          
+          return {
+            ...prevProject,
+            buildings: prevProject.buildings.map(b => 
+              b.id === nameEditModal.building!.id 
+                ? { ...b, name: nameEditModal.name.trim() }
+                : b
+            )
+          };
+        });
+        
         setNameEditModal({ visible: false, building: null, name: '' });
-        loadProject();
       } else {
         console.error('❌ Erreur: Bâtiment non trouvé pour la modification');
         Alert.alert(strings.error, 'Impossible de modifier le nom du bâtiment');

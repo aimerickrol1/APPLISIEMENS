@@ -446,16 +446,34 @@ export default function ZoneDetailScreen() {
     });
   };
 
+  // CORRIGÉ : Fonction pour sauvegarder le changement de nom avec mise à jour instantanée
   const saveNameChange = async () => {
     if (!nameEditModal.shutter || !nameEditModal.name.trim()) return;
 
     try {
-      await updateShutter(nameEditModal.shutter.id, {
+      const updatedShutter = await updateShutter(nameEditModal.shutter.id, {
         name: nameEditModal.name.trim(),
       });
       
-      setNameEditModal({ visible: false, shutter: null, name: '' });
-      loadZone();
+      if (updatedShutter) {
+        // CORRIGÉ : Mise à jour instantanée de l'état local de la zone
+        setZone(prevZone => {
+          if (!prevZone) return prevZone;
+          
+          return {
+            ...prevZone,
+            shutters: prevZone.shutters.map(s => 
+              s.id === nameEditModal.shutter!.id 
+                ? { ...s, name: nameEditModal.name.trim() }
+                : s
+            )
+          };
+        });
+        
+        setNameEditModal({ visible: false, shutter: null, name: '' });
+      } else {
+        Alert.alert(strings.error, 'Impossible de modifier le nom');
+      }
     } catch (error) {
       Alert.alert(strings.error, 'Impossible de modifier le nom');
     }
@@ -470,16 +488,34 @@ export default function ZoneDetailScreen() {
     });
   };
 
+  // CORRIGÉ : Fonction pour sauvegarder le changement de remarques avec mise à jour instantanée
   const saveRemarksChange = async () => {
     if (!remarksEditModal.shutter) return;
 
     try {
-      await updateShutter(remarksEditModal.shutter.id, {
+      const updatedShutter = await updateShutter(remarksEditModal.shutter.id, {
         remarks: remarksEditModal.remarks.trim() || undefined,
       });
       
-      setRemarksEditModal({ visible: false, shutter: null, remarks: '' });
-      loadZone();
+      if (updatedShutter) {
+        // CORRIGÉ : Mise à jour instantanée de l'état local de la zone
+        setZone(prevZone => {
+          if (!prevZone) return prevZone;
+          
+          return {
+            ...prevZone,
+            shutters: prevZone.shutters.map(s => 
+              s.id === remarksEditModal.shutter!.id 
+                ? { ...s, remarks: remarksEditModal.remarks.trim() || undefined }
+                : s
+            )
+          };
+        });
+        
+        setRemarksEditModal({ visible: false, shutter: null, remarks: '' });
+      } else {
+        Alert.alert(strings.error, 'Impossible de modifier les remarques');
+      }
     } catch (error) {
       Alert.alert(strings.error, 'Impossible de modifier les remarques');
     }
@@ -916,6 +952,7 @@ export default function ZoneDetailScreen() {
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Modifier les remarques</Text>
+              
               <TouchableOpacity 
                 onPress={() => setRemarksEditModal({ visible: false, shutter: null, remarks: '' })}
                 style={styles.closeButton}
