@@ -130,7 +130,7 @@ export default function ProjectsScreen() {
   const addBuilding = () => {
     const newBuilding: PredefinedBuilding = {
       id: generateUniqueId(),
-      name: Bâtiment ${predefinedStructure.buildings.length + 1},
+      name: `Bâtiment ${predefinedStructure.buildings.length + 1}`,
       zones: []
     };
     
