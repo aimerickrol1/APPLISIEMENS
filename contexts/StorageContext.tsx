@@ -55,6 +55,7 @@ interface StorageContextType {
   // Actions pour l'historique
   addQuickCalcHistory: (item: Omit<QuickCalcHistoryItem, 'id' | 'timestamp'>) => Promise<void>;
   clearQuickCalcHistory: () => Promise<void>;
+  getQuickCalcHistory: () => Promise<QuickCalcHistoryItem[]>;
   
   // Recherche
   searchShutters: (query: string) => SearchResult[];
@@ -62,6 +63,10 @@ interface StorageContextType {
   // Utilitaires
   clearAllData: () => Promise<void>;
   getStorageInfo: () => { projectsCount: number; totalShutters: number; storageSize: string };
+  getProjects: () => Promise<Project[]>;
+  getFavoriteBuildings: () => Promise<string[]>;
+  getFavoriteZones: () => Promise<string[]>;
+  getFavoriteShutters: () => Promise<string[]>;
 }
 
 const StorageContext = createContext<StorageContextType | undefined>(undefined);
@@ -251,7 +256,8 @@ export function StorageProvider({ children }: StorageProviderProps) {
     const newProjects = [...projects];
     newProjects[projectIndex] = {
       ...newProjects[projectIndex],
-      buildings: [...newProjects[projectIndex].buildings, newBuilding]
+      buildings: [...newProjects[projectIndex].buildings, newBuilding],
+      updatedAt: new Date()
     };
 
     await saveProjects(newProjects);
@@ -271,7 +277,8 @@ export function StorageProvider({ children }: StorageProviderProps) {
             ...newProjects[i].buildings.slice(0, buildingIndex),
             updatedBuilding,
             ...newProjects[i].buildings.slice(buildingIndex + 1)
-          ]
+          ],
+          updatedAt: new Date()
         };
         
         await saveProjects(newProjects);
@@ -290,7 +297,8 @@ export function StorageProvider({ children }: StorageProviderProps) {
       if (buildingIndex !== -1) {
         newProjects[i] = {
           ...newProjects[i],
-          buildings: newProjects[i].buildings.filter(b => b.id !== buildingId)
+          buildings: newProjects[i].buildings.filter(b => b.id !== buildingId),
+          updatedAt: new Date()
         };
         found = true;
         break;
@@ -308,7 +316,7 @@ export function StorageProvider({ children }: StorageProviderProps) {
     return found;
   };
 
-  // Actions pour les zones (implémentation similaire)
+  // Actions pour les zones
   const createFunctionalZone = async (buildingId: string, zoneData: Omit<FunctionalZone, 'id' | 'buildingId' | 'createdAt' | 'shutters'>): Promise<FunctionalZone | null> => {
     const newProjects = [...projects];
     
@@ -332,7 +340,8 @@ export function StorageProvider({ children }: StorageProviderProps) {
               functionalZones: [...newProjects[i].buildings[buildingIndex].functionalZones, newZone]
             },
             ...newProjects[i].buildings.slice(buildingIndex + 1)
-          ]
+          ],
+          updatedAt: new Date()
         };
         
         await saveProjects(newProjects);
@@ -364,7 +373,8 @@ export function StorageProvider({ children }: StorageProviderProps) {
                 ]
               },
               ...newProjects[i].buildings.slice(j + 1)
-            ]
+            ],
+            updatedAt: new Date()
           };
           
           await saveProjects(newProjects);
@@ -392,7 +402,8 @@ export function StorageProvider({ children }: StorageProviderProps) {
                 functionalZones: newProjects[i].buildings[j].functionalZones.filter(z => z.id !== zoneId)
               },
               ...newProjects[i].buildings.slice(j + 1)
-            ]
+            ],
+            updatedAt: new Date()
           };
           found = true;
           break;
@@ -444,7 +455,8 @@ export function StorageProvider({ children }: StorageProviderProps) {
                 ]
               },
               ...newProjects[i].buildings.slice(j + 1)
-            ]
+            ],
+            updatedAt: new Date()
           };
           
           await saveProjects(newProjects);
@@ -489,7 +501,8 @@ export function StorageProvider({ children }: StorageProviderProps) {
                   ]
                 },
                 ...newProjects[i].buildings.slice(j + 1)
-              ]
+              ],
+              updatedAt: new Date()
             };
             
             await saveProjects(newProjects);
@@ -526,7 +539,8 @@ export function StorageProvider({ children }: StorageProviderProps) {
                   ]
                 },
                 ...newProjects[i].buildings.slice(j + 1)
-              ]
+              ],
+              updatedAt: new Date()
             };
             found = true;
             break;
@@ -612,6 +626,10 @@ export function StorageProvider({ children }: StorageProviderProps) {
     }
   };
 
+  const getQuickCalcHistory = async (): Promise<QuickCalcHistoryItem[]> => {
+    return quickCalcHistory;
+  };
+
   // Recherche
   const searchShutters = (query: string): SearchResult[] => {
     const results: SearchResult[] = [];
@@ -676,6 +694,23 @@ export function StorageProvider({ children }: StorageProviderProps) {
     };
   };
 
+  // Fonctions de compatibilité pour l'ancienne interface
+  const getProjects = async (): Promise<Project[]> => {
+    return projects;
+  };
+
+  const getFavoriteBuildings = async (): Promise<string[]> => {
+    return favoriteBuildings;
+  };
+
+  const getFavoriteZones = async (): Promise<string[]> => {
+    return favoriteZones;
+  };
+
+  const getFavoriteShutters = async (): Promise<string[]> => {
+    return favoriteShutters;
+  };
+
   const value: StorageContextType = {
     isLoading,
     isInitialized,
@@ -703,9 +738,14 @@ export function StorageProvider({ children }: StorageProviderProps) {
     setFavoriteShutters,
     addQuickCalcHistory,
     clearQuickCalcHistory,
+    getQuickCalcHistory,
     searchShutters,
     clearAllData,
     getStorageInfo,
+    getProjects,
+    getFavoriteBuildings,
+    getFavoriteZones,
+    getFavoriteShutters,
   };
 
   return (

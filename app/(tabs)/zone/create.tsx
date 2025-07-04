@@ -11,7 +11,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 export default function CreateZoneScreen() {
   const { strings } = useLanguage();
   const { theme } = useTheme();
-  const { storage } = useStorage();
+  const { createFunctionalZone } = useStorage();
   const { buildingId } = useLocalSearchParams<{ buildingId: string }>();
   const [name, setName] = useState('ZF');
   const [description, setDescription] = useState('');
@@ -43,18 +43,23 @@ export default function CreateZoneScreen() {
 
     setLoading(true);
     try {
-      const zone = await storage.createFunctionalZone(buildingId, {
+      console.log('🏢 Création de la zone:', name.trim(), 'dans le bâtiment:', buildingId);
+      
+      const zone = await createFunctionalZone(buildingId, {
         name: name.trim(),
         description: description.trim() || undefined,
       });
 
       if (zone) {
+        console.log('✅ Zone créée avec succès:', zone.id);
         // CORRIGÉ : Naviguer vers la zone créée
         router.push(`/(tabs)/zone/${zone.id}`);
       } else {
+        console.error('❌ Erreur: Zone non créée');
         Alert.alert(strings.error, 'Impossible de créer la zone. Bâtiment introuvable.');
       }
     } catch (error) {
+      console.error('❌ Erreur lors de la création de la zone:', error);
       Alert.alert(strings.error, 'Impossible de créer la zone. Veuillez réessayer.');
     } finally {
       setLoading(false);
@@ -98,7 +103,7 @@ export default function CreateZoneScreen() {
 
         <View style={styles.buttonContainer}>
           <Button
-            title={strings.createZone}
+            title={loading ? "Création..." : strings.createZone}
             onPress={handleCreate}
             disabled={loading}
           />

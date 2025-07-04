@@ -261,7 +261,7 @@ export default function ProjectsScreen() {
     return new Date(year, month - 1, day);
   };
 
-  // CORRIGÉ : Création du projet avec structure prédéfinie - AVEC ATTENTE COMPLÈTE
+  // CORRIGÉ : Création du projet avec structure prédéfinie - AVEC ATTENTE COMPLÈTE ET GESTION D'ERREURS
   const handleCreateProject = async () => {
     if (!validateForm()) return;
 
@@ -286,6 +286,7 @@ export default function ProjectsScreen() {
       // Créer le projet
       console.log('🚀 Création du projet:', projectData.name);
       const project = await createProject(projectData);
+      console.log('✅ Projet créé avec ID:', project.id);
 
       // CORRIGÉ : Si la prédéfinition est activée, créer TOUTE la structure avant de naviguer
       if (predefinedStructure.enabled && predefinedStructure.buildings.length > 0) {
@@ -299,6 +300,8 @@ export default function ProjectsScreen() {
             });
 
             if (building && buildingData.zones.length > 0) {
+              console.log(`✅ Bâtiment créé avec ID: ${building.id}`);
+              
               for (const zoneData of buildingData.zones) {
                 if (zoneData.name.trim()) {
                   console.log(`🏢 Création de la zone: ${zoneData.name}`);
@@ -307,30 +310,38 @@ export default function ProjectsScreen() {
                   });
 
                   if (zone) {
+                    console.log(`✅ Zone créée avec ID: ${zone.id}`);
+                    
                     // Créer les volets hauts (VH)
                     for (let i = 1; i <= zoneData.highShutters; i++) {
                       console.log(`🔼 Création du volet haut VH${i.toString().padStart(2, '0')}`);
-                      await createShutter(zone.id, {
+                      const shutterHigh = await createShutter(zone.id, {
                         name: `VH${i.toString().padStart(2, '0')}`,
                         type: 'high',
                         referenceFlow: 0,
                         measuredFlow: 0
                       });
+                      console.log(`✅ Volet haut créé avec ID: ${shutterHigh?.id}`);
                     }
 
                     // Créer les volets bas (VB)
                     for (let i = 1; i <= zoneData.lowShutters; i++) {
                       console.log(`🔽 Création du volet bas VB${i.toString().padStart(2, '0')}`);
-                      await createShutter(zone.id, {
+                      const shutterLow = await createShutter(zone.id, {
                         name: `VB${i.toString().padStart(2, '0')}`,
                         type: 'low',
                         referenceFlow: 0,
                         measuredFlow: 0
                       });
+                      console.log(`✅ Volet bas créé avec ID: ${shutterLow?.id}`);
                     }
+                  } else {
+                    console.error('❌ Erreur: Zone non créée');
                   }
                 }
               }
+            } else {
+              console.error('❌ Erreur: Bâtiment non créé');
             }
           }
         }
@@ -344,7 +355,12 @@ export default function ProjectsScreen() {
 
       // CORRIGÉ : Naviguer vers le projet créé SEULEMENT après que toute la structure soit créée
       console.log('🎯 Navigation vers le projet créé');
-      router.push(`/(tabs)/project/${project.id}`);
+      
+      // Attendre un petit délai pour s'assurer que toutes les données sont sauvegardées
+      setTimeout(() => {
+        router.push(`/(tabs)/project/${project.id}`);
+      }, 500);
+      
     } catch (error) {
       console.error('❌ Erreur lors de la création:', error);
       Alert.alert('Erreur', 'Impossible de créer le projet. Veuillez réessayer.');

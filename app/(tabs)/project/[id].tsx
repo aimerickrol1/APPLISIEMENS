@@ -20,7 +20,8 @@ export default function ProjectDetailScreen() {
     favoriteBuildings,
     createBuilding,
     deleteBuilding,
-    setFavoriteBuildings
+    setFavoriteBuildings,
+    updateBuilding
   } = useStorage();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [project, setProject] = useState<Project | null>(null);
@@ -190,12 +191,15 @@ export default function ProjectDetailScreen() {
 
     setFormLoading(true);
     try {
+      console.log('🏗️ Création du bâtiment:', buildingName.trim(), 'dans le projet:', project.id);
+      
       const building = await createBuilding(project.id, {
         name: buildingName.trim(),
         description: buildingDescription.trim() || undefined,
       });
 
       if (building) {
+        console.log('✅ Bâtiment créé avec succès:', building.id);
         setCreateBuildingModalVisible(false);
         resetForm();
         loadProject();
@@ -203,9 +207,11 @@ export default function ProjectDetailScreen() {
         // Navigation directe vers le bâtiment créé
         router.push(`/(tabs)/building/${building.id}`);
       } else {
+        console.error('❌ Erreur: Bâtiment non créé');
         Alert.alert(strings.error, 'Impossible de créer le bâtiment.');
       }
     } catch (error) {
+      console.error('❌ Erreur lors de la création du bâtiment:', error);
       Alert.alert(strings.error, 'Impossible de créer le bâtiment. Veuillez réessayer.');
     } finally {
       setFormLoading(false);
@@ -234,14 +240,22 @@ export default function ProjectDetailScreen() {
     if (!nameEditModal.building || !nameEditModal.name.trim()) return;
 
     try {
-      // Note: Cette fonction devrait être ajoutée au StorageContext
-      // await updateBuilding(nameEditModal.building.id, {
-      //   name: nameEditModal.name.trim(),
-      // });
+      console.log('✏️ Modification du nom du bâtiment:', nameEditModal.building.id, 'nouveau nom:', nameEditModal.name.trim());
       
-      setNameEditModal({ visible: false, building: null, name: '' });
-      loadProject();
+      const updatedBuilding = await updateBuilding(nameEditModal.building.id, {
+        name: nameEditModal.name.trim(),
+      });
+      
+      if (updatedBuilding) {
+        console.log('✅ Nom du bâtiment modifié avec succès');
+        setNameEditModal({ visible: false, building: null, name: '' });
+        loadProject();
+      } else {
+        console.error('❌ Erreur: Bâtiment non trouvé pour la modification');
+        Alert.alert(strings.error, 'Impossible de modifier le nom du bâtiment');
+      }
     } catch (error) {
+      console.error('❌ Erreur lors de la modification du nom:', error);
       Alert.alert(strings.error, 'Impossible de modifier le nom du bâtiment');
     }
   };
@@ -264,8 +278,14 @@ export default function ProjectDetailScreen() {
           text: strings.delete,
           style: 'destructive',
           onPress: async () => {
-            await deleteBuilding(building.id);
-            loadProject();
+            console.log('🗑️ Suppression du bâtiment:', building.id);
+            const success = await deleteBuilding(building.id);
+            if (success) {
+              console.log('✅ Bâtiment supprimé avec succès');
+              loadProject();
+            } else {
+              console.error('❌ Erreur lors de la suppression du bâtiment');
+            }
           }
         }
       ]
@@ -626,7 +646,7 @@ export default function ProjectDetailScreen() {
                 style={styles.modalButton}
               />
               <Button
-                title={strings.create}
+                title={formLoading ? "Création..." : strings.create}
                 onPress={handleSubmitBuilding}
                 disabled={formLoading}
                 style={styles.modalButton}
