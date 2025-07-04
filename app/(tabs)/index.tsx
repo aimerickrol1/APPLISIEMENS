@@ -1,7 +1,7 @@
-import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Modal, ScrollView, TextInput, Platform } from 'react-native';
-import { router } from 'expo-router';
-import { Plus, Building, Settings, Star, Trash2, SquareCheck as CheckSquare, Square, X, Minus, Calendar, Layers, TriangleAlert as AlertTriangle } from 'lucide-react-native';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Modal, ScrollView, RefreshControl } from 'react-native';
+import { router, useFocusEffect } from 'expo-router';
+import { Plus, Settings, Building, Star, Trash2, SquareCheck as CheckSquare, Square, X, AlertTriangle } from 'lucide-react-native';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
@@ -11,241 +11,171 @@ import { useStorage } from '@/contexts/StorageContext';
 import { calculateCompliance } from '@/utils/compliance';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useDoubleBackToExit } from '@/utils/BackHandler';
-
-// Interface pour la structure prédéfinie
-interface PredefinedZone {
-  id: string;
-  name: string;
-  highShutters: number;
-  lowShutters: number;
-}
-
-interface PredefinedBuilding {
-  id: string;
-  name: string;
-  zones: PredefinedZone[];
-}
-
-interface PredefinedStructure {
-  enabled: boolean;
-  buildings: PredefinedBuilding[];
-}
 
 export default function ProjectsScreen() {
   const { strings } = useLanguage();
   const { theme } = useTheme();
   const { 
-    isLoading, 
     projects, 
     favoriteProjects, 
     createProject, 
     deleteProject, 
-    createBuilding, 
-    createFunctionalZone, 
-    createShutter,
-    setFavoriteProjects 
+    setFavoriteProjects,
+    isLoading 
   } = useStorage();
   
-  // États pour le mode sélection
+  const [createModalVisible, setCreateModalVisible] = useState(false);
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedProjects, setSelectedProjects] = useState<Set<string>>(new Set());
-
-  // États pour le modal de création
-  const [createModalVisible, setCreateModalVisible] = useState(false);
-  const [formLoading, setFormLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [complianceInfoModalVisible, setComplianceInfoModalVisible] = useState(false);
   
-  // NOUVEAU : État pour le modal d'information sur le taux de conformité
-  const [complianceRateModalVisible, setComplianceRateModalVisible] = useState(false);
-  
-  // États du formulaire
+  // Form states
   const [name, setName] = useState('');
   const [city, setCity] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [formLoading, setFormLoading] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; startDate?: string; endDate?: string }>({});
 
-  // États pour la prédéfinition de structure
-  const [predefinedStructure, setPredefinedStructure] = useState<PredefinedStructure>({
-    enabled: false,
-    buildings: []
-  });
+  // Convert favoriteProjects array to Set for .has() method
+  const favoriteProjectsSet = new Set(favoriteProjects);
 
-  // Référence pour le ScrollView du modal
-  const modalScrollViewRef = useRef<ScrollView>(null);
-
-  // Utiliser le hook pour gérer le double appui sur le bouton retour pour quitter
-  useDoubleBackToExit();
-
-  // NOUVEAU : Écouteur d'événement pour ouvrir le modal depuis la page export
-  React.useEffect(() => {
-    const handleOpenModal = () => {
-      handleCreateModal();
+  // Écouter l'événement personnalisé pour ouvrir le modal de création
+  useEffect(() => {
+    const handleOpenCreateModal = () => {
+      setCreateModalVisible(true);
     };
 
-    // Ajouter l'écouteur d'événement seulement sur web
     if (typeof window !== 'undefined') {
-      window.addEventListener('openCreateProjectModal', handleOpenModal);
+      window.addEventListener('openCreateProjectModal', handleOpenCreateModal);
       
-      // Nettoyer l'écouteur au démontage
       return () => {
-        window.removeEventListener('openCreateProjectModal', handleOpenModal);
+        window.removeEventListener('openCreateProjectModal', handleOpenCreateModal);
       };
     }
   }, []);
 
-  // NOUVEAU : Fonction pour ouvrir le modal d'information sur le taux de conformité
-  const handleComplianceRatePress = () => {
-    setComplianceRateModalVisible(true);
+  // Recharger les données quand on revient sur cette page
+  useFocusEffect(
+    useCallback(() => {
+      console.log('Projects screen focused, data should be up to date');
+    }, [])
+  );
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    // Simuler un délai de rafraîchissement
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1000);
+  }, []);
+
+  const resetForm = () => {
+    setName('');
+    setCity('');
+    setStartDate('');
+    setEndDate('');
+    setErrors({});
   };
 
-  // Fonctions pour la prédéfinition de structure
-  const generateUniqueId = () => `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-  const togglePredefinedStructure = () => {
-    setPredefinedStructure(prev => ({
-      ...prev,
-      enabled: !prev.enabled,
-      buildings: prev.enabled ? [] : prev.buildings
-    }));
+  const handleCreateProject = () => {
+    resetForm();
+    setCreateModalVisible(true);
   };
 
-  const addBuilding = () => {
-    const newBuilding: PredefinedBuilding = {
-      id: generateUniqueId(),
-      name: `Bâtiment ${predefinedStructure.buildings.length + 1}`,
-      zones: []
-    };
-    
-    setPredefinedStructure(prev => ({
-      ...prev,
-      buildings: [...prev.buildings, newBuilding]
-    }));
+  const handleSelectionMode = () => {
+    setSelectionMode(!selectionMode);
+    setSelectedProjects(new Set());
   };
 
-  const removeBuilding = (buildingId: string) => {
-    setPredefinedStructure(prev => ({
-      ...prev,
-      buildings: prev.buildings.filter(b => b.id !== buildingId)
-    }));
+  const handleProjectSelection = (projectId: string) => {
+    setSelectedProjects(prev => {
+      const newSelection = new Set(prev);
+      if (newSelection.has(projectId)) {
+        newSelection.delete(projectId);
+      } else {
+        newSelection.add(projectId);
+      }
+      return newSelection;
+    });
   };
 
-  const updateBuildingName = (buildingId: string, name: string) => {
-    setPredefinedStructure(prev => ({
-      ...prev,
-      buildings: prev.buildings.map(b => 
-        b.id === buildingId ? { ...b, name } : b
-      )
-    }));
-  };
+  const handleBulkDelete = () => {
+    if (selectedProjects.size === 0) return;
 
-  const addZone = (buildingId: string) => {
-    const building = predefinedStructure.buildings.find(b => b.id === buildingId);
-    const zoneNumber = building ? building.zones.length + 1 : 1;
-    
-    const newZone: PredefinedZone = {
-      id: generateUniqueId(),
-      name: `ZF${zoneNumber.toString().padStart(2, '0')}`,
-      highShutters: 0,
-      lowShutters: 0
-    };
-
-    setPredefinedStructure(prev => ({
-      ...prev,
-      buildings: prev.buildings.map(b => 
-        b.id === buildingId 
-          ? { ...b, zones: [...b.zones, newZone] }
-          : b
-      )
-    }));
-  };
-
-  const removeZone = (buildingId: string, zoneId: string) => {
-    setPredefinedStructure(prev => ({
-      ...prev,
-      buildings: prev.buildings.map(b => 
-        b.id === buildingId 
-          ? { ...b, zones: b.zones.filter(z => z.id !== zoneId) }
-          : b
-      )
-    }));
-  };
-
-  const updateZoneName = (buildingId: string, zoneId: string, name: string) => {
-    setPredefinedStructure(prev => ({
-      ...prev,
-      buildings: prev.buildings.map(b => 
-        b.id === buildingId 
-          ? { 
-              ...b, 
-              zones: b.zones.map(z => 
-                z.id === zoneId ? { ...z, name } : z
-              )
+    Alert.alert(
+      strings.delete + ' ' + strings.projects.toLowerCase(),
+      `Êtes-vous sûr de vouloir supprimer ${selectedProjects.size} projet${selectedProjects.size > 1 ? 's' : ''} ?`,
+      [
+        { text: strings.cancel, style: 'cancel' },
+        {
+          text: strings.delete,
+          style: 'destructive',
+          onPress: async () => {
+            for (const projectId of selectedProjects) {
+              await deleteProject(projectId);
             }
-          : b
-      )
-    }));
+            setSelectedProjects(new Set());
+            setSelectionMode(false);
+          }
+        }
+      ]
+    );
   };
 
-  const updateShutterCount = (buildingId: string, zoneId: string, type: 'high' | 'low', count: number) => {
-    const clampedCount = Math.max(0, Math.min(30, count));
+  const handleBulkFavorite = async () => {
+    if (selectedProjects.size === 0) return;
+
+    const newFavorites = new Set(favoriteProjectsSet);
+    for (const projectId of selectedProjects) {
+      if (newFavorites.has(projectId)) {
+        newFavorites.delete(projectId);
+      } else {
+        newFavorites.add(projectId);
+      }
+    }
     
-    setPredefinedStructure(prev => ({
-      ...prev,
-      buildings: prev.buildings.map(b => 
-        b.id === buildingId 
-          ? { 
-              ...b, 
-              zones: b.zones.map(z => 
-                z.id === zoneId 
-                  ? { 
-                      ...z, 
-                      [type === 'high' ? 'highShutters' : 'lowShutters']: clampedCount 
-                    }
-                  : z
-              )
-            }
-          : b
-      )
-    }));
+    await setFavoriteProjects(Array.from(newFavorites));
+    setSelectedProjects(new Set());
+    setSelectionMode(false);
   };
 
-  // Validation du formulaire avec scroll automatique
+  const handleToggleFavorite = async (projectId: string) => {
+    const newFavorites = new Set(favoriteProjectsSet);
+    if (newFavorites.has(projectId)) {
+      newFavorites.delete(projectId);
+    } else {
+      newFavorites.add(projectId);
+    }
+    
+    await setFavoriteProjects(Array.from(newFavorites));
+  };
+
   const validateForm = () => {
     const newErrors: { name?: string; startDate?: string; endDate?: string } = {};
 
     if (!name.trim()) {
-      newErrors.name = 'Le nom du projet est requis';
+      newErrors.name = strings.nameRequired;
     }
 
     if (startDate && !isValidDate(startDate)) {
-      newErrors.startDate = 'Format de date invalide (JJ/MM/AAAA)';
+      newErrors.startDate = strings.invalidDate;
     }
 
     if (endDate && !isValidDate(endDate)) {
-      newErrors.endDate = 'Format de date invalide (JJ/MM/AAAA)';
+      newErrors.endDate = strings.invalidDate;
     }
 
     if (startDate && endDate && isValidDate(startDate) && isValidDate(endDate)) {
       const start = parseDate(startDate);
       const end = parseDate(endDate);
       if (end <= start) {
-        newErrors.endDate = 'La date de fin doit être après la date de début';
+        newErrors.endDate = strings.endDateAfterStart;
       }
     }
 
     setErrors(newErrors);
-
-    // Si le champ nom est vide, faire un scroll vers le haut
-    if (newErrors.name && modalScrollViewRef.current) {
-      setTimeout(() => {
-        modalScrollViewRef.current?.scrollTo({ 
-          y: 0, 
-          animated: true 
-        });
-      }, 100);
-    }
-
     return Object.keys(newErrors).length === 0;
   };
 
@@ -269,12 +199,13 @@ export default function ProjectsScreen() {
     return new Date(year, month - 1, day);
   };
 
-  // CORRIGÉ : Création du projet avec structure prédéfinie - AVEC ATTENTE COMPLÈTE ET GESTION D'ERREURS
-  const handleCreateProject = async () => {
+  const handleSubmitProject = async () => {
     if (!validateForm()) return;
 
     setFormLoading(true);
     try {
+      console.log('🚀 Création du projet:', name.trim());
+      
       const projectData: any = {
         name: name.trim(),
       };
@@ -291,183 +222,25 @@ export default function ProjectsScreen() {
         projectData.endDate = parseDate(endDate);
       }
 
-      // Créer le projet
-      console.log('🚀 Création du projet:', projectData.name);
       const project = await createProject(projectData);
-      console.log('✅ Projet créé avec ID:', project.id);
-
-      // CORRIGÉ : Si la prédéfinition est activée, créer TOUTE la structure avant de naviguer
-      if (predefinedStructure.enabled && predefinedStructure.buildings.length > 0) {
-        console.log('🏗️ Création de la structure prédéfinie...');
-        
-        for (const buildingData of predefinedStructure.buildings) {
-          if (buildingData.name.trim()) {
-            console.log(`📦 Création du bâtiment: ${buildingData.name}`);
-            const building = await createBuilding(project.id, {
-              name: buildingData.name.trim()
-            });
-
-            // CORRIGÉ : Séparer la vérification de création du bâtiment de la vérification des zones
-            if (!building) {
-              console.error(`❌ Erreur: Échec de la création du bâtiment "${buildingData.name}"`);
-              continue; // Passer au bâtiment suivant
-            }
-
-            console.log(`✅ Bâtiment créé avec ID: ${building.id}`);
-
-            // Vérifier s'il y a des zones à créer
-            if (buildingData.zones.length === 0) {
-              console.log(`ℹ️ Aucune zone définie pour le bâtiment "${buildingData.name}"`);
-              continue; // Passer au bâtiment suivant
-            }
-
-            // Créer les zones
-            for (const zoneData of buildingData.zones) {
-              if (zoneData.name.trim()) {
-                console.log(`🏢 Création de la zone: ${zoneData.name}`);
-                const zone = await createFunctionalZone(building.id, {
-                  name: zoneData.name.trim()
-                });
-
-                if (zone) {
-                  console.log(`✅ Zone créée avec ID: ${zone.id}`);
-                  
-                  // Créer les volets hauts (VH)
-                  for (let i = 1; i <= zoneData.highShutters; i++) {
-                    console.log(`🔼 Création du volet haut VH${i.toString().padStart(2, '0')}`);
-                    const shutterHigh = await createShutter(zone.id, {
-                      name: `VH${i.toString().padStart(2, '0')}`,
-                      type: 'high',
-                      referenceFlow: 0,
-                      measuredFlow: 0
-                    });
-                    console.log(`✅ Volet haut créé avec ID: ${shutterHigh?.id}`);
-                  }
-
-                  // Créer les volets bas (VB)
-                  for (let i = 1; i <= zoneData.lowShutters; i++) {
-                    console.log(`🔽 Création du volet bas VB${i.toString().padStart(2, '0')}`);
-                    const shutterLow = await createShutter(zone.id, {
-                      name: `VB${i.toString().padStart(2, '0')}`,
-                      type: 'low',
-                      referenceFlow: 0,
-                      measuredFlow: 0
-                    });
-                    console.log(`✅ Volet bas créé avec ID: ${shutterLow?.id}`);
-                  }
-                } else {
-                  console.error(`❌ Erreur: Échec de la création de la zone "${zoneData.name}"`);
-                }
-              }
-            }
-          }
-        }
-        
-        console.log('✅ Structure prédéfinie créée avec succès !');
-      }
-
-      // Réinitialiser le formulaire
-      resetForm();
-      setCreateModalVisible(false);
-
-      // CORRIGÉ : Naviguer vers le projet créé SEULEMENT après que toute la structure soit créée
-      console.log('🎯 Navigation vers le projet créé');
       
-      // Attendre un petit délai pour s'assurer que toutes les données sont sauvegardées
-      setTimeout(() => {
+      if (project) {
+        console.log('✅ Projet créé avec succès:', project.id);
+        setCreateModalVisible(false);
+        resetForm();
+        
+        // Navigation vers le projet créé
         router.push(`/(tabs)/project/${project.id}`);
-      }, 500);
-      
+      } else {
+        console.error('❌ Erreur: Projet non créé');
+        Alert.alert(strings.error, 'Impossible de créer le projet.');
+      }
     } catch (error) {
-      console.error('❌ Erreur lors de la création:', error);
-      Alert.alert('Erreur', 'Impossible de créer le projet. Veuillez réessayer.');
+      console.error('❌ Erreur lors de la création du projet:', error);
+      Alert.alert(strings.error, 'Impossible de créer le projet. Veuillez réessayer.');
     } finally {
       setFormLoading(false);
     }
-  };
-
-  const resetForm = () => {
-    setName('');
-    setCity('');
-    setStartDate('');
-    setEndDate('');
-    setErrors({});
-    setPredefinedStructure({
-      enabled: false,
-      buildings: []
-    });
-  };
-
-  const handleCreateModal = () => {
-    resetForm();
-    setCreateModalVisible(true);
-  };
-
-  // Fonctions pour les favoris et sélection
-  const handleToggleFavorite = async (projectId: string) => {
-    const newFavorites = new Set(favoriteProjects);
-    if (newFavorites.has(projectId)) {
-      newFavorites.delete(projectId);
-    } else {
-      newFavorites.add(projectId);
-    }
-    
-    await setFavoriteProjects(Array.from(newFavorites));
-  };
-
-  const handleSelectionMode = () => {
-    setSelectionMode(!selectionMode);
-    setSelectedProjects(new Set());
-  };
-
-  const handleProjectSelection = (projectId: string) => {
-    const newSelection = new Set(selectedProjects);
-    if (newSelection.has(projectId)) {
-      newSelection.delete(projectId);
-    } else {
-      newSelection.add(projectId);
-    }
-    setSelectedProjects(newSelection);
-  };
-
-  const handleBulkDelete = () => {
-    if (selectedProjects.size === 0) return;
-
-    Alert.alert(
-      'Supprimer les projets',
-      `Êtes-vous sûr de vouloir supprimer ${selectedProjects.size} projet${selectedProjects.size > 1 ? 's' : ''} ?`,
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Supprimer',
-          style: 'destructive',
-          onPress: async () => {
-            for (const projectId of selectedProjects) {
-              await deleteProject(projectId);
-            }
-            setSelectedProjects(new Set());
-            setSelectionMode(false);
-          }
-        }
-      ]
-    );
-  };
-
-  const handleBulkFavorite = async () => {
-    if (selectedProjects.size === 0) return;
-
-    const newFavorites = new Set(favoriteProjects);
-    for (const projectId of selectedProjects) {
-      if (newFavorites.has(projectId)) {
-        newFavorites.delete(projectId);
-      } else {
-        newFavorites.add(projectId);
-      }
-    }
-    
-    await setFavoriteProjects(Array.from(newFavorites));
-    setSelectedProjects(new Set());
-    setSelectionMode(false);
   };
 
   const handleProjectPress = (project: Project) => {
@@ -478,39 +251,47 @@ export default function ProjectsScreen() {
     }
   };
 
+  const handleEditProject = (project: Project) => {
+    try {
+      router.push(`/(tabs)/project/edit/${project.id}`);
+    } catch (error) {
+      console.error('Erreur de navigation vers édition projet:', error);
+    }
+  };
+
   const handleDeleteProject = async (project: Project) => {
     Alert.alert(
-      'Supprimer le projet',
+      strings.deleteProject,
       `Êtes-vous sûr de vouloir supprimer le projet "${project.name}" ?`,
       [
-        { text: 'Annuler', style: 'cancel' },
+        { text: strings.cancel, style: 'cancel' },
         {
-          text: 'Supprimer',
+          text: strings.delete,
           style: 'destructive',
           onPress: async () => {
-            await deleteProject(project.id);
+            console.log('🗑️ Suppression du projet:', project.id);
+            const success = await deleteProject(project.id);
+            if (success) {
+              console.log('✅ Projet supprimé avec succès');
+            } else {
+              console.error('❌ Erreur lors de la suppression du projet');
+            }
           }
         }
       ]
     );
   };
 
-  const handleEditProject = (project: Project) => {
-    router.push(`/(tabs)/project/edit/${project.id}`);
-  };
-
-  // NOUVEAU : Fonction pour calculer les statistiques détaillées du projet
   const getProjectStats = (project: Project) => {
     const buildingCount = project.buildings.length;
     const zoneCount = project.buildings.reduce((total, building) => total + building.functionalZones.length, 0);
     const shutterCount = project.buildings.reduce((total, building) => 
       total + building.functionalZones.reduce((zoneTotal, zone) => zoneTotal + zone.shutters.length, 0), 0);
-
+    
     let compliantCount = 0;
     let acceptableCount = 0;
     let nonCompliantCount = 0;
 
-    // Calculer la conformité pour chaque volet
     project.buildings.forEach(building => {
       building.functionalZones.forEach(zone => {
         zone.shutters.forEach(shutter => {
@@ -545,18 +326,18 @@ export default function ProjectsScreen() {
 
   // Trier les projets : favoris en premier
   const sortedProjects = [...projects].sort((a, b) => {
-    const aIsFavorite = favoriteProjects.includes(a.id);
-    const bIsFavorite = favoriteProjects.includes(b.id);
+    const aIsFavorite = favoriteProjectsSet.has(a.id);
+    const bIsFavorite = favoriteProjectsSet.has(b.id);
     
     if (aIsFavorite && !bIsFavorite) return -1;
     if (!aIsFavorite && bIsFavorite) return 1;
-    return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+    return 0;
   });
 
   const renderProject = ({ item }: { item: Project }) => {
-    const isSelected = selectedProjects.has(item.id);
-    const isFavorite = favoriteProjects.includes(item.id);
     const stats = getProjectStats(item);
+    const isSelected = selectedProjects.has(item.id);
+    const isFavorite = favoriteProjectsSet.has(item.id);
 
     return (
       <TouchableOpacity
@@ -573,7 +354,6 @@ export default function ProjectsScreen() {
           }
         }}
       >
-        {/* En-tête avec nom du projet et actions */}
         <View style={styles.projectHeader}>
           <View style={styles.projectTitleSection}>
             {selectionMode && (
@@ -590,7 +370,9 @@ export default function ProjectsScreen() {
             )}
             <View style={styles.projectInfo}>
               <Text style={styles.projectName}>{item.name}</Text>
-              {item.city && <Text style={styles.projectCity}>{item.city}</Text>}
+              {item.city && (
+                <Text style={styles.projectCity}>{item.city}</Text>
+              )}
             </View>
           </View>
           
@@ -622,52 +404,44 @@ export default function ProjectsScreen() {
           )}
         </View>
 
-        {/* Dates du projet */}
         {(item.startDate || item.endDate) && (
-          <View style={styles.projectDates}>
-            <Calendar size={14} color={theme.colors.textSecondary} />
+          <View style={styles.dateRange}>
             <Text style={styles.dateText}>
-              {item.startDate && new Date(item.startDate).toLocaleDateString('fr-FR', { 
-                day: 'numeric', 
-                month: 'short', 
-                year: 'numeric' 
-              })}
+              {item.startDate && new Intl.DateTimeFormat('fr-FR', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+              }).format(new Date(item.startDate))}
               {item.startDate && item.endDate && ' → '}
-              {item.endDate && new Date(item.endDate).toLocaleDateString('fr-FR', { 
-                day: 'numeric', 
-                month: 'short', 
-                year: 'numeric' 
-              })}
+              {item.endDate && new Intl.DateTimeFormat('fr-FR', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+              }).format(new Date(item.endDate))}
             </Text>
           </View>
         )}
 
-        {/* CORRIGÉ : Statistiques principales avec alignement parfait */}
-        <View style={styles.mainStats}>
-          <View style={styles.statBox}>
-            <View style={styles.statIconContainer}>
-              <Building size={16} color={theme.colors.primary} />
-            </View>
-            <Text style={styles.statNumber}>{stats.buildingCount}</Text>
-            <Text style={styles.statLabel}>Bâtiments</Text>
+        <View style={styles.statsContainer}>
+          <View style={styles.statItem}>
+            <Building size={16} color={theme.colors.primary} />
+            <Text style={styles.statValue}>{stats.buildingCount}</Text>
+            <Text style={styles.statLabel}>{strings.buildings}</Text>
           </View>
           
-          <View style={styles.statBox}>
-            <View style={styles.statIconContainer}>
-              <Layers size={16} color={theme.colors.primary} />
+          <View style={styles.statItem}>
+            <View style={[styles.statIcon, { backgroundColor: theme.colors.primary + '20' }]}>
+              <Text style={[styles.statIconText, { color: theme.colors.primary }]}>Z</Text>
             </View>
-            <Text style={styles.statNumber}>{stats.zoneCount}</Text>
-            <Text style={styles.statLabel}>Zones</Text>
+            <Text style={styles.statValue}>{stats.zoneCount}</Text>
+            <Text style={styles.statLabel}>{strings.zones}</Text>
           </View>
-          
-          <View style={styles.statBox}>
-            {/* CORRIGÉ : Point coloré dans un conteneur de même taille que les icônes */}
-            <View style={styles.statIconContainer}>
-              <View style={[styles.complianceDot, { 
-                backgroundColor: stats.complianceRate >= 80 ? '#10B981' : stats.complianceRate >= 60 ? '#F59E0B' : '#EF4444' 
-              }]} />
-            </View>
-            <Text style={[styles.statNumber, { 
+
+          <View style={styles.statItem}>
+            <View style={[styles.complianceIndicator, { 
+              backgroundColor: stats.complianceRate >= 80 ? '#10B981' : stats.complianceRate >= 60 ? '#F59E0B' : '#EF4444' 
+            }]} />
+            <Text style={[styles.statValue, { 
               color: stats.complianceRate >= 80 ? '#10B981' : stats.complianceRate >= 60 ? '#F59E0B' : '#EF4444' 
             }]}>
               {stats.complianceRate.toFixed(0)}%
@@ -676,159 +450,49 @@ export default function ProjectsScreen() {
           </View>
         </View>
 
-        {/* Barre de progression de conformité */}
-        {stats.shutterCount > 0 && (
-          <View style={styles.complianceSection}>
-            <Text style={styles.shutterCountText}>{stats.shutterCount} volets</Text>
-            
-            <View style={styles.complianceBar}>
-              <View style={[styles.complianceSegment, { 
-                flex: stats.compliantCount, 
-                backgroundColor: '#10B981' 
-              }]} />
-              <View style={[styles.complianceSegment, { 
-                flex: stats.acceptableCount, 
-                backgroundColor: '#F59E0B' 
-              }]} />
-              <View style={[styles.complianceSegment, { 
-                flex: stats.nonCompliantCount, 
-                backgroundColor: '#EF4444' 
-              }]} />
+        <View style={styles.shutterSummary}>
+          <Text style={styles.shutterTotal}>
+            {stats.shutterCount} {strings.shutters.toLowerCase()}
+          </Text>
+          
+          {stats.shutterCount > 0 && (
+            <View style={styles.complianceBreakdown}>
+              <View style={styles.complianceBar}>
+                <View style={[styles.complianceSegment, { 
+                  flex: stats.compliantCount, 
+                  backgroundColor: '#10B981' 
+                }]} />
+                <View style={[styles.complianceSegment, { 
+                  flex: stats.acceptableCount, 
+                  backgroundColor: '#F59E0B' 
+                }]} />
+                <View style={[styles.complianceSegment, { 
+                  flex: stats.nonCompliantCount, 
+                  backgroundColor: '#EF4444' 
+                }]} />
+              </View>
+              
+              <View style={styles.complianceLabels}>
+                <Text style={styles.complianceLabel}>
+                  <Text style={[styles.complianceDot, { color: '#10B981' }]}>●</Text> {stats.compliantCount} Fonctionnel
+                </Text>
+                <Text style={styles.complianceLabel}>
+                  <Text style={[styles.complianceDot, { color: '#F59E0B' }]}>●</Text> {stats.acceptableCount} Acceptable
+                </Text>
+                <Text style={styles.complianceLabel}>
+                  <Text style={[styles.complianceDot, { color: '#EF4444' }]}>●</Text> {stats.nonCompliantCount} Non conforme
+                </Text>
+              </View>
             </View>
+          )}
+        </View>
 
-            <View style={styles.complianceLegend}>
-              <View style={styles.legendItem}>
-                <View style={[styles.legendDot, { backgroundColor: '#10B981' }]} />
-                <Text style={styles.legendText}>{stats.compliantCount} Fonctionnel</Text>
-              </View>
-              <View style={styles.legendItem}>
-                <View style={[styles.legendDot, { backgroundColor: '#F59E0B' }]} />
-                <Text style={styles.legendText}>{stats.acceptableCount} Acceptable</Text>
-              </View>
-              <View style={styles.legendItem}>
-                <View style={[styles.legendDot, { backgroundColor: '#EF4444' }]} />
-                <Text style={styles.legendText}>{stats.nonCompliantCount} Non conforme</Text>
-              </View>
-            </View>
-          </View>
-        )}
-
-        {/* Date de création */}
         <View style={styles.projectFooter}>
-          <Text style={styles.createdText}>
-            Créé le {new Date(item.createdAt).toLocaleDateString('fr-FR', { 
-              day: 'numeric', 
-              month: 'short', 
-              year: 'numeric' 
-            })}
+          <Text style={styles.createdDate}>
+            Créé le {new Intl.DateTimeFormat('fr-FR').format(new Date(item.createdAt))}
           </Text>
         </View>
       </TouchableOpacity>
-    );
-  };
-
-  const renderPredefinedStructure = () => {
-    if (!predefinedStructure.enabled) return null;
-
-    return (
-      <View style={styles.predefinedSection}>
-        <Text style={styles.predefinedTitle}>🏗️ Structure prédéfinie</Text>
-        
-        <ScrollView style={styles.predefinedScroll} nestedScrollEnabled>
-          {predefinedStructure.buildings.map((building) => (
-            <View key={building.id} style={styles.buildingContainer}>
-              <View style={styles.buildingHeader}>
-                <TextInput
-                  style={styles.buildingNameInput}
-                  value={building.name}
-                  onChangeText={(text) => updateBuildingName(building.id, text)}
-                  placeholder="Nom du bâtiment"
-                  placeholderTextColor={theme.colors.textTertiary}
-                />
-                <TouchableOpacity
-                  style={styles.removeButton}
-                  onPress={() => removeBuilding(building.id)}
-                >
-                  <X size={16} color={theme.colors.error} />
-                </TouchableOpacity>
-              </View>
-
-              <TouchableOpacity
-                style={styles.addZoneButton}
-                onPress={() => addZone(building.id)}
-              >
-                <Plus size={16} color={theme.colors.primary} />
-                <Text style={styles.addZoneText}>Ajouter une zone</Text>
-              </TouchableOpacity>
-
-              {building.zones.map((zone) => (
-                <View key={zone.id} style={styles.zoneContainer}>
-                  <View style={styles.zoneHeader}>
-                    <TextInput
-                      style={styles.zoneNameInput}
-                      value={zone.name}
-                      onChangeText={(text) => updateZoneName(building.id, zone.id, text)}
-                      placeholder="Nom de la zone"
-                      placeholderTextColor={theme.colors.textTertiary}
-                    />
-                    <TouchableOpacity
-                      style={styles.removeButton}
-                      onPress={() => removeZone(building.id, zone.id)}
-                    >
-                      <X size={14} color={theme.colors.error} />
-                    </TouchableOpacity>
-                  </View>
-
-                  <View style={styles.shutterControls}>
-                    <View style={styles.shutterControl}>
-                      <Text style={styles.shutterLabel}>VH (Hauts)</Text>
-                      <View style={styles.counterContainer}>
-                        <TouchableOpacity
-                          style={styles.counterButton}
-                          onPress={() => updateShutterCount(building.id, zone.id, 'high', zone.highShutters - 1)}
-                        >
-                          <Minus size={14} color={theme.colors.primary} />
-                        </TouchableOpacity>
-                        <Text style={styles.counterValue}>{zone.highShutters}</Text>
-                        <TouchableOpacity
-                          style={styles.counterButton}
-                          onPress={() => updateShutterCount(building.id, zone.id, 'high', zone.highShutters + 1)}
-                        >
-                          <Plus size={14} color={theme.colors.primary} />
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-
-                    <View style={styles.shutterControl}>
-                      <Text style={styles.shutterLabel}>VB (Bas)</Text>
-                      <View style={styles.counterContainer}>
-                        <TouchableOpacity
-                          style={styles.counterButton}
-                          onPress={() => updateShutterCount(building.id, zone.id, 'low', zone.lowShutters - 1)}
-                        >
-                          <Minus size={14} color={theme.colors.primary} />
-                        </TouchableOpacity>
-                        <Text style={styles.counterValue}>{zone.lowShutters}</Text>
-                        <TouchableOpacity
-                          style={styles.counterButton}
-                          onPress={() => updateShutterCount(building.id, zone.id, 'low', zone.lowShutters + 1)}
-                        >
-                          <Plus size={14} color={theme.colors.primary} />
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  </View>
-                </View>
-              ))}
-            </View>
-          ))}
-
-          <TouchableOpacity style={styles.addBuildingButton} onPress={addBuilding}>
-            <Plus size={20} color={theme.colors.primary} />
-            <Text style={styles.addBuildingText}>Ajouter un bâtiment</Text>
-          </TouchableOpacity>
-        </ScrollView>
-      </View>
     );
   };
 
@@ -837,9 +501,9 @@ export default function ProjectsScreen() {
   if (isLoading) {
     return (
       <View style={styles.container}>
-        <Header title="Chargement..." />
+        <Header title={strings.projectsTitle} subtitle={strings.projectsSubtitle} />
         <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Chargement des projets...</Text>
+          <Text style={styles.loadingText}>{strings.loading}</Text>
         </View>
       </View>
     );
@@ -848,18 +512,16 @@ export default function ProjectsScreen() {
   return (
     <View style={styles.container}>
       <Header
-        title="Projets"
-        subtitle="Gestion des projets de désenfumage"
+        title={strings.projectsTitle}
+        subtitle={strings.projectsSubtitle}
         rightComponent={
           <View style={styles.headerActions}>
-            {projects.length > 0 && (
-              <TouchableOpacity onPress={handleSelectionMode} style={styles.selectionButton}>
-                <Text style={styles.selectionButtonText}>
-                  {selectionMode ? 'Annuler' : 'Sélect.'}
-                </Text>
-              </TouchableOpacity>
-            )}
-            <TouchableOpacity onPress={handleCreateModal} style={styles.actionButton}>
+            <TouchableOpacity onPress={handleSelectionMode} style={styles.selectionButton}>
+              <Text style={styles.selectionButtonText}>
+                {selectionMode ? strings.cancel : 'Sélect.'}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleCreateProject} style={styles.actionButton}>
               <Plus size={24} color={theme.colors.primary} />
             </TouchableOpacity>
           </View>
@@ -867,24 +529,22 @@ export default function ProjectsScreen() {
       />
 
       {/* NOUVEAU : Encart d'information sur le taux de conformité */}
-      {projects.length > 0 && (
-        <View style={styles.complianceInfoContainer}>
-          <TouchableOpacity 
-            style={styles.complianceInfoCard}
-            onPress={handleComplianceRatePress}
-          >
-            <AlertTriangle size={16} color={theme.colors.warning} />
-            <Text style={styles.complianceInfoText}>
-              Le taux de conformité affiché n'a aucune valeur réglementaire
-            </Text>
-          </TouchableOpacity>
+      <TouchableOpacity 
+        style={styles.complianceInfoCard}
+        onPress={() => setComplianceInfoModalVisible(true)}
+      >
+        <View style={styles.complianceInfoContent}>
+          <AlertTriangle size={16} color={theme.colors.warning} />
+          <Text style={styles.complianceInfoText}>
+            Avertissement important
+          </Text>
         </View>
-      )}
+      </TouchableOpacity>
 
       {selectionMode && (
         <View style={styles.selectionToolbar}>
           <Text style={styles.selectionCount}>
-            {selectedProjects.size} sélectionné{selectedProjects.size > 1 ? 's' : ''}
+            {selectedProjects.size} {strings.selected}{selectedProjects.size > 1 ? 's' : ''}
           </Text>
           <View style={styles.selectionActions}>
             <TouchableOpacity 
@@ -894,7 +554,7 @@ export default function ProjectsScreen() {
             >
               <Star size={20} color={selectedProjects.size > 0 ? "#F59E0B" : theme.colors.textTertiary} />
               <Text style={[styles.toolbarButtonText, { color: selectedProjects.size > 0 ? "#F59E0B" : theme.colors.textTertiary }]}>
-                Favoris
+                {strings.favorites}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity 
@@ -904,7 +564,7 @@ export default function ProjectsScreen() {
             >
               <Trash2 size={20} color={selectedProjects.size > 0 ? theme.colors.error : theme.colors.textTertiary} />
               <Text style={[styles.toolbarButtonText, { color: selectedProjects.size > 0 ? theme.colors.error : theme.colors.textTertiary }]}>
-                Supprimer
+                {strings.delete}
               </Text>
             </TouchableOpacity>
           </View>
@@ -915,13 +575,13 @@ export default function ProjectsScreen() {
         {projects.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Building size={64} color={theme.colors.textTertiary} />
-            <Text style={styles.emptyTitle}>Aucun projet</Text>
+            <Text style={styles.emptyTitle}>{strings.noProjects}</Text>
             <Text style={styles.emptySubtitle}>
-              Créez votre premier projet de désenfumage pour commencer
+              {strings.noProjectsDesc}
             </Text>
             <Button
-              title="Créer un projet"
-              onPress={handleCreateModal}
+              title={strings.createFirstProject}
+              onPress={handleCreateProject}
               style={styles.createButton}
             />
           </View>
@@ -932,11 +592,14 @@ export default function ProjectsScreen() {
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.listContainer}
             showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
           />
         )}
       </View>
 
-      {/* Modal de création de projet avec prédéfinition */}
+      {/* Modal de création de projet */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -946,7 +609,7 @@ export default function ProjectsScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Nouveau projet</Text>
+              <Text style={styles.modalTitle}>{strings.newProject}</Text>
               <TouchableOpacity 
                 onPress={() => setCreateModalVisible(false)}
                 style={styles.closeButton}
@@ -955,13 +618,9 @@ export default function ProjectsScreen() {
               </TouchableOpacity>
             </View>
 
-            <ScrollView 
-              ref={modalScrollViewRef}
-              style={styles.modalBody} 
-              showsVerticalScrollIndicator={false}
-            >
+            <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
               <Input
-                label="Nom du projet *"
+                label={strings.projectName + " *"}
                 value={name}
                 onChangeText={setName}
                 placeholder="Ex: Mesures centre commercial Rivoli"
@@ -969,14 +628,14 @@ export default function ProjectsScreen() {
               />
 
               <Input
-                label="Ville (optionnel)"
+                label={strings.city + " (" + strings.optional + ")"}
                 value={city}
                 onChangeText={setCity}
                 placeholder="Ex: Paris, Lyon, Marseille"
               />
 
               <DateInput
-                label="Date de début (optionnel)"
+                label={strings.startDate + " (" + strings.optional + ")"}
                 value={startDate}
                 onChangeText={setStartDate}
                 placeholder="JJ/MM/AAAA"
@@ -984,42 +643,24 @@ export default function ProjectsScreen() {
               />
 
               <DateInput
-                label="Date de fin (optionnel)"
+                label={strings.endDate + " (" + strings.optional + ")"}
                 value={endDate}
                 onChangeText={setEndDate}
                 placeholder="JJ/MM/AAAA"
                 error={errors.endDate}
               />
-
-              {/* Section prédéfinition de structure */}
-              <View style={styles.predefinedToggleSection}>
-                <View style={styles.toggleHeader}>
-                  <Text style={styles.toggleTitle}>🏗️ Prédéfinir la structure (optionnel)</Text>
-                  <TouchableOpacity
-                    style={[styles.toggle, predefinedStructure.enabled && styles.toggleActive]}
-                    onPress={togglePredefinedStructure}
-                  >
-                    <View style={[styles.toggleThumb, predefinedStructure.enabled && styles.toggleThumbActive]} />
-                  </TouchableOpacity>
-                </View>
-                <Text style={styles.toggleDescription}>
-                  Créez automatiquement vos bâtiments, zones et volets
-                </Text>
-              </View>
-
-              {renderPredefinedStructure()}
             </ScrollView>
 
             <View style={styles.modalFooter}>
               <Button
-                title="Annuler"
+                title={strings.cancel}
                 onPress={() => setCreateModalVisible(false)}
                 variant="secondary"
                 style={styles.modalButton}
               />
               <Button
-                title={formLoading ? "Création..." : "Créer le projet"}
-                onPress={handleCreateProject}
+                title={formLoading ? "Création..." : strings.create}
+                onPress={handleSubmitProject}
                 disabled={formLoading}
                 style={styles.modalButton}
               />
@@ -1028,117 +669,56 @@ export default function ProjectsScreen() {
         </View>
       </Modal>
 
-      {/* NOUVEAU : Modal Taux de conformité déplacé de la page À propos */}
+      {/* NOUVEAU : Modal d'information sur le taux de conformité */}
       <Modal
         animationType="fade"
         transparent={true}
-        visible={complianceRateModalVisible}
-        onRequestClose={() => setComplianceRateModalVisible(false)}
+        visible={complianceInfoModalVisible}
+        onRequestClose={() => setComplianceInfoModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.complianceRateModalContent}>
+          <View style={styles.complianceModalContent}>
             <View style={styles.modalHeader}>
               <AlertTriangle size={32} color={theme.colors.warning} />
-              <Text style={styles.modalTitle}>Taux de conformité affiché</Text>
+              <Text style={styles.modalTitle}>Avertissement important</Text>
               <TouchableOpacity 
-                onPress={() => setComplianceRateModalVisible(false)}
+                onPress={() => setComplianceInfoModalVisible(false)}
                 style={styles.closeButton}
               >
                 <X size={20} color={theme.colors.textSecondary} />
               </TouchableOpacity>
             </View>
             
-            <ScrollView 
-              style={styles.complianceRateScrollView} 
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.complianceRateScrollContent}
-            >
-              {/* Avertissement principal */}
-              <View style={styles.warningSection}>
-                <Text style={styles.warningTitle}>⚠️ Avertissement important</Text>
-                <Text style={styles.warningText}>
-                  Le taux de conformité affiché dans l'aperçu des projets <Text style={styles.warningBold}>n'a aucune valeur réglementaire</Text>.
-                  {'\n\n'}
-                  Il s'agit uniquement d\'un <Text style={styles.warningBold}>indicateur visuel</Text> pour aider à suivre globalement l'état des volets d'un projet.
-                  {'\n\n'}
-                  Ce taux <Text style={styles.warningBold}>n'est défini nulle part dans la norme NF S61-933</Text>.
-                </Text>
-              </View>
-
-              {/* Logique de calcul */}
-              <View style={styles.logicSection}>
-                <Text style={styles.logicTitle}>🧮 Logique de calcul utilisée</Text>
-                <Text style={styles.logicDescription}>
-                  Le taux affiché correspond au pourcentage de volets "Fonctionnels" par rapport au nombre total de volets du projet :
-                </Text>
-                
-                <View style={styles.formulaContainer}>
-                  <Text style={styles.formulaText}>
-                    Taux = (Nombre de volets fonctionnels / Nombre total de volets) × 100
-                  </Text>
-                </View>
-
-                <Text style={styles.logicNote}>
-                  Seuls les volets avec un statut "Fonctionnel" (écart ≤ ±10%) sont comptabilisés dans le numérateur.
-                </Text>
-              </View>
-
-              {/* Signification des couleurs */}
-              <View style={styles.colorsSection}>
-                <Text style={styles.colorsTitle}>🎨 Signification des couleurs</Text>
-                
-                <View style={styles.colorItem}>
-                  <View style={[styles.colorDot, { backgroundColor: '#10B981' }]} />
-                  <View style={styles.colorContent}>
-                    <Text style={styles.colorLabel}>Vert (≥ 80%)</Text>
-                    <Text style={styles.colorDescription}>
-                      Projet avec un bon niveau de conformité globale
-                    </Text>
-                  </View>
-                </View>
-
-                <View style={styles.colorItem}>
-                  <View style={[styles.colorDot, { backgroundColor: '#F59E0B' }]} />
-                  <View style={styles.colorContent}>
-                    <Text style={styles.colorLabel}>Orange (60% - 79%)</Text>
-                    <Text style={styles.colorDescription}>
-                      Projet avec un niveau de conformité moyen, attention requise
-                    </Text>
-                  </View>
-                </View>
-
-                <View style={styles.colorItem}>
-                  <View style={[styles.colorDot, { backgroundColor: '#EF4444' }]} />
-                  <View style={styles.colorContent}>
-                    <Text style={styles.colorLabel}>Rouge ({'<'} 60%)</Text>
-                    <Text style={styles.colorDescription}>
-                      Projet nécessitant une attention particulière
-                    </Text>
-                  </View>
-                </View>
-              </View>
-
-              {/* Rappel réglementaire */}
-              <View style={styles.reminderSection}>
-                <Text style={styles.reminderTitle}>📋 Rappel réglementaire</Text>
-                <Text style={styles.reminderText}>
-                  La conformité réglementaire se base uniquement sur l'évaluation individuelle de chaque volet selon les critères de la norme NF S61-933 Annexe H :
-                  {'\n\n'}
-                  • <Text style={{ color: '#10B981', fontWeight: 'bold' }}>Fonctionnel</Text> : écart ≤ ±10%
-                  {'\n'}
-                  • <Text style={{ color: '#F59E0B', fontWeight: 'bold' }}>Acceptable</Text> : écart entre ±10% et ±20%
-                  {'\n'}
-                  • <Text style={{ color: '#EF4444', fontWeight: 'bold' }}>Non conforme</Text> : écart > ±20%
-                  {'\n\n'}
-                  Chaque volet doit être évalué individuellement selon ces critères officiels.
-                </Text>
-              </View>
+            <ScrollView style={styles.modalScrollView} showsVerticalScrollIndicator={false}>
+              <Text style={styles.modalText}>
+                <Text style={styles.modalBold}>Le taux de conformité affiché dans l'aperçu des projets n'a aucune valeur réglementaire.</Text>
+                {'\n\n'}
+                Il s'agit uniquement d'un indicateur visuel pour aider à suivre globalement l'état des volets d'un projet.
+                {'\n\n'}
+                Ce taux n'est défini nulle part dans la norme NF S61-933.
+                {'\n\n'}
+                <Text style={styles.modalBold}>Logique de calcul utilisée :</Text>
+                {'\n'}
+                • <Text style={{ color: '#10B981', fontFamily: 'Inter-SemiBold' }}>Vert (≥80%)</Text> : Majorité des volets fonctionnels
+                {'\n'}
+                • <Text style={{ color: '#F59E0B', fontFamily: 'Inter-SemiBold' }}>Orange (60-79%)</Text> : Situation intermédiaire
+                {'\n'}
+                • <Text style={{ color: '#EF4444', fontFamily: 'Inter-SemiBold' }}>Rouge ({'<'}60%)</Text> : Attention requise
+                {'\n\n'}
+                <Text style={styles.modalBold}>Rappel des critères réglementaires :</Text>
+                {'\n'}
+                • Fonctionnel : |Écart| ≤ 10%
+                {'\n'}
+                • Acceptable : 10% {'<'} |Écart| ≤ 20%
+                {'\n'}
+                • Non conforme : |Écart| {'>'} 20%
+              </Text>
             </ScrollView>
-
+            
             <View style={styles.modalFooter}>
               <Button
-                title="J'ai compris"
-                onPress={() => setComplianceRateModalVisible(false)}
+                title="Compris"
+                onPress={() => setComplianceInfoModalVisible(false)}
                 style={styles.modalButton}
               />
             </View>
@@ -1187,26 +767,23 @@ const createStyles = (theme: any) => StyleSheet.create({
     padding: 8,
   },
   // NOUVEAU : Styles pour l'encart d'information sur le taux de conformité
-  complianceInfoContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: theme.colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-  },
   complianceInfoCard: {
+    backgroundColor: theme.colors.warning + '20',
+    borderLeftWidth: 4,
+    borderLeftColor: theme.colors.warning,
+    marginHorizontal: 16,
+    marginVertical: 8,
+    borderRadius: 8,
+    padding: 12,
+  },
+  complianceInfoContent: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: theme.colors.warning + '20',
-    borderRadius: 8,
-    padding: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: theme.colors.warning,
   },
   complianceInfoText: {
-    fontSize: 12,
-    fontFamily: 'Inter-Medium',
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
     color: theme.colors.warning,
     flex: 1,
   },
@@ -1269,25 +846,21 @@ const createStyles = (theme: any) => StyleSheet.create({
   listContainer: {
     padding: 16,
   },
-
-  // NOUVEAU : Styles pour les cartes de projet détaillées
   projectCard: {
-    backgroundColor: theme.colors.cardBackground,
+    backgroundColor: theme.colors.surface,
     borderRadius: 16,
-    padding: 20,
+    padding: 16,
     marginBottom: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 4,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
   },
   selectedCard: {
     borderWidth: 2,
     borderColor: theme.colors.primary,
-    backgroundColor: theme.colors.primary + '10',
+    backgroundColor: theme.colors.primary + '20',
   },
   favoriteCard: {
     borderLeftWidth: 4,
@@ -1297,7 +870,7 @@ const createStyles = (theme: any) => StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   projectTitleSection: {
     flexDirection: 'row',
@@ -1319,129 +892,116 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   projectCity: {
     fontSize: 14,
-    fontFamily: 'Inter-Medium',
+    fontFamily: 'Inter-Regular',
     color: theme.colors.primary,
   },
   actionButtons: {
     flexDirection: 'row',
     gap: 8,
   },
-  
-  // Dates du projet
-  projectDates: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+  dateRange: {
     backgroundColor: theme.colors.surfaceSecondary,
     borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 12,
+    alignItems: 'center',
   },
   dateText: {
-    fontSize: 13,
-    fontFamily: 'Inter-Medium',
-    color: theme.colors.textSecondary,
-  },
-
-  // CORRIGÉ : Statistiques principales avec alignement parfait
-  mainStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 20,
-    paddingVertical: 16,
-    backgroundColor: theme.colors.surfaceSecondary,
-    borderRadius: 12,
-  },
-  statBox: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  // NOUVEAU : Conteneur pour les icônes avec taille fixe pour alignement parfait
-  statIconContainer: {
-    width: 16,
-    height: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  statNumber: {
-    fontSize: 24,
-    fontFamily: 'Inter-Bold',
-    color: theme.colors.text,
-    marginBottom: 4,
-  },
-  statLabel: {
     fontSize: 12,
     fontFamily: 'Inter-Medium',
     color: theme.colors.textSecondary,
-    textAlign: 'center',
   },
-  // CORRIGÉ : Point coloré centré dans son conteneur
-  complianceDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-
-  // Section de conformité
-  complianceSection: {
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
     marginBottom: 16,
+    paddingVertical: 12,
+    backgroundColor: theme.colors.surfaceSecondary,
+    borderRadius: 8,
   },
-  shutterCountText: {
-    fontSize: 14,
+  statItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  statIcon: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  statIconText: {
+    fontSize: 12,
+    fontFamily: 'Inter-Bold',
+  },
+  statValue: {
+    fontSize: 18,
+    fontFamily: 'Inter-Bold',
+    color: theme.colors.text,
+    marginTop: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    fontFamily: 'Inter-Regular',
+    color: theme.colors.textSecondary,
+    marginTop: 2,
+  },
+  complianceIndicator: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginBottom: 4,
+  },
+  shutterSummary: {
+    marginBottom: 12,
+  },
+  shutterTotal: {
+    fontSize: 16,
     fontFamily: 'Inter-SemiBold',
     color: theme.colors.text,
-    marginBottom: 8,
     textAlign: 'center',
+    marginBottom: 8,
+  },
+  complianceBreakdown: {
+    gap: 8,
   },
   complianceBar: {
     flexDirection: 'row',
-    height: 8,
-    borderRadius: 4,
+    height: 6,
+    borderRadius: 3,
     overflow: 'hidden',
     backgroundColor: theme.colors.border,
-    marginBottom: 12,
   },
   complianceSegment: {
     height: '100%',
   },
-  complianceLegend: {
+  complianceLabels: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     flexWrap: 'wrap',
-    gap: 8,
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
     gap: 4,
   },
-  legendDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  legendText: {
-    fontSize: 11,
-    fontFamily: 'Inter-Medium',
+  complianceLabel: {
+    fontSize: 10,
+    fontFamily: 'Inter-Regular',
     color: theme.colors.textSecondary,
   },
-
-  // Pied de page du projet
+  complianceDot: {
+    fontSize: 12,
+  },
   projectFooter: {
     borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
+    borderTopColor: theme.colors.separator,
     paddingTop: 12,
-    alignItems: 'center',
   },
-  createdText: {
+  createdDate: {
     fontSize: 12,
     fontFamily: 'Inter-Regular',
     color: theme.colors.textTertiary,
+    textAlign: 'center',
   },
-
-  // Styles pour le modal
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -1453,18 +1013,17 @@ const createStyles = (theme: any) => StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderRadius: 20,
     width: '100%',
-    maxWidth: 500,
-    maxHeight: '90%',
+    maxWidth: 400,
+    maxHeight: '80%',
   },
-  // NOUVEAU : Modal du taux de conformité
-  complianceRateModalContent: {
+  // NOUVEAU : Modal spécifique pour l'information sur le taux de conformité
+  complianceModalContent: {
     backgroundColor: theme.colors.surface,
     borderRadius: 16,
     padding: 20,
     width: '100%',
-    maxWidth: 650,
-    maxHeight: '85%',
-    marginVertical: 40,
+    maxWidth: 500,
+    maxHeight: '80%',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -1472,12 +1031,14 @@ const createStyles = (theme: any) => StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
+    borderBottomColor: theme.colors.separator,
   },
   modalTitle: {
     fontSize: 20,
     fontFamily: 'Inter-Bold',
     color: theme.colors.text,
+    flex: 1,
+    marginLeft: 12,
   },
   closeButton: {
     padding: 8,
@@ -1486,347 +1047,28 @@ const createStyles = (theme: any) => StyleSheet.create({
     padding: 20,
     maxHeight: 400,
   },
+  modalScrollView: {
+    maxHeight: 400,
+    marginBottom: 16,
+  },
+  modalText: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: theme.colors.textSecondary,
+    lineHeight: 20,
+  },
+  modalBold: {
+    fontFamily: 'Inter-SemiBold',
+    color: theme.colors.text,
+  },
   modalFooter: {
     flexDirection: 'row',
     padding: 20,
     borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
+    borderTopColor: theme.colors.separator,
     gap: 12,
   },
   modalButton: {
     flex: 1,
-  },
-  // NOUVEAU : ScrollView pour le taux de conformité
-  complianceRateScrollView: {
-    maxHeight: 500,
-    paddingBottom: 10,
-  },
-  complianceRateScrollContent: {
-    paddingBottom: 20,
-  },
-
-  // NOUVEAU : Styles pour le modal du taux de conformité
-  warningSection: {
-    backgroundColor: theme.colors.warning + '20',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
-    borderLeftWidth: 4,
-    borderLeftColor: theme.colors.warning,
-  },
-  warningTitle: {
-    fontSize: 16,
-    fontFamily: 'Inter-SemiBold',
-    color: theme.colors.warning,
-    marginBottom: 12,
-  },
-  warningText: {
-    fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: theme.colors.warning,
-    lineHeight: 20,
-  },
-  warningBold: {
-    fontFamily: 'Inter-SemiBold',
-  },
-  logicSection: {
-    marginBottom: 20,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.separator,
-  },
-  logicTitle: {
-    fontSize: 16,
-    fontFamily: 'Inter-SemiBold',
-    color: theme.colors.text,
-    marginBottom: 12,
-  },
-  logicDescription: {
-    fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: theme.colors.textSecondary,
-    lineHeight: 20,
-    marginBottom: 12,
-  },
-  formulaContainer: {
-    backgroundColor: theme.colors.primary + '20',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 8,
-    borderLeftWidth: 4,
-    borderLeftColor: theme.colors.success,
-  },
-  formulaText: {
-    fontSize: 13,
-    fontFamily: 'Inter-Medium',
-    color: theme.colors.primary,
-    textAlign: 'center',
-  },
-  logicNote: {
-    fontSize: 13,
-    fontFamily: 'Inter-Regular',
-    color: theme.colors.textSecondary,
-    lineHeight: 18,
-    fontStyle: 'italic',
-    marginTop: 8,
-  },
-  colorsSection: {
-    marginBottom: 20,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.separator,
-  },
-  colorsTitle: {
-    fontSize: 16,
-    fontFamily: 'Inter-SemiBold',
-    color: theme.colors.text,
-    marginBottom: 16,
-  },
-  colorItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 16,
-    backgroundColor: theme.colors.surfaceSecondary,
-    borderRadius: 8,
-    padding: 12,
-  },
-  colorDot: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    marginRight: 12,
-    marginTop: 2,
-  },
-  colorContent: {
-    flex: 1,
-  },
-  colorLabel: {
-    fontSize: 14,
-    fontFamily: 'Inter-SemiBold',
-    color: theme.colors.text,
-    marginBottom: 4,
-  },
-  colorDescription: {
-    fontSize: 13,
-    fontFamily: 'Inter-Regular',
-    color: theme.colors.textSecondary,
-    lineHeight: 18,
-  },
-  reminderSection: {
-    backgroundColor: theme.colors.primary + '20',
-    borderRadius: 12,
-    padding: 16,
-    borderLeftWidth: 4,
-    borderLeftColor: theme.colors.primary,
-  },
-  reminderTitle: {
-    fontSize: 16,
-    fontFamily: 'Inter-SemiBold',
-    color: theme.colors.primary,
-    marginBottom: 12,
-  },
-  reminderText: {
-    fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: theme.colors.primary,
-    lineHeight: 20,
-  },
-
-  // Styles pour la prédéfinition de structure
-  predefinedToggleSection: {
-    marginBottom: 16,
-    paddingVertical: 16,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
-  },
-  toggleHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  toggleTitle: {
-    fontSize: 16,
-    fontFamily: 'Inter-SemiBold',
-    color: theme.colors.text,
-  },
-  toggle: {
-    width: 50,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: theme.colors.border,
-    justifyContent: 'center',
-    paddingHorizontal: 2,
-  },
-  toggleActive: {
-    backgroundColor: theme.colors.primary,
-  },
-  toggleThumb: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: theme.colors.surface,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  toggleThumbActive: {
-    transform: [{ translateX: 22 }],
-  },
-  toggleDescription: {
-    fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: theme.colors.textSecondary,
-  },
-  predefinedSection: {
-    marginTop: 16,
-  },
-  predefinedTitle: {
-    fontSize: 16,
-    fontFamily: 'Inter-SemiBold',
-    color: theme.colors.text,
-    marginBottom: 16,
-  },
-  predefinedScroll: {
-    maxHeight: 300,
-  },
-  buildingContainer: {
-    backgroundColor: theme.colors.surfaceSecondary,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  buildingHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  buildingNameInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    fontSize: 14,
-    fontFamily: 'Inter-Medium',
-    backgroundColor: theme.colors.inputBackground,
-    color: theme.colors.text,
-    marginRight: 8,
-  },
-  removeButton: {
-    padding: 8,
-    borderRadius: 6,
-    backgroundColor: theme.colors.error + '20',
-  },
-  addZoneButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    backgroundColor: theme.colors.primary + '20',
-    borderWidth: 1,
-    borderColor: theme.colors.primary + '40',
-    marginBottom: 12,
-  },
-  addZoneText: {
-    fontSize: 14,
-    fontFamily: 'Inter-Medium',
-    color: theme.colors.primary,
-    marginLeft: 6,
-  },
-  zoneContainer: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  zoneHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  zoneNameInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    fontSize: 13,
-    fontFamily: 'Inter-Medium',
-    backgroundColor: theme.colors.surfaceSecondary,
-    color: theme.colors.text,
-    marginRight: 8,
-  },
-  shutterControls: {
-    flexDirection: 'row',
-    gap: 16,
-  },
-  shutterControl: {
-    flex: 1,
-  },
-  shutterLabel: {
-    fontSize: 12,
-    fontFamily: 'Inter-Medium',
-    color: theme.colors.textSecondary,
-    marginBottom: 6,
-    textAlign: 'center',
-  },
-  counterContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.colors.surfaceSecondary,
-    borderRadius: 8,
-    padding: 4,
-  },
-  counterButton: {
-    width: 28,
-    height: 28,
-    borderRadius: 6,
-    backgroundColor: theme.colors.surface,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 1,
-    elevation: 1,
-  },
-  counterValue: {
-    fontSize: 16,
-    fontFamily: 'Inter-Bold',
-    color: theme.colors.text,
-    marginHorizontal: 16,
-    minWidth: 24,
-    textAlign: 'center',
-  },
-  addBuildingButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    backgroundColor: theme.colors.primary + '20',
-    borderWidth: 2,
-    borderColor: theme.colors.primary,
-    borderStyle: 'dashed',
-    marginTop: 8,
-  },
-  addBuildingText: {
-    fontSize: 16,
-    fontFamily: 'Inter-SemiBold',
-    color: theme.colors.primary,
-    marginLeft: 8,
   },
 });

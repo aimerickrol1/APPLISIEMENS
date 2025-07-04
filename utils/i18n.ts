@@ -1,3 +1,5 @@
+// Système d'internationalisation pour l'application Siemens CalcConform
+
 export type SupportedLanguage = 'fr' | 'en' | 'es' | 'it';
 
 export interface LanguageStrings {
@@ -7,10 +9,12 @@ export interface LanguageStrings {
   search: string;
   export: string;
   about: string;
-  
-  // Titres de pages
+  settings: string;
+
+  // Titres et sous-titres
   projectsTitle: string;
   projectsSubtitle: string;
+  quickCalcTitle: string;
   quickCalcSubtitle: string;
   searchTitle: string;
   searchSubtitle: string;
@@ -18,11 +22,9 @@ export interface LanguageStrings {
   exportSubtitle: string;
   aboutTitle: string;
   aboutSubtitle: string;
-  
-  // Header
-  headerTitle: string;
-  headerSubtitle: string;
-  
+  settingsTitle: string;
+  settingsSubtitle: string;
+
   // Actions générales
   create: string;
   edit: string;
@@ -36,93 +38,79 @@ export interface LanguageStrings {
   next: string;
   previous: string;
   close: string;
+  open: string;
   loading: string;
   error: string;
   success: string;
-  
-  // Formulaires
-  name: string;
-  nameRequired: string;
-  description: string;
-  optional: string;
-  required: string;
-  
+  warning: string;
+  info: string;
+
   // Projets
+  project: string;
   newProject: string;
-  createProject: string;
   editProject: string;
   deleteProject: string;
+  createProject: string;
   projectName: string;
-  city: string;
-  startDate: string;
-  endDate: string;
+  projectDescription: string;
   noProjects: string;
   noProjectsDesc: string;
-  invalidDate: string;
-  endDateAfterStart: string;
-  
-  // Prédéfinition de structure
-  predefineStructure: string;
-  predefineStructureDesc: string;
-  buildings: string;
-  zones: string;
-  shutters: string;
-  zonesPerBuilding: string;
-  shuttersPerZone: string;
-  structureOverview: string;
-  structureComplete: string;
-  
+  createFirstProject: string;
+
   // Bâtiments
   building: string;
-  buildingName: string;
+  buildings: string;
   newBuilding: string;
-  createBuilding: string;
   editBuilding: string;
   deleteBuilding: string;
+  createBuilding: string;
+  buildingName: string;
+  buildingDescription: string;
   noBuildings: string;
   noBuildingsDesc: string;
-  
+
   // Zones
   zone: string;
-  zoneName: string;
-  smokeExtractionZone: string;
+  zones: string;
   newZone: string;
-  createZone: string;
   editZone: string;
   deleteZone: string;
+  createZone: string;
+  zoneName: string;
+  zoneDescription: string;
   noZones: string;
   noZonesDesc: string;
-  
+  smokeExtractionZone: string;
+
   // Volets
   shutter: string;
+  shutters: string;
+  newShutter: string;
+  editShutter: string;
+  deleteShutter: string;
+  deleteShutterConfirm: string;
+  createShutter: string;
+  addFirstShutter: string;
   shutterName: string;
   shutterType: string;
   shutterHigh: string;
   shutterLow: string;
-  newShutter: string;
-  createShutter: string;
-  editShutter: string;
-  deleteShutter: string;
-  deleteShutterConfirm: string;
   noShutters: string;
   noShuttersDesc: string;
-  modifyFlows: string;
-  modifyShutterFlows: string;
-  
+
   // Débits et mesures
   referenceFlow: string;
   measuredFlow: string;
-  deviation: string;
-  calculatedDeviation: string;
   flowMeasurements: string;
   cubicMeterPerHour: string;
-  positiveOrZeroRequired: string;
-  
+  deviation: string;
+  calculatedDeviation: string;
+
   // Conformité
   compliance: string;
   complianceResult: string;
   compliancePreview: string;
-  complianceCalculator: string;
+  complianceCalculations: string;
   compliant: string;
   acceptable: string;
   nonCompliant: string;
@@ -130,70 +118,74 @@ export interface LanguageStrings {
   acceptableDesc: string;
   nonCompliantDesc: string;
   invalidReference: string;
-  
+
+  // Formulaires
+  nameRequired: string;
+  positiveOrZeroRequired: string;
+  invalidDate: string;
+  endDateAfterStart: string;
+  optional: string;
+  required: string;
+
+  // Dates
+  startDate: string;
+  endDate: string;
+  createdOn: string;
+  updatedOn: string;
+  city: string;
+
+  // Remarques
+  remarks: string;
+
   // Recherche
-  searchPlaceholder: string;
+  simpleSearch: string;
+  hierarchicalSearch: string;
+  searchScope: string;
+  searchInSelected: string;
   searchMinChars: string;
-  searching: string;
   searchResults: string;
   noResults: string;
   noResultsDesc: string;
-  
-  // Recherche hiérarchique
-  simpleSearch: string;
-  hierarchicalSearch: string;
-  selectProject: string;
-  selectBuilding: string;
-  selectZone: string;
-  allZones: string;
-  allBuildings: string;
-  clearFilters: string;
-  searchInSelected: string;
-  searchScope: string;
-  
+  searching: string;
+
   // Export
-  exportCSV: string;
-  exportSuccess: string;
-  exportError: string;
-  exportInProgress: string;
+  exportMyData: string;
   noProjectsToExport: string;
   noProjectsToExportDesc: string;
-  exportDescription: string;
   availableProjects: string;
-  completeCSVReport: string;
-  detailedDataForSpreadsheet: string;
-  localBackup: string;
-  directDownload: string;
-  fileSavedInDocuments: string;
-  
+
+  // Calcul rapide
+  complianceCalculator: string;
+  clearValues: string;
+  simplifiedModeDesc: string;
+
+  // Norme
+  nfStandardDesc: string;
+
+  // Interface
+  generalInfo: string;
+  version: string;
+  currentVersion: string;
+  appUpToDate: string;
+  loadingData: string;
+  dataNotFound: string;
+  itemNotFound: string;
+  saveChanges: string;
+
+  // Favoris et sélection
+  favorites: string;
+  selected: string;
+  copied: string;
+
   // À propos
   appDescription: string;
   developedBy: string;
   copyright: string;
   application: string;
-  version: string;
-  language: string;
-  privacy: string;
-  dataProtection: string;
-  nfStandard: string;
-  nfStandardFull: string;
-  consultDocument: string;
-  complianceCalculations: string;
-  certifiedAlgorithms: string;
-  contactDeveloper: string;
-  contact: string;
-  legalNote: string;
-  
-  // NOUVEAU : Paramètres
-  settings: string;
-  settingsTitle: string;
-  settingsSubtitle: string;
   languageAndRegion: string;
   interfaceLanguage: string;
   dataManagement: string;
   storageUsed: string;
-  exportMyData: string;
-  exportMyDataDesc: string;
   clearAllData: string;
   clearAllDataDesc: string;
   clearAllDataConfirm: string;
@@ -201,107 +193,54 @@ export interface LanguageStrings {
   dataCleared: string;
   dataClearedDesc: string;
   applicationSection: string;
-  privacyLocalOnly: string;
-  
-  // Modales et dialogues
-  appUpToDate: string;
-  currentVersion: string;
-  selectLanguage: string;
+  contactDeveloper: string;
+  contact: string;
+  contactDeveloperMessage: string;
+  consultDocument: string;
+  pdfOpenError: string;
+
+  // Confidentialité
+  privacy: string;
   privacyTitle: string;
-  unofficialApp: string;
-  unofficialAppDesc: string;
+  dataProtection: string;
   dataProtectionTitle: string;
   dataProtectionDesc: string;
   localStorageTitle: string;
   localStorageDesc: string;
+  unofficialApp: string;
+  unofficialAppDesc: string;
   understood: string;
-  
-  // Dates et temps
-  createdOn: string;
-  
-  // Informations générales
-  generalInfo: string;
-  remarks: string;
-  
-  // Actions sur les éléments
-  saveChanges: string;
-  clearValues: string;
-  
-  // États et statuts
-  loadingData: string;
-  itemNotFound: string;
-  dataNotFound: string;
-  
-  // Mode simplifié
-  simplifiedMode: string;
-  simplifiedModeDesc: string;
-  quickVerificationDesc: string;
-  nfStandardDesc: string;
-  thisStandardDefines: string;
-  deviationLessThan10: string;
-  idealForSpotChecks: string;
-  forCompleteTracking: string;
-  enterFlowValues: string;
-  
-  // Sélection et favoris
-  selected: string;
-  favorites: string;
-  
-  // Aperçu et prévisualisation
-  preview: string;
-  
-  // Types de volets avec traduction complète
-  highShutter: string;
-  lowShutter: string;
-  
-  // Boutons d'action spécifiques
-  addFirstShutter: string;
-  
-  // Messages d'état
-  enterAtLeast2Chars: string;
-  searchInProgress: string;
-  noShuttersFound: string;
-  
-  // Textes spécifiques aux captures d'écran
-  copied: string;
-  all: string;
-  
-  // Norme française avec mention
-  frenchStandard: string;
-  
-  // Traductions approximatives
+
+  // Langues
+  selectLanguage: string;
   approximateTranslations: string;
   translationNote: string;
-  
-  // Messages pour le contact et erreurs
-  contactDeveloperMessage: string;
-  pdfOpenError: string;
 }
 
-const translations: Record<SupportedLanguage, LanguageStrings> = {
+const strings: Record<SupportedLanguage, LanguageStrings> = {
   fr: {
     // Navigation et onglets
     projects: 'Projets',
-    quickCalc: 'Calcul Rapide',
+    quickCalc: 'Calcul rapide',
     search: 'Recherche',
     export: 'Export',
     about: 'À propos',
-    
-    // Titres de pages
+    settings: 'Paramètres',
+
+    // Titres et sous-titres
     projectsTitle: 'Projets',
-    projectsSubtitle: 'Gestion de vos projets de désenfumage',
-    quickCalcSubtitle: 'Vérification de conformité instantanée',
+    projectsSubtitle: 'Gestion des projets de désenfumage',
+    quickCalcTitle: 'Calcul rapide',
+    quickCalcSubtitle: 'Calcul de conformité simplifié',
     searchTitle: 'Recherche',
     searchSubtitle: 'Rechercher dans vos volets',
     exportTitle: 'Export',
     exportSubtitle: 'Exporter vos données',
     aboutTitle: 'À propos',
     aboutSubtitle: 'Informations sur l\'application',
-    
-    // Header
-    headerTitle: 'Gestion et calcul de conformité',
-    headerSubtitle: 'de débit de désenfumage',
-    
+    settingsTitle: 'Paramètres',
+    settingsSubtitle: 'Configuration de l\'application',
+
     // Actions générales
     create: 'Créer',
     edit: 'Modifier',
@@ -315,248 +254,185 @@ const translations: Record<SupportedLanguage, LanguageStrings> = {
     next: 'Suivant',
     previous: 'Précédent',
     close: 'Fermer',
-    loading: 'Chargement...',
+    open: 'Ouvrir',
+    loading: 'Chargement',
     error: 'Erreur',
     success: 'Succès',
-    
-    // Formulaires
-    name: 'Nom',
-    nameRequired: 'Le nom est requis',
-    description: 'Description',
-    optional: 'optionnel',
-    required: 'requis',
-    
+    warning: 'Attention',
+    info: 'Information',
+
     // Projets
+    project: 'Projet',
     newProject: 'Nouveau projet',
-    createProject: 'Créer un projet',
     editProject: 'Modifier le projet',
     deleteProject: 'Supprimer le projet',
+    createProject: 'Créer le projet',
     projectName: 'Nom du projet',
-    city: 'Ville',
-    startDate: 'Date de début',
-    endDate: 'Date de fin',
+    projectDescription: 'Description du projet',
     noProjects: 'Aucun projet',
     noProjectsDesc: 'Créez votre premier projet pour commencer',
-    invalidDate: 'Format de date invalide (JJ/MM/AAAA)',
-    endDateAfterStart: 'La date de fin doit être après la date de début',
-    
-    // Prédéfinition de structure
-    predefineStructure: 'Prédéfinir la structure',
-    predefineStructureDesc: 'Créez automatiquement vos bâtiments, zones et volets',
-    buildings: 'Bâtiments',
-    zones: 'Zones',
-    shutters: 'Volets',
-    zonesPerBuilding: 'Zones par bâtiment',
-    shuttersPerZone: 'Volets par zone',
-    structureOverview: 'Aperçu de la structure',
-    structureComplete: 'Structure complète prête à utiliser !',
-    
+    createFirstProject: 'Créer votre premier projet',
+
     // Bâtiments
     building: 'Bâtiment',
-    buildingName: 'Nom du bâtiment',
+    buildings: 'Bâtiments',
     newBuilding: 'Nouveau bâtiment',
-    createBuilding: 'Créer un bâtiment',
     editBuilding: 'Modifier le bâtiment',
     deleteBuilding: 'Supprimer le bâtiment',
+    createBuilding: 'Créer le bâtiment',
+    buildingName: 'Nom du bâtiment',
+    buildingDescription: 'Description du bâtiment',
     noBuildings: 'Aucun bâtiment',
-    noBuildingsDesc: 'Créez votre premier bâtiment pour organiser les zones',
-    
+    noBuildingsDesc: 'Ajoutez des bâtiments à votre projet',
+
     // Zones
     zone: 'Zone',
-    zoneName: 'Nom de la zone',
-    smokeExtractionZone: 'Zone de désenfumage',
+    zones: 'Zones',
     newZone: 'Nouvelle zone',
-    createZone: 'Créer une zone',
     editZone: 'Modifier la zone',
     deleteZone: 'Supprimer la zone',
+    createZone: 'Créer la zone',
+    zoneName: 'Nom de la zone',
+    zoneDescription: 'Description de la zone',
     noZones: 'Aucune zone',
-    noZonesDesc: 'Créez votre première zone pour organiser les volets',
-    
+    noZonesDesc: 'Ajoutez des zones de désenfumage à ce bâtiment',
+    smokeExtractionZone: 'Zone de désenfumage',
+
     // Volets
     shutter: 'Volet',
-    shutterName: 'Nom du volet',
-    shutterType: 'Type de volet',
-    shutterHigh: 'Volet Haut',
-    shutterLow: 'Volet Bas',
+    shutters: 'Volets',
     newShutter: 'Nouveau volet',
-    createShutter: 'Créer un volet',
     editShutter: 'Modifier le volet',
     deleteShutter: 'Supprimer le volet',
     deleteShutterConfirm: 'Êtes-vous sûr de vouloir supprimer le volet',
+    createShutter: 'Créer le volet',
+    addFirstShutter: 'Ajouter le premier volet',
+    shutterName: 'Nom du volet',
+    shutterType: 'Type de volet',
+    shutterHigh: 'Volet Haut (VH)',
+    shutterLow: 'Volet Bas (VB)',
     noShutters: 'Aucun volet',
-    noShuttersDesc: 'Ajoutez des volets pour commencer les mesures',
-    modifyFlows: 'Modifier les débits',
-    modifyShutterFlows: 'Modifier les débits',
-    
+    noShuttersDesc: 'Ajoutez des volets à cette zone',
+
     // Débits et mesures
     referenceFlow: 'Débit de référence',
     measuredFlow: 'Débit mesuré',
-    deviation: 'Écart',
-    calculatedDeviation: 'Écart calculé',
     flowMeasurements: 'Mesures de débit',
     cubicMeterPerHour: 'm³/h',
-    positiveOrZeroRequired: 'Valeur positive ou nulle requise',
-    
-    // Conformité - MODIFIÉ : Textes officiels de la norme NF S61-933 Annexe H
+    deviation: 'Écart',
+    calculatedDeviation: 'Écart calculé',
+
+    // Conformité
     compliance: 'Conformité',
     complianceResult: 'Résultat de conformité',
     compliancePreview: 'Aperçu de conformité',
-    complianceCalculator: 'Calculateur de conformité',
+    complianceCalculations: 'Calculs de conformité',
     compliant: 'Fonctionnel',
     acceptable: 'Acceptable',
     nonCompliant: 'Non conforme',
-    functionalDesc: 'Un écart inférieur à ±10 % entre les valeurs retenues lors de l\'essai fonctionnel et les valeurs de référence conduit au constat du fonctionnement attendu du système de désenfumage mécanique.',
-    acceptableDesc: 'Un écart compris entre ±10 % et ±20 % conduit à signaler cette dérive, par une proposition d\'action corrective à l\'exploitant ou au chef d\'établissement.',
-    nonCompliantDesc: 'Un écart supérieur à ±20 % doit conduire à une action corrective obligatoire, la valeur étant jugée non conforme à la mise en service.',
+    functionalDesc: 'Le volet fonctionne correctement selon la norme.',
+    acceptableDesc: 'Le volet présente un écart acceptable nécessitant une surveillance.',
+    nonCompliantDesc: 'Le volet nécessite une action corrective obligatoire.',
     invalidReference: 'Référence invalide',
-    
+
+    // Formulaires
+    nameRequired: 'Le nom est requis',
+    positiveOrZeroRequired: 'Valeur positive ou zéro requise',
+    invalidDate: 'Format de date invalide (JJ/MM/AAAA)',
+    endDateAfterStart: 'La date de fin doit être après la date de début',
+    optional: 'optionnel',
+    required: 'requis',
+
+    // Dates
+    startDate: 'Date de début',
+    endDate: 'Date de fin',
+    createdOn: 'Créé le',
+    updatedOn: 'Modifié le',
+    city: 'Ville',
+
+    // Remarques
+    remarks: 'Remarques',
+
     // Recherche
-    searchPlaceholder: 'Rechercher un volet...',
-    searchMinChars: 'Saisissez au moins 2 caractères',
-    searching: 'Recherche en cours...',
+    simpleSearch: 'Recherche simple',
+    hierarchicalSearch: 'Recherche hiérarchique',
+    searchScope: 'Portée de recherche',
+    searchInSelected: 'Rechercher dans la sélection',
+    searchMinChars: 'Saisissez au moins 2 caractères pour rechercher',
     searchResults: 'résultats',
     noResults: 'Aucun résultat',
     noResultsDesc: 'Aucun volet ne correspond à votre recherche',
-    
-    // Recherche hiérarchique
-    simpleSearch: 'Recherche simple',
-    hierarchicalSearch: 'Recherche hiérarchique',
-    selectProject: 'Sélectionner un projet',
-    selectBuilding: 'Sélectionner un bâtiment',
-    selectZone: 'Sélectionner une zone',
-    allZones: 'Toutes les zones',
-    allBuildings: 'Tous les bâtiments',
-    clearFilters: 'Effacer les filtres',
-    searchInSelected: 'Rechercher dans la sélection',
-    searchScope: 'Portée de recherche',
-    
-    // Export - NETTOYÉ : Messages simplifiés et professionnels
-    exportCSV: 'Exporter en CSV',
-    exportSuccess: 'Export réussi',
-    exportError: 'Erreur d\'export',
-    exportInProgress: 'Export en cours...',
+    searching: 'Recherche en cours...',
+
+    // Export
+    exportMyData: 'Exporter mes données',
     noProjectsToExport: 'Aucun projet à exporter',
     noProjectsToExportDesc: 'Créez des projets pour pouvoir les exporter',
-    exportDescription: 'Exportez vos données de conformité',
     availableProjects: 'Projets disponibles',
-    completeCSVReport: 'Rapport CSV complet',
-    detailedDataForSpreadsheet: 'Données détaillées pour tableur',
-    localBackup: 'Sauvegarde locale',
-    directDownload: 'Téléchargement direct',
-    fileSavedInDocuments: 'Fichier sauvegardé',
-    
-    // À propos - MODIFIÉ : Nouveau titre de l'application
-    appDescription: 'Application de gestion des projets de désenfumage avec calcul automatique de conformité des débits',
+
+    // Calcul rapide
+    complianceCalculator: 'Calculateur de conformité',
+    clearValues: 'Effacer les valeurs',
+    simplifiedModeDesc: 'Saisissez les débits pour calculer la conformité',
+
+    // Norme
+    nfStandardDesc: 'Calculs selon la norme NF S61-933 Annexe H',
+
+    // Interface
+    generalInfo: 'Informations générales',
+    version: 'Version',
+    currentVersion: 'Version actuelle',
+    appUpToDate: 'Application à jour',
+    loadingData: 'Chargement des données...',
+    dataNotFound: 'Données non trouvées',
+    itemNotFound: 'Élément non trouvé',
+    saveChanges: 'Enregistrer les modifications',
+
+    // Favoris et sélection
+    favorites: 'Favoris',
+    selected: 'sélectionné',
+    copied: 'copié',
+
+    // À propos
+    appDescription: 'Application de calcul de conformité de débit de désenfumage',
     developedBy: 'Développé par Aimeric Krol',
     copyright: '© 2025 Siemens. Tous droits réservés.',
     application: 'Application',
-    version: 'Version',
-    language: 'Langue',
-    privacy: 'Confidentialité',
-    dataProtection: 'Protection des données',
-    nfStandard: 'Norme NF S61-933',
-    nfStandardFull: 'NF S61-933 (norme française)',
-    consultDocument: 'Consulter le document',
-    complianceCalculations: 'Calculs de conformité',
-    certifiedAlgorithms: 'Algorithmes certifiés',
-    contactDeveloper: 'Contacter le développeur',
-    contact: 'Contact',
-    legalNote: 'Cette application est un outil d\'aide au calcul. Les résultats doivent être vérifiés par un professionnel qualifié.',
-    
-    // NOUVEAU : Paramètres
-    settings: 'Paramètres',
-    settingsTitle: 'Paramètres',
-    settingsSubtitle: 'Configuration de l\'application',
     languageAndRegion: 'Langue et région',
     interfaceLanguage: 'Langue de l\'interface',
     dataManagement: 'Gestion des données',
     storageUsed: 'Stockage utilisé',
-    exportMyData: 'Exporter mes données',
-    exportMyDataDesc: 'Sauvegarder en CSV',
     clearAllData: 'Effacer toutes les données',
-    clearAllDataDesc: 'Supprime tous vos projets et volets',
-    clearAllDataConfirm: 'Supprimer toutes les données',
+    clearAllDataDesc: 'Supprimer tous les projets et données',
+    clearAllDataConfirm: 'Confirmer la suppression',
     clearAllDataWarning: 'Cette action est irréversible !',
     dataCleared: 'Données supprimées',
-    dataClearedDesc: 'Toutes vos données ont été supprimées avec succès.',
+    dataClearedDesc: 'Toutes vos données ont été supprimées',
     applicationSection: 'Application',
-    privacyLocalOnly: 'Données stockées localement uniquement',
-    
-    // Modales et dialogues
-    appUpToDate: 'Application à jour',
-    currentVersion: 'Version actuelle',
-    selectLanguage: 'Sélectionner la langue',
-    privacyTitle: 'Confidentialité',
-    unofficialApp: 'Application non officielle',
-    unofficialAppDesc: 'Cette application n\'est pas officiellement approuvée par les organismes de certification.',
+    contactDeveloper: 'Contacter le développeur',
+    contact: 'Contact',
+    contactDeveloperMessage: 'Pour toute question ou suggestion, contactez aimeric.krol@siemens.com',
+    consultDocument: 'Consulter le document',
+    pdfOpenError: 'Impossible d\'ouvrir le document PDF',
+
+    // Confidentialité
+    privacy: 'Confidentialité',
+    privacyTitle: 'Politique de confidentialité',
+    dataProtection: 'Protection des données',
     dataProtectionTitle: 'Protection des données',
-    dataProtectionDesc: 'Toutes vos données restent sur votre appareil.',
+    dataProtectionDesc: 'Vos données sont stockées localement sur votre appareil et ne sont jamais transmises à des serveurs externes.',
     localStorageTitle: 'Stockage local',
-    localStorageDesc: 'Aucune donnée n\'est transmise à des serveurs externes.',
+    localStorageDesc: 'Toutes vos données (projets, bâtiments, zones, volets) sont sauvegardées uniquement sur votre appareil.',
+    unofficialApp: 'Application non officielle',
+    unofficialAppDesc: 'Cette application n\'est pas officiellement approuvée par les organismes de normalisation.',
     understood: 'Compris',
-    
-    // Dates et temps
-    createdOn: 'Créé le',
-    
-    // Informations générales
-    generalInfo: 'Informations générales',
-    remarks: 'Remarques',
-    
-    // Actions sur les éléments
-    saveChanges: 'Enregistrer les modifications',
-    clearValues: 'Effacer les valeurs',
-    
-    // États et statuts
-    loadingData: 'Chargement des données...',
-    itemNotFound: 'Élément introuvable',
-    dataNotFound: 'Données introuvables',
-    
-    // Mode simplifié
-    simplifiedMode: 'Mode simplifié',
-    simplifiedModeDesc: 'Ce mode permet une vérification rapide de conformité sans créer de projet. Idéal pour des contrôles ponctuels ou des vérifications sur le terrain.',
-    quickVerificationDesc: 'Pour un suivi complet avec historique et rapports, utilisez le mode "Projets".',
-    nfStandardDesc: 'Cette norme française définit les critères de conformité pour les systèmes de désenfumage mécanique',
-    thisStandardDefines: 'Cette norme définit les critères de conformité',
-    deviationLessThan10: 'Écart ≤ ±10%',
-    idealForSpotChecks: 'Idéal pour des contrôles ponctuels',
-    forCompleteTracking: 'Pour un suivi complet avec historique',
-    enterFlowValues: 'Saisissez les valeurs de débit pour voir le résultat',
-    
-    // Sélection et favoris
-    selected: 'sélectionné',
-    favorites: 'Favoris',
-    
-    // Aperçu et prévisualisation
-    preview: 'Aperçu',
-    
-    // Types de volets avec traduction complète
-    highShutter: 'Volet Haut',
-    lowShutter: 'Volet Bas',
-    
-    // Boutons d'action spécifiques
-    addFirstShutter: 'Ajouter un volet',
-    
-    // Messages d'état
-    enterAtLeast2Chars: 'Saisissez au moins 2 caractères',
-    searchInProgress: 'Recherche en cours...',
-    noShuttersFound: 'Aucun volet trouvé',
-    
-    // Textes spécifiques aux captures d'écran
-    copied: 'copié',
-    all: 'Tous',
-    
-    // Norme française avec mention
-    frenchStandard: 'NF S61-933 (norme française)',
-    
-    // Traductions approximatives
+
+    // Langues
+    selectLanguage: 'Sélectionner la langue',
     approximateTranslations: 'Traductions approximatives',
-    translationNote: 'Les traductions sont littérales et peuvent ne pas utiliser les termes techniques exacts de chaque pays.',
-    
-    // Messages pour le contact et erreurs
-    contactDeveloperMessage: 'Pour toute question ou suggestion concernant cette application, veuillez contacter :\n\nAimeric Krol\naimeric.krol@siemens.com',
-    pdfOpenError: 'Impossible d\'ouvrir le document PDF. Veuillez réessayer.',
+    translationNote: 'Les traductions dans d\'autres langues sont approximatives et peuvent contenir des erreurs.',
   },
-  
+
   en: {
     // Navigation et onglets
     projects: 'Projects',
@@ -564,22 +440,22 @@ const translations: Record<SupportedLanguage, LanguageStrings> = {
     search: 'Search',
     export: 'Export',
     about: 'About',
-    
-    // Titres de pages
+    settings: 'Settings',
+
+    // Titres et sous-titres
     projectsTitle: 'Projects',
-    projectsSubtitle: 'Manage your smoke extraction projects',
-    quickCalcSubtitle: 'Instant compliance verification',
+    projectsSubtitle: 'Smoke extraction project management',
+    quickCalcTitle: 'Quick Calc',
+    quickCalcSubtitle: 'Simplified compliance calculation',
     searchTitle: 'Search',
-    searchSubtitle: 'Search through your shutters',
+    searchSubtitle: 'Search in your shutters',
     exportTitle: 'Export',
     exportSubtitle: 'Export your data',
     aboutTitle: 'About',
     aboutSubtitle: 'Application information',
-    
-    // Header
-    headerTitle: 'Smoke extraction flow',
-    headerSubtitle: 'compliance management and calculation',
-    
+    settingsTitle: 'Settings',
+    settingsSubtitle: 'Application configuration',
+
     // Actions générales
     create: 'Create',
     edit: 'Edit',
@@ -593,271 +469,208 @@ const translations: Record<SupportedLanguage, LanguageStrings> = {
     next: 'Next',
     previous: 'Previous',
     close: 'Close',
-    loading: 'Loading...',
+    open: 'Open',
+    loading: 'Loading',
     error: 'Error',
     success: 'Success',
-    
-    // Formulaires
-    name: 'Name',
-    nameRequired: 'Name is required',
-    description: 'Description',
-    optional: 'optional',
-    required: 'required',
-    
+    warning: 'Warning',
+    info: 'Information',
+
     // Projets
-    newProject: 'New Project',
-    createProject: 'Create Project',
-    editProject: 'Edit Project',
-    deleteProject: 'Delete Project',
-    projectName: 'Project Name',
-    city: 'City',
-    startDate: 'Start Date',
-    endDate: 'End Date',
-    noProjects: 'No Projects',
+    project: 'Project',
+    newProject: 'New project',
+    editProject: 'Edit project',
+    deleteProject: 'Delete project',
+    createProject: 'Create project',
+    projectName: 'Project name',
+    projectDescription: 'Project description',
+    noProjects: 'No projects',
     noProjectsDesc: 'Create your first project to get started',
-    invalidDate: 'Invalid date format (DD/MM/YYYY)',
-    endDateAfterStart: 'End date must be after start date',
-    
-    // Prédéfinition de structure
-    predefineStructure: 'Predefine Structure',
-    predefineStructureDesc: 'Automatically create your buildings, zones and shutters',
-    buildings: 'Buildings',
-    zones: 'Zones',
-    shutters: 'Shutters',
-    zonesPerBuilding: 'Zones per building',
-    shuttersPerZone: 'Shutters per zone',
-    structureOverview: 'Structure Overview',
-    structureComplete: 'Complete structure ready to use!',
-    
+    createFirstProject: 'Create your first project',
+
     // Bâtiments
     building: 'Building',
-    buildingName: 'Building Name',
-    newBuilding: 'New Building',
-    createBuilding: 'Create Building',
-    editBuilding: 'Edit Building',
-    deleteBuilding: 'Delete Building',
-    noBuildings: 'No Buildings',
-    noBuildingsDesc: 'Create your first building to organize zones',
-    
+    buildings: 'Buildings',
+    newBuilding: 'New building',
+    editBuilding: 'Edit building',
+    deleteBuilding: 'Delete building',
+    createBuilding: 'Create building',
+    buildingName: 'Building name',
+    buildingDescription: 'Building description',
+    noBuildings: 'No buildings',
+    noBuildingsDesc: 'Add buildings to your project',
+
     // Zones
     zone: 'Zone',
-    zoneName: 'Zone Name',
-    smokeExtractionZone: 'Smoke Extraction Zone',
-    newZone: 'New Zone',
-    createZone: 'Create Zone',
-    editZone: 'Edit Zone',
-    deleteZone: 'Delete Zone',
-    noZones: 'No Zones',
-    noZonesDesc: 'Create your first zone to organize shutters',
-    
+    zones: 'Zones',
+    newZone: 'New zone',
+    editZone: 'Edit zone',
+    deleteZone: 'Delete zone',
+    createZone: 'Create zone',
+    zoneName: 'Zone name',
+    zoneDescription: 'Zone description',
+    noZones: 'No zones',
+    noZonesDesc: 'Add smoke extraction zones to this building',
+    smokeExtractionZone: 'Smoke extraction zone',
+
     // Volets
     shutter: 'Shutter',
-    shutterName: 'Shutter Name',
-    shutterType: 'Shutter Type',
-    shutterHigh: 'High Shutter',
-    shutterLow: 'Low Shutter',
-    newShutter: 'New Shutter',
-    createShutter: 'Create Shutter',
-    editShutter: 'Edit Shutter',
-    deleteShutter: 'Delete Shutter',
-    deleteShutterConfirm: 'Are you sure you want to delete shutter',
-    noShutters: 'No Shutters',
-    noShuttersDesc: 'Add shutters to start measurements',
-    modifyFlows: 'Modify Flows',
-    modifyShutterFlows: 'Modify Flows',
-    
+    shutters: 'Shutters',
+    newShutter: 'New shutter',
+    editShutter: 'Edit shutter',
+    deleteShutter: 'Delete shutter',
+    deleteShutterConfirm: 'Are you sure you want to delete the shutter',
+    createShutter: 'Create shutter',
+    addFirstShutter: 'Add first shutter',
+    shutterName: 'Shutter name',
+    shutterType: 'Shutter type',
+    shutterHigh: 'High Shutter (HS)',
+    shutterLow: 'Low Shutter (LS)',
+    noShutters: 'No shutters',
+    noShuttersDesc: 'Add shutters to this zone',
+
     // Débits et mesures
-    referenceFlow: 'Reference Flow',
-    measuredFlow: 'Measured Flow',
-    deviation: 'Deviation',
-    calculatedDeviation: 'Calculated Deviation',
-    flowMeasurements: 'Flow Measurements',
+    referenceFlow: 'Reference flow',
+    measuredFlow: 'Measured flow',
+    flowMeasurements: 'Flow measurements',
     cubicMeterPerHour: 'm³/h',
-    positiveOrZeroRequired: 'Positive or zero value required',
-    
-    // Conformité - MODIFIÉ : Traductions adaptées des textes officiels
+    deviation: 'Deviation',
+    calculatedDeviation: 'Calculated deviation',
+
+    // Conformité
     compliance: 'Compliance',
-    complianceResult: 'Compliance Result',
-    compliancePreview: 'Compliance Preview',
-    complianceCalculator: 'Compliance Calculator',
+    complianceResult: 'Compliance result',
+    compliancePreview: 'Compliance preview',
+    complianceCalculations: 'Compliance calculations',
     compliant: 'Compliant',
     acceptable: 'Acceptable',
     nonCompliant: 'Non-compliant',
-    functionalDesc: 'A deviation of less than ±10% between the values retained during the functional test and the reference values leads to confirmation of the expected operation of the mechanical smoke extraction system.',
-    acceptableDesc: 'A deviation between ±10% and ±20% leads to reporting this drift, with a proposal for corrective action to the operator or facility manager.',
-    nonCompliantDesc: 'A deviation greater than ±20% must lead to mandatory corrective action, the value being deemed non-compliant with commissioning.',
-    invalidReference: 'Invalid Reference',
-    
+    functionalDesc: 'The shutter works correctly according to the standard.',
+    acceptableDesc: 'The shutter shows an acceptable deviation requiring monitoring.',
+    nonCompliantDesc: 'The shutter requires mandatory corrective action.',
+    invalidReference: 'Invalid reference',
+
+    // Formulaires
+    nameRequired: 'Name is required',
+    positiveOrZeroRequired: 'Positive or zero value required',
+    invalidDate: 'Invalid date format (DD/MM/YYYY)',
+    endDateAfterStart: 'End date must be after start date',
+    optional: 'optional',
+    required: 'required',
+
+    // Dates
+    startDate: 'Start date',
+    endDate: 'End date',
+    createdOn: 'Created on',
+    updatedOn: 'Updated on',
+    city: 'City',
+
+    // Remarques
+    remarks: 'Remarks',
+
     // Recherche
-    searchPlaceholder: 'Search for a shutter...',
-    searchMinChars: 'Enter at least 2 characters',
-    searching: 'Searching...',
-    searchResults: 'results',
-    noResults: 'No Results',
-    noResultsDesc: 'No shutters match your search',
-    
-    // Recherche hiérarchique
-    simpleSearch: 'Simple Search',
-    hierarchicalSearch: 'Hierarchical Search',
-    selectProject: 'Select a project',
-    selectBuilding: 'Select a building',
-    selectZone: 'Select a zone',
-    allZones: 'All zones',
-    allBuildings: 'All buildings',
-    clearFilters: 'Clear filters',
-    searchInSelected: 'Search in selection',
+    simpleSearch: 'Simple search',
+    hierarchicalSearch: 'Hierarchical search',
     searchScope: 'Search scope',
-    
-    // Export - NETTOYÉ
-    exportCSV: 'Export to CSV',
-    exportSuccess: 'Export Successful',
-    exportError: 'Export Error',
-    exportInProgress: 'Exporting...',
-    noProjectsToExport: 'No Projects to Export',
+    searchInSelected: 'Search in selection',
+    searchMinChars: 'Enter at least 2 characters to search',
+    searchResults: 'results',
+    noResults: 'No results',
+    noResultsDesc: 'No shutters match your search',
+    searching: 'Searching...',
+
+    // Export
+    exportMyData: 'Export my data',
+    noProjectsToExport: 'No projects to export',
     noProjectsToExportDesc: 'Create projects to be able to export them',
-    exportDescription: 'Export your compliance data',
-    availableProjects: 'Available Projects',
-    completeCSVReport: 'Complete CSV Report',
-    detailedDataForSpreadsheet: 'Detailed data for spreadsheet',
-    localBackup: 'Local Backup',
-    directDownload: 'Direct download',
-    fileSavedInDocuments: 'File saved',
-    
-    // À propos - MODIFIÉ : Nouveau titre de l'application
-    appDescription: 'Smoke extraction project management application with automatic flow compliance calculation',
+    availableProjects: 'Available projects',
+
+    // Calcul rapide
+    complianceCalculator: 'Compliance calculator',
+    clearValues: 'Clear values',
+    simplifiedModeDesc: 'Enter flow rates to calculate compliance',
+
+    // Norme
+    nfStandardDesc: 'Calculations according to NF S61-933 Annex H standard',
+
+    // Interface
+    generalInfo: 'General information',
+    version: 'Version',
+    currentVersion: 'Current version',
+    appUpToDate: 'App up to date',
+    loadingData: 'Loading data...',
+    dataNotFound: 'Data not found',
+    itemNotFound: 'Item not found',
+    saveChanges: 'Save changes',
+
+    // Favoris et sélection
+    favorites: 'Favorites',
+    selected: 'selected',
+    copied: 'copied',
+
+    // À propos
+    appDescription: 'Smoke extraction flow compliance calculation application',
     developedBy: 'Developed by Aimeric Krol',
     copyright: '© 2025 Siemens. All rights reserved.',
     application: 'Application',
-    version: 'Version',
-    language: 'Language',
-    privacy: 'Privacy',
-    dataProtection: 'Data Protection',
-    nfStandard: 'NF S61-933 Standard',
-    nfStandardFull: 'NF S61-933 (French standard)',
-    consultDocument: 'View Document',
-    complianceCalculations: 'Compliance Calculations',
-    certifiedAlgorithms: 'Certified Algorithms',
-    contactDeveloper: 'Contact Developer',
-    contact: 'Contact',
-    legalNote: 'This application is a calculation aid tool. Results must be verified by a qualified professional.',
-    
-    // NOUVEAU : Paramètres
-    settings: 'Settings',
-    settingsTitle: 'Settings',
-    settingsSubtitle: 'Application configuration',
     languageAndRegion: 'Language and region',
     interfaceLanguage: 'Interface language',
     dataManagement: 'Data management',
     storageUsed: 'Storage used',
-    exportMyData: 'Export my data',
-    exportMyDataDesc: 'Save as CSV',
     clearAllData: 'Clear all data',
-    clearAllDataDesc: 'Delete all your projects and shutters',
-    clearAllDataConfirm: 'Clear all data',
+    clearAllDataDesc: 'Delete all projects and data',
+    clearAllDataConfirm: 'Confirm deletion',
     clearAllDataWarning: 'This action is irreversible!',
     dataCleared: 'Data cleared',
-    dataClearedDesc: 'All your data has been successfully deleted.',
+    dataClearedDesc: 'All your data has been deleted',
     applicationSection: 'Application',
-    privacyLocalOnly: 'Data stored locally only',
-    
-    // Modales et dialogues
-    appUpToDate: 'App Up to Date',
-    currentVersion: 'Current Version',
-    selectLanguage: 'Select Language',
-    privacyTitle: 'Privacy',
-    unofficialApp: 'Unofficial Application',
-    unofficialAppDesc: 'This application is not officially approved by certification bodies.',
-    dataProtectionTitle: 'Data Protection',
-    dataProtectionDesc: 'All your data remains on your device.',
-    localStorageTitle: 'Local Storage',
-    localStorageDesc: 'No data is transmitted to external servers.',
+    contactDeveloper: 'Contact developer',
+    contact: 'Contact',
+    contactDeveloperMessage: 'For any questions or suggestions, contact aimeric.krol@siemens.com',
+    consultDocument: 'View document',
+    pdfOpenError: 'Unable to open PDF document',
+
+    // Confidentialité
+    privacy: 'Privacy',
+    privacyTitle: 'Privacy policy',
+    dataProtection: 'Data protection',
+    dataProtectionTitle: 'Data protection',
+    dataProtectionDesc: 'Your data is stored locally on your device and is never transmitted to external servers.',
+    localStorageTitle: 'Local storage',
+    localStorageDesc: 'All your data (projects, buildings, zones, shutters) is saved only on your device.',
+    unofficialApp: 'Unofficial application',
+    unofficialAppDesc: 'This application is not officially approved by standardization bodies.',
     understood: 'Understood',
-    
-    // Dates et temps
-    createdOn: 'Created on',
-    
-    // Informations générales
-    generalInfo: 'General Information',
-    remarks: 'Remarks',
-    
-    // Actions sur les éléments
-    saveChanges: 'Save Changes',
-    clearValues: 'Clear Values',
-    
-    // États et statuts
-    loadingData: 'Loading data...',
-    itemNotFound: 'Item Not Found',
-    dataNotFound: 'Data not found',
-    
-    // Mode simplifié
-    simplifiedMode: 'Simplified Mode',
-    simplifiedModeDesc: 'This mode allows quick compliance verification without creating a project. Ideal for spot checks or field verifications.',
-    quickVerificationDesc: 'For complete tracking with history and reports, use "Projects" mode.',
-    nfStandardDesc: 'This French standard defines compliance criteria for mechanical smoke extraction systems',
-    thisStandardDefines: 'This standard defines compliance criteria',
-    deviationLessThan10: 'Deviation ≤ ±10%',
-    idealForSpotChecks: 'Ideal for spot checks',
-    forCompleteTracking: 'For complete tracking with history',
-    enterFlowValues: 'Enter flow values to see the result',
-    
-    // Sélection et favoris
-    selected: 'selected',
-    favorites: 'Favorites',
-    
-    // Aperçu et prévisualisation
-    preview: 'Preview',
-    
-    // Types de volets avec traduction complète
-    highShutter: 'High Shutter',
-    lowShutter: 'Low Shutter',
-    
-    // Boutons d'action spécifiques
-    addFirstShutter: 'Add Shutter',
-    
-    // Messages d'état
-    enterAtLeast2Chars: 'Enter at least 2 characters',
-    searchInProgress: 'Searching...',
-    noShuttersFound: 'No shutters found',
-    
-    // Textes spécifiques aux captures d'écran
-    copied: 'copied',
-    all: 'All',
-    
-    // Norme française avec mention
-    frenchStandard: 'NF S61-933 (French standard)',
-    
-    // Traductions approximatives
-    approximateTranslations: 'Approximate Translations',
-    translationNote: 'Translations are literal and may not use the exact technical terms of each country.',
-    
-    // Messages pour le contact et erreurs
-    contactDeveloperMessage: 'For any questions or suggestions regarding this application, please contact:\n\nAimeric Krol\naimeric.krol@siemens.com',
-    pdfOpenError: 'Unable to open PDF document. Please try again.',
+
+    // Langues
+    selectLanguage: 'Select language',
+    approximateTranslations: 'Approximate translations',
+    translationNote: 'Translations in other languages are approximate and may contain errors.',
   },
-  
+
   es: {
     // Navigation et onglets
     projects: 'Proyectos',
-    quickCalc: 'Cálculo Rápido',
-    search: 'Buscar',
+    quickCalc: 'Cálculo rápido',
+    search: 'Búsqueda',
     export: 'Exportar',
     about: 'Acerca de',
-    
-    // Titres de pages
+    settings: 'Configuración',
+
+    // Titres et sous-titres
     projectsTitle: 'Proyectos',
-    projectsSubtitle: 'Gestiona tus proyectos de extracción de humos',
-    quickCalcSubtitle: 'Verificación instantánea de cumplimiento',
-    searchTitle: 'Buscar',
-    searchSubtitle: 'Buscar en tus compuertas',
+    projectsSubtitle: 'Gestión de proyectos de extracción de humos',
+    quickCalcTitle: 'Cálculo rápido',
+    quickCalcSubtitle: 'Cálculo de cumplimiento simplificado',
+    searchTitle: 'Búsqueda',
+    searchSubtitle: 'Buscar en sus compuertas',
     exportTitle: 'Exportar',
-    exportSubtitle: 'Exportar tus datos',
+    exportSubtitle: 'Exportar sus datos',
     aboutTitle: 'Acerca de',
     aboutSubtitle: 'Información de la aplicación',
-    
-    // Header
-    headerTitle: 'Gestión y cálculo de cumplimiento',
-    headerSubtitle: 'de caudal de extracción de humos',
-    
+    settingsTitle: 'Configuración',
+    settingsSubtitle: 'Configuración de la aplicación',
+
     // Actions générales
     create: 'Crear',
     edit: 'Editar',
@@ -871,271 +684,208 @@ const translations: Record<SupportedLanguage, LanguageStrings> = {
     next: 'Siguiente',
     previous: 'Anterior',
     close: 'Cerrar',
-    loading: 'Cargando...',
+    open: 'Abrir',
+    loading: 'Cargando',
     error: 'Error',
     success: 'Éxito',
-    
-    // Formulaires
-    name: 'Nombre',
-    nameRequired: 'El nombre es requerido',
-    description: 'Descripción',
-    optional: 'opcional',
-    required: 'requerido',
-    
+    warning: 'Advertencia',
+    info: 'Información',
+
     // Projets
-    newProject: 'Nuevo Proyecto',
-    createProject: 'Crear Proyecto',
-    editProject: 'Editar Proyecto',
-    deleteProject: 'Eliminar Proyecto',
-    projectName: 'Nombre del Proyecto',
-    city: 'Ciudad',
-    startDate: 'Fecha de Inicio',
-    endDate: 'Fecha de Fin',
-    noProjects: 'Sin Proyectos',
-    noProjectsDesc: 'Crea tu primer proyecto para comenzar',
-    invalidDate: 'Formato de fecha inválido (DD/MM/AAAA)',
-    endDateAfterStart: 'La fecha de fin debe ser posterior a la fecha de inicio',
-    
-    // Prédéfinition de structure
-    predefineStructure: 'Predefinir Estructura',
-    predefineStructureDesc: 'Crea automáticamente tus edificios, zonas y compuertas',
-    buildings: 'Edificios',
-    zones: 'Zonas',
-    shutters: 'Compuertas',
-    zonesPerBuilding: 'Zonas por edificio',
-    shuttersPerZone: 'Compuertas por zona',
-    structureOverview: 'Vista General de la Estructura',
-    structureComplete: '¡Estructura completa lista para usar!',
-    
+    project: 'Proyecto',
+    newProject: 'Nuevo proyecto',
+    editProject: 'Editar proyecto',
+    deleteProject: 'Eliminar proyecto',
+    createProject: 'Crear proyecto',
+    projectName: 'Nombre del proyecto',
+    projectDescription: 'Descripción del proyecto',
+    noProjects: 'Sin proyectos',
+    noProjectsDesc: 'Cree su primer proyecto para comenzar',
+    createFirstProject: 'Crear su primer proyecto',
+
     // Bâtiments
     building: 'Edificio',
-    buildingName: 'Nombre del Edificio',
-    newBuilding: 'Nuevo Edificio',
-    createBuilding: 'Crear Edificio',
-    editBuilding: 'Editar Edificio',
-    deleteBuilding: 'Eliminar Edificio',
-    noBuildings: 'Sin Edificios',
-    noBuildingsDesc: 'Crea tu primer edificio para organizar las zonas',
-    
+    buildings: 'Edificios',
+    newBuilding: 'Nuevo edificio',
+    editBuilding: 'Editar edificio',
+    deleteBuilding: 'Eliminar edificio',
+    createBuilding: 'Crear edificio',
+    buildingName: 'Nombre del edificio',
+    buildingDescription: 'Descripción del edificio',
+    noBuildings: 'Sin edificios',
+    noBuildingsDesc: 'Agregue edificios a su proyecto',
+
     // Zones
     zone: 'Zona',
-    zoneName: 'Nombre de la Zona',
-    smokeExtractionZone: 'Zona de Extracción de Humos',
-    newZone: 'Nueva Zona',
-    createZone: 'Crear Zona',
-    editZone: 'Editar Zona',
-    deleteZone: 'Eliminar Zona',
-    noZones: 'Sin Zonas',
-    noZonesDesc: 'Crea tu primera zona para organizar las compuertas',
-    
+    zones: 'Zonas',
+    newZone: 'Nueva zona',
+    editZone: 'Editar zona',
+    deleteZone: 'Eliminar zona',
+    createZone: 'Crear zona',
+    zoneName: 'Nombre de la zona',
+    zoneDescription: 'Descripción de la zona',
+    noZones: 'Sin zonas',
+    noZonesDesc: 'Agregue zonas de extracción de humos a este edificio',
+    smokeExtractionZone: 'Zona de extracción de humos',
+
     // Volets
     shutter: 'Compuerta',
-    shutterName: 'Nombre de la Compuerta',
-    shutterType: 'Tipo de Compuerta',
-    shutterHigh: 'Compuerta Alta',
-    shutterLow: 'Compuerta Baja',
-    newShutter: 'Nueva Compuerta',
-    createShutter: 'Crear Compuerta',
-    editShutter: 'Editar Compuerta',
-    deleteShutter: 'Eliminar Compuerta',
-    deleteShutterConfirm: '¿Estás seguro de que quieres eliminar la compuerta',
-    noShutters: 'Sin Compuertas',
-    noShuttersDesc: 'Añade compuertas para comenzar las mediciones',
-    modifyFlows: 'Modificar Caudales',
-    modifyShutterFlows: 'Modificar Caudales',
-    
+    shutters: 'Compuertas',
+    newShutter: 'Nueva compuerta',
+    editShutter: 'Editar compuerta',
+    deleteShutter: 'Eliminar compuerta',
+    deleteShutterConfirm: '¿Está seguro de que desea eliminar la compuerta',
+    createShutter: 'Crear compuerta',
+    addFirstShutter: 'Agregar primera compuerta',
+    shutterName: 'Nombre de la compuerta',
+    shutterType: 'Tipo de compuerta',
+    shutterHigh: 'Compuerta Alta (CA)',
+    shutterLow: 'Compuerta Baja (CB)',
+    noShutters: 'Sin compuertas',
+    noShuttersDesc: 'Agregue compuertas a esta zona',
+
     // Débits et mesures
-    referenceFlow: 'Caudal de Referencia',
-    measuredFlow: 'Caudal Medido',
-    deviation: 'Desviación',
-    calculatedDeviation: 'Desviación Calculada',
-    flowMeasurements: 'Mediciones de Caudal',
+    referenceFlow: 'Caudal de referencia',
+    measuredFlow: 'Caudal medido',
+    flowMeasurements: 'Mediciones de caudal',
     cubicMeterPerHour: 'm³/h',
-    positiveOrZeroRequired: 'Se requiere valor positivo o cero',
-    
-    // Conformité - MODIFIÉ : Traductions adaptées des textes officiels
+    deviation: 'Desviación',
+    calculatedDeviation: 'Desviación calculada',
+
+    // Conformité
     compliance: 'Cumplimiento',
-    complianceResult: 'Resultado de Cumplimiento',
-    compliancePreview: 'Vista Previa de Cumplimiento',
-    complianceCalculator: 'Calculadora de Cumplimiento',
+    complianceResult: 'Resultado de cumplimiento',
+    compliancePreview: 'Vista previa de cumplimiento',
+    complianceCalculations: 'Cálculos de cumplimiento',
     compliant: 'Conforme',
     acceptable: 'Aceptable',
     nonCompliant: 'No conforme',
-    functionalDesc: 'Una desviación inferior a ±10% entre los valores retenidos durante la prueba funcional y los valores de referencia conduce a la constatación del funcionamiento esperado del sistema de extracción de humos mecánico.',
-    acceptableDesc: 'Una desviación entre ±10% y ±20% conduce a señalar esta deriva, mediante una propuesta de acción correctiva al operador o al jefe del establecimiento.',
-    nonCompliantDesc: 'Una desviación superior a ±20% debe conducir a una acción correctiva obligatoria, siendo el valor considerado no conforme con la puesta en servicio.',
-    invalidReference: 'Referencia Inválida',
-    
+    functionalDesc: 'La compuerta funciona correctamente según la norma.',
+    acceptableDesc: 'La compuerta muestra una desviación aceptable que requiere monitoreo.',
+    nonCompliantDesc: 'La compuerta requiere acción correctiva obligatoria.',
+    invalidReference: 'Referencia inválida',
+
+    // Formulaires
+    nameRequired: 'El nombre es requerido',
+    positiveOrZeroRequired: 'Se requiere valor positivo o cero',
+    invalidDate: 'Formato de fecha inválido (DD/MM/AAAA)',
+    endDateAfterStart: 'La fecha de fin debe ser posterior a la fecha de inicio',
+    optional: 'opcional',
+    required: 'requerido',
+
+    // Dates
+    startDate: 'Fecha de inicio',
+    endDate: 'Fecha de fin',
+    createdOn: 'Creado el',
+    updatedOn: 'Actualizado el',
+    city: 'Ciudad',
+
+    // Remarques
+    remarks: 'Observaciones',
+
     // Recherche
-    searchPlaceholder: 'Buscar una compuerta...',
-    searchMinChars: 'Ingresa al menos 2 caracteres',
-    searching: 'Buscando...',
-    searchResults: 'resultados',
-    noResults: 'Sin Resultados',
-    noResultsDesc: 'Ninguna compuerta coincide con tu búsqueda',
-    
-    // Recherche hiérarchique
-    simpleSearch: 'Búsqueda Simple',
-    hierarchicalSearch: 'Búsqueda Jerárquica',
-    selectProject: 'Seleccionar un proyecto',
-    selectBuilding: 'Seleccionar un edificio',
-    selectZone: 'Seleccionar una zona',
-    allZones: 'Todas las zonas',
-    allBuildings: 'Todos los edificios',
-    clearFilters: 'Limpiar filtros',
-    searchInSelected: 'Buscar en selección',
+    simpleSearch: 'Búsqueda simple',
+    hierarchicalSearch: 'Búsqueda jerárquica',
     searchScope: 'Alcance de búsqueda',
-    
-    // Export - NETTOYÉ
-    exportCSV: 'Exportar a CSV',
-    exportSuccess: 'Exportación Exitosa',
-    exportError: 'Error de Exportación',
-    exportInProgress: 'Exportando...',
-    noProjectsToExport: 'Sin Proyectos para Exportar',
-    noProjectsToExportDesc: 'Crea proyectos para poder exportarlos',
-    exportDescription: 'Exporta tus datos de cumplimiento',
-    availableProjects: 'Proyectos Disponibles',
-    completeCSVReport: 'Informe CSV Completo',
-    detailedDataForSpreadsheet: 'Datos detallados para hoja de cálculo',
-    localBackup: 'Respaldo Local',
-    directDownload: 'Descarga directa',
-    fileSavedInDocuments: 'Archivo guardado',
-    
-    // À propos - MODIFIÉ : Nouveau titre de l'application
-    appDescription: 'Aplicación de gestión de proyectos de extracción de humos con cálculo automático de cumplimiento de caudales',
+    searchInSelected: 'Buscar en selección',
+    searchMinChars: 'Ingrese al menos 2 caracteres para buscar',
+    searchResults: 'resultados',
+    noResults: 'Sin resultados',
+    noResultsDesc: 'Ninguna compuerta coincide con su búsqueda',
+    searching: 'Buscando...',
+
+    // Export
+    exportMyData: 'Exportar mis datos',
+    noProjectsToExport: 'Sin proyectos para exportar',
+    noProjectsToExportDesc: 'Cree proyectos para poder exportarlos',
+    availableProjects: 'Proyectos disponibles',
+
+    // Calcul rapide
+    complianceCalculator: 'Calculadora de cumplimiento',
+    clearValues: 'Limpiar valores',
+    simplifiedModeDesc: 'Ingrese los caudales para calcular el cumplimiento',
+
+    // Norme
+    nfStandardDesc: 'Cálculos según la norma NF S61-933 Anexo H',
+
+    // Interface
+    generalInfo: 'Información general',
+    version: 'Versión',
+    currentVersion: 'Versión actual',
+    appUpToDate: 'Aplicación actualizada',
+    loadingData: 'Cargando datos...',
+    dataNotFound: 'Datos no encontrados',
+    itemNotFound: 'Elemento no encontrado',
+    saveChanges: 'Guardar cambios',
+
+    // Favoris et sélection
+    favorites: 'Favoritos',
+    selected: 'seleccionado',
+    copied: 'copiado',
+
+    // À propos
+    appDescription: 'Aplicación de cálculo de cumplimiento de flujo de extracción de humos',
     developedBy: 'Desarrollado por Aimeric Krol',
     copyright: '© 2025 Siemens. Todos los derechos reservados.',
     application: 'Aplicación',
-    version: 'Versión',
-    language: 'Idioma',
-    privacy: 'Privacidad',
-    dataProtection: 'Protección de Datos',
-    nfStandard: 'Norma NF S61-933',
-    nfStandardFull: 'NF S61-933 (norma francesa)',
-    consultDocument: 'Ver Documento',
-    complianceCalculations: 'Cálculos de Cumplimiento',
-    certifiedAlgorithms: 'Algoritmos Certificados',
-    contactDeveloper: 'Contactar Desarrollador',
-    contact: 'Contacto',
-    legalNote: 'Esta aplicación es una herramienta de ayuda al cálculo. Los resultados deben ser verificados por un profesional calificado.',
-    
-    // NOUVEAU : Paramètres
-    settings: 'Configuración',
-    settingsTitle: 'Configuración',
-    settingsSubtitle: 'Configuración de la aplicación',
     languageAndRegion: 'Idioma y región',
     interfaceLanguage: 'Idioma de la interfaz',
     dataManagement: 'Gestión de datos',
-    storageUsed: 'Almacenamiento usado',
-    exportMyData: 'Exportar mis datos',
-    exportMyDataDesc: 'Guardar como CSV',
+    storageUsed: 'Almacenamiento utilizado',
     clearAllData: 'Borrar todos los datos',
-    clearAllDataDesc: 'Elimina todos tus proyectos y compuertas',
-    clearAllDataConfirm: 'Borrar todos los datos',
+    clearAllDataDesc: 'Eliminar todos los proyectos y datos',
+    clearAllDataConfirm: 'Confirmar eliminación',
     clearAllDataWarning: '¡Esta acción es irreversible!',
     dataCleared: 'Datos eliminados',
-    dataClearedDesc: 'Todos tus datos han sido eliminados exitosamente.',
+    dataClearedDesc: 'Todos sus datos han sido eliminados',
     applicationSection: 'Aplicación',
-    privacyLocalOnly: 'Datos almacenados solo localmente',
-    
-    // Modales et dialogues
-    appUpToDate: 'Aplicación Actualizada',
-    currentVersion: 'Versión Actual',
-    selectLanguage: 'Seleccionar Idioma',
-    privacyTitle: 'Privacidad',
-    unofficialApp: 'Aplicación No Oficial',
-    unofficialAppDesc: 'Esta aplicación no está oficialmente aprobada por organismos de certificación.',
-    dataProtectionTitle: 'Protección de Datos',
-    dataProtectionDesc: 'Todos tus datos permanecen en tu dispositivo.',
-    localStorageTitle: 'Almacenamiento Local',
-    localStorageDesc: 'No se transmiten datos a servidores externos.',
+    contactDeveloper: 'Contactar desarrollador',
+    contact: 'Contacto',
+    contactDeveloperMessage: 'Para cualquier pregunta o sugerencia, contacte aimeric.krol@siemens.com',
+    consultDocument: 'Ver documento',
+    pdfOpenError: 'No se puede abrir el documento PDF',
+
+    // Confidentialité
+    privacy: 'Privacidad',
+    privacyTitle: 'Política de privacidad',
+    dataProtection: 'Protección de datos',
+    dataProtectionTitle: 'Protección de datos',
+    dataProtectionDesc: 'Sus datos se almacenan localmente en su dispositivo y nunca se transmiten a servidores externos.',
+    localStorageTitle: 'Almacenamiento local',
+    localStorageDesc: 'Todos sus datos (proyectos, edificios, zonas, compuertas) se guardan solo en su dispositivo.',
+    unofficialApp: 'Aplicación no oficial',
+    unofficialAppDesc: 'Esta aplicación no está oficialmente aprobada por organismos de normalización.',
     understood: 'Entendido',
-    
-    // Dates et temps
-    createdOn: 'Creado el',
-    
-    // Informations générales
-    generalInfo: 'Información General',
-    remarks: 'Observaciones',
-    
-    // Actions sur les éléments
-    saveChanges: 'Guardar Cambios',
-    clearValues: 'Limpiar Valores',
-    
-    // États et statuts
-    loadingData: 'Cargando datos...',
-    itemNotFound: 'Elemento No Encontrado',
-    dataNotFound: 'Datos no encontrados',
-    
-    // Mode simplifié
-    simplifiedMode: 'Modo Simplificado',
-    simplifiedModeDesc: 'Este modo permite una verificación rápida de cumplimiento sin crear un proyecto. Ideal para controles puntuales o verificaciones en campo.',
-    quickVerificationDesc: 'Para un seguimiento completo con historial e informes, usa el modo "Proyectos".',
-    nfStandardDesc: 'Esta norma francesa define los criterios de cumplimiento para sistemas de extracción de humos mecánicos',
-    thisStandardDefines: 'Esta norma define los criterios de cumplimiento',
-    deviationLessThan10: 'Desviación ≤ ±10%',
-    idealForSpotChecks: 'Ideal para controles puntuales',
-    forCompleteTracking: 'Para seguimiento completo con historial',
-    enterFlowValues: 'Ingresa los valores de caudal para ver el resultado',
-    
-    // Sélection et favoris
-    selected: 'seleccionado',
-    favorites: 'Favoritos',
-    
-    // Aperçu et prévisualisation
-    preview: 'Vista Previa',
-    
-    // Types de volets avec traduction complète
-    highShutter: 'Compuerta Alta',
-    lowShutter: 'Compuerta Baja',
-    
-    // Boutons d'action spécifiques
-    addFirstShutter: 'Añadir Compuerta',
-    
-    // Messages d'état
-    enterAtLeast2Chars: 'Ingresa al menos 2 caracteres',
-    searchInProgress: 'Buscando...',
-    noShuttersFound: 'No se encontraron compuertas',
-    
-    // Textes spécifiques aux captures d'écran
-    copied: 'copiado',
-    all: 'Todos',
-    
-    // Norme française avec mention
-    frenchStandard: 'NF S61-933 (norma francesa)',
-    
-    // Traductions approximatives
-    approximateTranslations: 'Traducciones Aproximadas',
-    translationNote: 'Las traducciones son literales y pueden no usar los términos técnicos exactos de cada país.',
-    
-    // Messages pour le contact et erreurs
-    contactDeveloperMessage: 'Para cualquier pregunta o sugerencia sobre esta aplicación, por favor contacta:\n\nAimeric Krol\naimeric.krol@siemens.com',
-    pdfOpenError: 'No se puede abrir el documento PDF. Por favor, inténtalo de nuevo.',
+
+    // Langues
+    selectLanguage: 'Seleccionar idioma',
+    approximateTranslations: 'Traducciones aproximadas',
+    translationNote: 'Las traducciones en otros idiomas son aproximadas y pueden contener errores.',
   },
-  
+
   it: {
     // Navigation et onglets
     projects: 'Progetti',
-    quickCalc: 'Calcolo Rapido',
-    search: 'Cerca',
+    quickCalc: 'Calcolo rapido',
+    search: 'Ricerca',
     export: 'Esporta',
     about: 'Informazioni',
-    
-    // Titres de pages
+    settings: 'Impostazioni',
+
+    // Titres et sous-titres
     projectsTitle: 'Progetti',
-    projectsSubtitle: 'Gestisci i tuoi progetti di estrazione fumi',
-    quickCalcSubtitle: 'Verifica istantanea di conformità',
-    searchTitle: 'Cerca',
+    projectsSubtitle: 'Gestione progetti di estrazione fumi',
+    quickCalcTitle: 'Calcolo rapido',
+    quickCalcSubtitle: 'Calcolo di conformità semplificato',
+    searchTitle: 'Ricerca',
     searchSubtitle: 'Cerca nelle tue serrande',
     exportTitle: 'Esporta',
     exportSubtitle: 'Esporta i tuoi dati',
     aboutTitle: 'Informazioni',
     aboutSubtitle: 'Informazioni sull\'applicazione',
-    
-    // Header
-    headerTitle: 'Gestione e calcolo di conformità',
-    headerSubtitle: 'di portata di estrazione fumi',
-    
+    settingsTitle: 'Impostazioni',
+    settingsSubtitle: 'Configurazione dell\'applicazione',
+
     // Actions générales
     create: 'Crea',
     edit: 'Modifica',
@@ -1149,268 +899,214 @@ const translations: Record<SupportedLanguage, LanguageStrings> = {
     next: 'Avanti',
     previous: 'Precedente',
     close: 'Chiudi',
-    loading: 'Caricamento...',
+    open: 'Apri',
+    loading: 'Caricamento',
     error: 'Errore',
     success: 'Successo',
-    
-    // Formulaires
-    name: 'Nome',
-    nameRequired: 'Il nome è richiesto',
-    description: 'Descrizione',
-    optional: 'opzionale',
-    required: 'richiesto',
-    
+    warning: 'Avviso',
+    info: 'Informazione',
+
     // Projets
-    newProject: 'Nuovo Progetto',
-    createProject: 'Crea Progetto',
-    editProject: 'Modifica Progetto',
-    deleteProject: 'Elimina Progetto',
-    projectName: 'Nome del Progetto',
-    city: 'Città',
-    startDate: 'Data di Inizio',
-    endDate: 'Data di Fine',
-    noProjects: 'Nessun Progetto',
+    project: 'Progetto',
+    newProject: 'Nuovo progetto',
+    editProject: 'Modifica progetto',
+    deleteProject: 'Elimina progetto',
+    createProject: 'Crea progetto',
+    projectName: 'Nome del progetto',
+    projectDescription: 'Descrizione del progetto',
+    noProjects: 'Nessun progetto',
     noProjectsDesc: 'Crea il tuo primo progetto per iniziare',
-    invalidDate: 'Formato data non valido (GG/MM/AAAA)',
-    endDateAfterStart: 'La data di fine deve essere successiva alla data di inizio',
-    
-    // Prédéfinition de structure
-    predefineStructure: 'Predefinisci Struttura',
-    predefineStructureDesc: 'Crea automaticamente i tuoi edifici, zone e serrande',
-    buildings: 'Edifici',
-    zones: 'Zone',
-    shutters: 'Serrande',
-    zonesPerBuilding: 'Zone per edificio',
-    shuttersPerZone: 'Serrande per zona',
-    structureOverview: 'Panoramica della Struttura',
-    structureComplete: 'Struttura completa pronta all\'uso!',
-    
+    createFirstProject: 'Crea il tuo primo progetto',
+
     // Bâtiments
     building: 'Edificio',
-    buildingName: 'Nome dell\'Edificio',
-    newBuilding: 'Nuovo Edificio',
-    createBuilding: 'Crea Edificio',
-    editBuilding: 'Modifica Edificio',
-    deleteBuilding: 'Elimina Edificio',
-    noBuildings: 'Nessun Edificio',
-    noBuildingsDesc: 'Crea il tuo primo edificio per organizzare le zone',
-    
+    buildings: 'Edifici',
+    newBuilding: 'Nuovo edificio',
+    editBuilding: 'Modifica edificio',
+    deleteBuilding: 'Elimina edificio',
+    createBuilding: 'Crea edificio',
+    buildingName: 'Nome dell\'edificio',
+    buildingDescription: 'Descrizione dell\'edificio',
+    noBuildings: 'Nessun edificio',
+    noBuildingsDesc: 'Aggiungi edifici al tuo progetto',
+
     // Zones
     zone: 'Zona',
-    zoneName: 'Nome della Zona',
-    smokeExtractionZone: 'Zona di Estrazione Fumi',
-    newZone: 'Nuova Zona',
-    createZone: 'Crea Zona',
-    editZone: 'Modifica Zona',
-    deleteZone: 'Elimina Zona',
-    noZones: 'Nessuna Zona',
-    noZonesDesc: 'Crea la tua prima zona per organizzare le serrande',
-    
+    zones: 'Zone',
+    newZone: 'Nuova zona',
+    editZone: 'Modifica zona',
+    deleteZone: 'Elimina zona',
+    createZone: 'Crea zona',
+    zoneName: 'Nome della zona',
+    zoneDescription: 'Descrizione della zona',
+    noZones: 'Nessuna zona',
+    noZonesDesc: 'Aggiungi zone di estrazione fumi a questo edificio',
+    smokeExtractionZone: 'Zona di estrazione fumi',
+
     // Volets
     shutter: 'Serranda',
-    shutterName: 'Nome della Serranda',
-    shutterType: 'Tipo di Serranda',
-    shutterHigh: 'Serranda Alta',
-    shutterLow: 'Serranda Bassa',
-    newShutter: 'Nuova Serranda',
-    createShutter: 'Crea Serranda',
-    editShutter: 'Modifica Serranda',
-    deleteShutter: 'Elimina Serranda',
+    shutters: 'Serrande',
+    newShutter: 'Nuova serranda',
+    editShutter: 'Modifica serranda',
+    deleteShutter: 'Elimina serranda',
     deleteShutterConfirm: 'Sei sicuro di voler eliminare la serranda',
-    noShutters: 'Nessuna Serranda',
-    noShuttersDesc: 'Aggiungi serrande per iniziare le misurazioni',
-    modifyFlows: 'Modifica Portate',
-    modifyShutterFlows: 'Modifica Portate',
-    
+    createShutter: 'Crea serranda',
+    addFirstShutter: 'Aggiungi prima serranda',
+    shutterName: 'Nome della serranda',
+    shutterType: 'Tipo di serranda',
+    shutterHigh: 'Serranda Alta (SA)',
+    shutterLow: 'Serranda Bassa (SB)',
+    noShutters: 'Nessuna serranda',
+    noShuttersDesc: 'Aggiungi serrande a questa zona',
+
     // Débits et mesures
-    referenceFlow: 'Portata di Riferimento',
-    measuredFlow: 'Portata Misurata',
-    deviation: 'Deviazione',
-    calculatedDeviation: 'Deviazione Calcolata',
-    flowMeasurements: 'Misurazioni di Portata',
+    referenceFlow: 'Portata di riferimento',
+    measuredFlow: 'Portata misurata',
+    flowMeasurements: 'Misurazioni di portata',
     cubicMeterPerHour: 'm³/h',
-    positiveOrZeroRequired: 'Valore positivo o zero richiesto',
-    
-    // Conformité - MODIFIÉ : Traductions adaptées des textes officiels
+    deviation: 'Deviazione',
+    calculatedDeviation: 'Deviazione calcolata',
+
+    // Conformité
     compliance: 'Conformità',
-    complianceResult: 'Risultato di Conformità',
-    compliancePreview: 'Anteprima di Conformità',
-    complianceCalculator: 'Calcolatore di Conformità',
+    complianceResult: 'Risultato di conformità',
+    compliancePreview: 'Anteprima conformità',
+    complianceCalculations: 'Calcoli di conformità',
     compliant: 'Conforme',
     acceptable: 'Accettabile',
     nonCompliant: 'Non conforme',
-    functionalDesc: 'Una deviazione inferiore a ±10% tra i valori mantenuti durante il test funzionale e i valori di riferimento porta alla constatazione del funzionamento atteso del sistema di estrazione fumi meccanico.',
-    acceptableDesc: 'Una deviazione compresa tra ±10% e ±20% porta a segnalare questa deriva, con una proposta di azione correttiva all\'operatore o al responsabile dello stabilimento.',
-    nonCompliantDesc: 'Una deviazione superiore a ±20% deve portare a un\'azione correttiva obbligatoria, il valore essendo giudicato non conforme alla messa in servizio.',
-    invalidReference: 'Riferimento Non Valido',
-    
+    functionalDesc: 'La serranda funziona correttamente secondo lo standard.',
+    acceptableDesc: 'La serranda mostra una deviazione accettabile che richiede monitoraggio.',
+    nonCompliantDesc: 'La serranda richiede azione correttiva obbligatoria.',
+    invalidReference: 'Riferimento non valido',
+
+    // Formulaires
+    nameRequired: 'Il nome è richiesto',
+    positiveOrZeroRequired: 'Valore positivo o zero richiesto',
+    invalidDate: 'Formato data non valido (GG/MM/AAAA)',
+    endDateAfterStart: 'La data di fine deve essere dopo la data di inizio',
+    optional: 'opzionale',
+    required: 'richiesto',
+
+    // Dates
+    startDate: 'Data di inizio',
+    endDate: 'Data di fine',
+    createdOn: 'Creato il',
+    updatedOn: 'Aggiornato il',
+    city: 'Città',
+
+    // Remarques
+    remarks: 'Osservazioni',
+
     // Recherche
-    searchPlaceholder: 'Cerca una serranda...',
-    searchMinChars: 'Inserisci almeno 2 caratteri',
-    searching: 'Ricerca in corso...',
-    searchResults: 'risultati',
-    noResults: 'Nessun Risultato',
-    noResultsDesc: 'Nessuna serranda corrisponde alla tua ricerca',
-    
-    // Recherche hiérarchique
-    simpleSearch: 'Ricerca Semplice',
-    hierarchicalSearch: 'Ricerca Gerarchica',
-    selectProject: 'Seleziona un progetto',
-    selectBuilding: 'Seleziona un edificio',
-    selectZone: 'Seleziona una zona',
-    allZones: 'Tutte le zone',
-    allBuildings: 'Tutti gli edifici',
-    clearFilters: 'Cancella filtri',
-    searchInSelected: 'Cerca nella selezione',
+    simpleSearch: 'Ricerca semplice',
+    hierarchicalSearch: 'Ricerca gerarchica',
     searchScope: 'Ambito di ricerca',
-    
-    // Export - NETTOYÉ
-    exportCSV: 'Esporta in CSV',
-    exportSuccess: 'Esportazione Riuscita',
-    exportError: 'Errore di Esportazione',
-    exportInProgress: 'Esportazione in corso...',
-    noProjectsToExport: 'Nessun Progetto da Esportare',
+    searchInSelected: 'Cerca nella selezione',
+    searchMinChars: 'Inserisci almeno 2 caratteri per cercare',
+    searchResults: 'risultati',
+    noResults: 'Nessun risultato',
+    noResultsDesc: 'Nessuna serranda corrisponde alla tua ricerca',
+    searching: 'Ricerca in corso...',
+
+    // Export
+    exportMyData: 'Esporta i miei dati',
+    noProjectsToExport: 'Nessun progetto da esportare',
     noProjectsToExportDesc: 'Crea progetti per poterli esportare',
-    exportDescription: 'Esporta i tuoi dati di conformità',
-    availableProjects: 'Progetti Disponibili',
-    completeCSVReport: 'Rapporto CSV Completo',
-    detailedDataForSpreadsheet: 'Dati dettagliati per foglio di calcolo',
-    localBackup: 'Backup Locale',
-    directDownload: 'Download diretto',
-    fileSavedInDocuments: 'File salvato',
-    
-    // À propos - MODIFIÉ : Nouveau titre de l'application
-    appDescription: 'Applicazione di gestione progetti di estrazione fumi con calcolo automatico di conformità delle portate',
+    availableProjects: 'Progetti disponibili',
+
+    // Calcul rapide
+    complianceCalculator: 'Calcolatore di conformità',
+    clearValues: 'Cancella valori',
+    simplifiedModeDesc: 'Inserisci le portate per calcolare la conformità',
+
+    // Norme
+    nfStandardDesc: 'Calcoli secondo lo standard NF S61-933 Allegato H',
+
+    // Interface
+    generalInfo: 'Informazioni generali',
+    version: 'Versione',
+    currentVersion: 'Versione corrente',
+    appUpToDate: 'App aggiornata',
+    loadingData: 'Caricamento dati...',
+    dataNotFound: 'Dati non trovati',
+    itemNotFound: 'Elemento non trovato',
+    saveChanges: 'Salva modifiche',
+
+    // Favoris et sélection
+    favorites: 'Preferiti',
+    selected: 'selezionato',
+    copied: 'copiato',
+
+    // À propos
+    appDescription: 'Applicazione di calcolo conformità flusso estrazione fumi',
     developedBy: 'Sviluppato da Aimeric Krol',
     copyright: '© 2025 Siemens. Tutti i diritti riservati.',
     application: 'Applicazione',
-    version: 'Versione',
-    language: 'Lingua',
-    privacy: 'Privacy',
-    dataProtection: 'Protezione dei Dati',
-    nfStandard: 'Norma NF S61-933',
-    nfStandardFull: 'NF S61-933 (norma francese)',
-    consultDocument: 'Visualizza Documento',
-    complianceCalculations: 'Calcoli di Conformità',
-    certifiedAlgorithms: 'Algoritmi Certificati',
-    contactDeveloper: 'Contatta Sviluppatore',
-    contact: 'Contatto',
-    legalNote: 'Questa applicazione è uno strumento di aiuto al calcolo. I risultati devono essere verificati da un professionista qualificato.',
-    
-    // NOUVEAU : Paramètres
-    settings: 'Impostazioni',
-    settingsTitle: 'Impostazioni',
-    settingsSubtitle: 'Configurazione dell\'applicazione',
     languageAndRegion: 'Lingua e regione',
     interfaceLanguage: 'Lingua dell\'interfaccia',
     dataManagement: 'Gestione dati',
-    storageUsed: 'Spazio utilizzato',
-    exportMyData: 'Esporta i miei dati',
-    exportMyDataDesc: 'Salva come CSV',
+    storageUsed: 'Archiviazione utilizzata',
     clearAllData: 'Cancella tutti i dati',
-    clearAllDataDesc: 'Elimina tutti i tuoi progetti e serrande',
-    clearAllDataConfirm: 'Cancella tutti i dati',
+    clearAllDataDesc: 'Elimina tutti i progetti e dati',
+    clearAllDataConfirm: 'Conferma eliminazione',
     clearAllDataWarning: 'Questa azione è irreversibile!',
     dataCleared: 'Dati cancellati',
-    dataClearedDesc: 'Tutti i tuoi dati sono stati eliminati con successo.',
+    dataClearedDesc: 'Tutti i tuoi dati sono stati eliminati',
     applicationSection: 'Applicazione',
-    privacyLocalOnly: 'Dati memorizzati solo localmente',
-    
-    // Modales et dialogues
-    appUpToDate: 'App Aggiornata',
-    currentVersion: 'Versione Corrente',
-    selectLanguage: 'Seleziona Lingua',
-    privacyTitle: 'Privacy',
-    unofficialApp: 'Applicazione Non Ufficiale',
-    unofficialAppDesc: 'Questa applicazione non è ufficialmente approvata da organismi di certificazione.',
-    dataProtectionTitle: 'Protezione dei Dati',
-    dataProtectionDesc: 'Tutti i tuoi dati rimangono sul tuo dispositivo.',
-    localStorageTitle: 'Archiviazione Locale',
-    localStorageDesc: 'Nessun dato viene trasmesso a server esterni.',
+    contactDeveloper: 'Contatta sviluppatore',
+    contact: 'Contatto',
+    contactDeveloperMessage: 'Per domande o suggerimenti, contatta aimeric.krol@siemens.com',
+    consultDocument: 'Visualizza documento',
+    pdfOpenError: 'Impossibile aprire il documento PDF',
+
+    // Confidentialité
+    privacy: 'Privacy',
+    privacyTitle: 'Politica sulla privacy',
+    dataProtection: 'Protezione dati',
+    dataProtectionTitle: 'Protezione dati',
+    dataProtectionDesc: 'I tuoi dati sono memorizzati localmente sul tuo dispositivo e non vengono mai trasmessi a server esterni.',
+    localStorageTitle: 'Archiviazione locale',
+    localStorageDesc: 'Tutti i tuoi dati (progetti, edifici, zone, serrande) sono salvati solo sul tuo dispositivo.',
+    unofficialApp: 'Applicazione non ufficiale',
+    unofficialAppDesc: 'Questa applicazione non è ufficialmente approvata da organismi di standardizzazione.',
     understood: 'Compreso',
-    
-    // Dates et temps
-    createdOn: 'Creato il',
-    
-    // Informations générales
-    generalInfo: 'Informazioni Generali',
-    remarks: 'Osservazioni',
-    
-    // Actions sur les éléments
-    saveChanges: 'Salva Modifiche',
-    clearValues: 'Cancella Valori',
-    
-    // États et statuts
-    loadingData: 'Caricamento dati...',
-    itemNotFound: 'Elemento Non Trovato',
-    dataNotFound: 'Dati non trovati',
-    
-    // Mode simplifié
-    simplifiedMode: 'Modalità Semplificata',
-    simplifiedModeDesc: 'Questa modalità consente una verifica rapida di conformità senza creare un progetto. Ideale per controlli puntuali o verifiche sul campo.',
-    quickVerificationDesc: 'Per un monitoraggio completo con cronologia e report, usa la modalità "Progetti".',
-    nfStandardDesc: 'Questa norma francese definisce i criteri di conformità per sistemi di estrazione fumi meccanici',
-    thisStandardDefines: 'Questa norma definisce i criteri di conformità',
-    deviationLessThan10: 'Deviazione ≤ ±10%',
-    idealForSpotChecks: 'Ideale per controlli puntuali',
-    forCompleteTracking: 'Per monitoraggio completo con cronologia',
-    enterFlowValues: 'Inserisci i valori di portata per vedere il risultato',
-    
-    // Sélection et favoris
-    selected: 'selezionato',
-    favorites: 'Preferiti',
-    
-    // Aperçu et prévisualisation
-    preview: 'Anteprima',
-    
-    // Types de volets avec traduction complète
-    highShutter: 'Serranda Alta',
-    lowShutter: 'Serranda Bassa',
-    
-    // Boutons d'action spécifiques
-    addFirstShutter: 'Aggiungi Serranda',
-    
-    // Messages d'état
-    enterAtLeast2Chars: 'Inserisci almeno 2 caratteri',
-    searchInProgress: 'Ricerca in corso...',
-    noShuttersFound: 'Nessuna serranda trovata',
-    
-    // Textes spécifiques aux captures d'écran
-    copied: 'copiato',
-    all: 'Tutti',
-    
-    // Norme française avec mention
-    frenchStandard: 'NF S61-933 (norma francese)',
-    
-    // Traductions approximatives
-    approximateTranslations: 'Traduzioni Approssimative',
-    translationNote: 'Le traduzioni sono letterali e potrebbero non utilizzare i termini tecnici esatti di ogni paese.',
-    
-    // Messages pour le contact et erreurs
-    contactDeveloperMessage: 'Per qualsiasi domanda o suggerimento riguardo questa applicazione, contatta:\n\nAimeric Krol\naimeric.krol@siemens.com',
-    pdfOpenError: 'Impossibile aprire il documento PDF. Riprova.',
+
+    // Langues
+    selectLanguage: 'Seleziona lingua',
+    approximateTranslations: 'Traduzioni approssimative',
+    translationNote: 'Le traduzioni in altre lingue sono approssimative e possono contenere errori.',
   }
 };
 
+// État global de la langue
 let currentLanguage: SupportedLanguage = 'fr';
 
-export function setLanguage(lang: SupportedLanguage) {
-  currentLanguage = lang;
+// Fonction pour obtenir les chaînes de caractères actuelles
+export function getStrings(): LanguageStrings {
+  return strings[currentLanguage];
 }
 
+// Fonction pour obtenir la langue actuelle
 export function getCurrentLanguage(): SupportedLanguage {
   return currentLanguage;
 }
 
-export function getStrings(): LanguageStrings {
-  return translations[currentLanguage];
+// Fonction pour changer la langue
+export function setLanguage(language: SupportedLanguage): void {
+  if (strings[language]) {
+    currentLanguage = language;
+  }
 }
 
-export function initializeLanguage() {
-  // Par défaut en français
+// Fonction pour initialiser la langue (peut être étendue pour détecter la langue du système)
+export function initializeLanguage(): void {
+  // Pour l'instant, on garde le français par défaut
+  // Cette fonction peut être étendue pour détecter la langue du système
   currentLanguage = 'fr';
 }
 
+// Fonction pour obtenir les options de langue disponibles
 export function getLanguageOptions() {
   return [
     { code: 'fr' as SupportedLanguage, name: 'Français', flag: '🇫🇷' },
