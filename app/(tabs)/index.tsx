@@ -261,7 +261,7 @@ export default function ProjectsScreen() {
     return new Date(year, month - 1, day);
   };
 
-  // Création du projet avec structure prédéfinie
+  // CORRIGÉ : Création du projet avec structure prédéfinie - AVEC ATTENTE COMPLÈTE
   const handleCreateProject = async () => {
     if (!validateForm()) return;
 
@@ -284,12 +284,16 @@ export default function ProjectsScreen() {
       }
 
       // Créer le projet
+      console.log('🚀 Création du projet:', projectData.name);
       const project = await createProject(projectData);
 
-      // Si la prédéfinition est activée, créer la structure
+      // CORRIGÉ : Si la prédéfinition est activée, créer TOUTE la structure avant de naviguer
       if (predefinedStructure.enabled && predefinedStructure.buildings.length > 0) {
+        console.log('🏗️ Création de la structure prédéfinie...');
+        
         for (const buildingData of predefinedStructure.buildings) {
           if (buildingData.name.trim()) {
+            console.log(`📦 Création du bâtiment: ${buildingData.name}`);
             const building = await createBuilding(project.id, {
               name: buildingData.name.trim()
             });
@@ -297,6 +301,7 @@ export default function ProjectsScreen() {
             if (building && buildingData.zones.length > 0) {
               for (const zoneData of buildingData.zones) {
                 if (zoneData.name.trim()) {
+                  console.log(`🏢 Création de la zone: ${zoneData.name}`);
                   const zone = await createFunctionalZone(building.id, {
                     name: zoneData.name.trim()
                   });
@@ -304,6 +309,7 @@ export default function ProjectsScreen() {
                   if (zone) {
                     // Créer les volets hauts (VH)
                     for (let i = 1; i <= zoneData.highShutters; i++) {
+                      console.log(`🔼 Création du volet haut VH${i.toString().padStart(2, '0')}`);
                       await createShutter(zone.id, {
                         name: `VH${i.toString().padStart(2, '0')}`,
                         type: 'high',
@@ -314,6 +320,7 @@ export default function ProjectsScreen() {
 
                     // Créer les volets bas (VB)
                     for (let i = 1; i <= zoneData.lowShutters; i++) {
+                      console.log(`🔽 Création du volet bas VB${i.toString().padStart(2, '0')}`);
                       await createShutter(zone.id, {
                         name: `VB${i.toString().padStart(2, '0')}`,
                         type: 'low',
@@ -327,15 +334,19 @@ export default function ProjectsScreen() {
             }
           }
         }
+        
+        console.log('✅ Structure prédéfinie créée avec succès !');
       }
 
       // Réinitialiser le formulaire
       resetForm();
       setCreateModalVisible(false);
 
-      // Naviguer vers le projet créé
+      // CORRIGÉ : Naviguer vers le projet créé SEULEMENT après que toute la structure soit créée
+      console.log('🎯 Navigation vers le projet créé');
       router.push(`/(tabs)/project/${project.id}`);
     } catch (error) {
+      console.error('❌ Erreur lors de la création:', error);
       Alert.alert('Erreur', 'Impossible de créer le projet. Veuillez réessayer.');
     } finally {
       setFormLoading(false);
@@ -959,7 +970,7 @@ export default function ProjectsScreen() {
                 style={styles.modalButton}
               />
               <Button
-                title="Créer le projet"
+                title={formLoading ? "Création..." : "Créer le projet"}
                 onPress={handleCreateProject}
                 disabled={formLoading}
                 style={styles.modalButton}
