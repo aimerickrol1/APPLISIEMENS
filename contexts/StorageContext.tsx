@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { Project, Building, FunctionalZone, Shutter, SearchResult } from '@/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -100,6 +100,14 @@ export function StorageProvider({ children }: StorageProviderProps) {
   const [favoriteZones, setFavoriteZonesState] = useState<string[]>([]);
   const [favoriteShutters, setFavoriteShuttersState] = useState<string[]>([]);
   const [quickCalcHistory, setQuickCalcHistoryState] = useState<QuickCalcHistoryItem[]>([]);
+
+  // CRITIQUE : Ref pour maintenir la version la plus récente des projets
+  const projectsRef = useRef<Project[]>([]);
+
+  // Mettre à jour la ref chaque fois que l'état projects change
+  useEffect(() => {
+    projectsRef.current = projects;
+  }, [projects]);
 
   // Initialisation au montage du provider
   useEffect(() => {
@@ -218,7 +226,7 @@ export function StorageProvider({ children }: StorageProviderProps) {
     
     console.log('📦 Nouveau projet créé:', newProject);
     
-    const newProjects = [...projects, newProject];
+    const newProjects = [...projectsRef.current, newProject];
     await saveProjects(newProjects);
     
     console.log('✅ Projet ajouté à la liste, total:', newProjects.length);
@@ -228,14 +236,14 @@ export function StorageProvider({ children }: StorageProviderProps) {
   const updateProject = async (id: string, updates: Partial<Project>): Promise<Project | null> => {
     console.log('✏️ StorageContext.updateProject appelé pour:', id, 'avec:', updates);
     
-    const projectIndex = projects.findIndex(p => p.id === id);
+    const projectIndex = projectsRef.current.findIndex(p => p.id === id);
     if (projectIndex === -1) {
       console.error('❌ Projet non trouvé:', id);
       return null;
     }
     
-    const updatedProject = { ...projects[projectIndex], ...updates, updatedAt: new Date() };
-    const newProjects = [...projects];
+    const updatedProject = { ...projectsRef.current[projectIndex], ...updates, updatedAt: new Date() };
+    const newProjects = [...projectsRef.current];
     newProjects[projectIndex] = updatedProject;
     
     await saveProjects(newProjects);
@@ -246,13 +254,13 @@ export function StorageProvider({ children }: StorageProviderProps) {
   const deleteProject = async (id: string): Promise<boolean> => {
     console.log('🗑️ StorageContext.deleteProject appelé pour:', id);
     
-    const projectIndex = projects.findIndex(p => p.id === id);
+    const projectIndex = projectsRef.current.findIndex(p => p.id === id);
     if (projectIndex === -1) {
       console.error('❌ Projet non trouvé pour suppression:', id);
       return false;
     }
     
-    const newProjects = projects.filter(p => p.id !== id);
+    const newProjects = projectsRef.current.filter(p => p.id !== id);
     const newFavoriteProjects = favoriteProjects.filter(fId => fId !== id);
     
     await Promise.all([
@@ -268,7 +276,7 @@ export function StorageProvider({ children }: StorageProviderProps) {
   const createBuilding = async (projectId: string, buildingData: Omit<Building, 'id' | 'projectId' | 'createdAt' | 'functionalZones'>): Promise<Building | null> => {
     console.log('🏗️ StorageContext.createBuilding appelé pour projet:', projectId, 'avec:', buildingData);
     
-    const projectIndex = projects.findIndex(p => p.id === projectId);
+    const projectIndex = projectsRef.current.findIndex(p => p.id === projectId);
     if (projectIndex === -1) {
       console.error('❌ Projet non trouvé pour création bâtiment:', projectId);
       return null;
@@ -284,7 +292,7 @@ export function StorageProvider({ children }: StorageProviderProps) {
 
     console.log('🏢 Nouveau bâtiment créé:', newBuilding);
 
-    const newProjects = [...projects];
+    const newProjects = [...projectsRef.current];
     newProjects[projectIndex] = {
       ...newProjects[projectIndex],
       buildings: [...newProjects[projectIndex].buildings, newBuilding],
@@ -299,7 +307,7 @@ export function StorageProvider({ children }: StorageProviderProps) {
   const updateBuilding = async (buildingId: string, updates: Partial<Building>): Promise<Building | null> => {
     console.log('✏️ StorageContext.updateBuilding appelé pour:', buildingId, 'avec:', updates);
     
-    const newProjects = [...projects];
+    const newProjects = [...projectsRef.current];
     
     for (let i = 0; i < newProjects.length; i++) {
       const buildingIndex = newProjects[i].buildings.findIndex(b => b.id === buildingId);
@@ -328,7 +336,7 @@ export function StorageProvider({ children }: StorageProviderProps) {
   const deleteBuilding = async (buildingId: string): Promise<boolean> => {
     console.log('🗑️ StorageContext.deleteBuilding appelé pour:', buildingId);
     
-    const newProjects = [...projects];
+    const newProjects = [...projectsRef.current];
     let found = false;
     
     for (let i = 0; i < newProjects.length; i++) {
@@ -362,7 +370,7 @@ export function StorageProvider({ children }: StorageProviderProps) {
   const createFunctionalZone = async (buildingId: string, zoneData: Omit<FunctionalZone, 'id' | 'buildingId' | 'createdAt' | 'shutters'>): Promise<FunctionalZone | null> => {
     console.log('🏢 StorageContext.createFunctionalZone appelé pour bâtiment:', buildingId, 'avec:', zoneData);
     
-    const newProjects = [...projects];
+    const newProjects = [...projectsRef.current];
     
     for (let i = 0; i < newProjects.length; i++) {
       const buildingIndex = newProjects[i].buildings.findIndex(b => b.id === buildingId);
@@ -403,7 +411,7 @@ export function StorageProvider({ children }: StorageProviderProps) {
   const updateFunctionalZone = async (zoneId: string, updates: Partial<FunctionalZone>): Promise<FunctionalZone | null> => {
     console.log('✏️ StorageContext.updateFunctionalZone appelé pour:', zoneId, 'avec:', updates);
     
-    const newProjects = [...projects];
+    const newProjects = [...projectsRef.current];
     
     for (let i = 0; i < newProjects.length; i++) {
       for (let j = 0; j < newProjects[i].buildings.length; j++) {
@@ -442,7 +450,7 @@ export function StorageProvider({ children }: StorageProviderProps) {
   const deleteFunctionalZone = async (zoneId: string): Promise<boolean> => {
     console.log('🗑️ StorageContext.deleteFunctionalZone appelé pour:', zoneId);
     
-    const newProjects = [...projects];
+    const newProjects = [...projectsRef.current];
     let found = false;
     
     for (let i = 0; i < newProjects.length; i++) {
@@ -486,7 +494,7 @@ export function StorageProvider({ children }: StorageProviderProps) {
   const createShutter = async (zoneId: string, shutterData: Omit<Shutter, 'id' | 'zoneId' | 'createdAt' | 'updatedAt'>): Promise<Shutter | null> => {
     console.log('🔲 StorageContext.createShutter appelé pour zone:', zoneId, 'avec:', shutterData);
     
-    const newProjects = [...projects];
+    const newProjects = [...projectsRef.current];
     
     for (let i = 0; i < newProjects.length; i++) {
       for (let j = 0; j < newProjects[i].buildings.length; j++) {
@@ -536,7 +544,7 @@ export function StorageProvider({ children }: StorageProviderProps) {
   const updateShutter = async (shutterId: string, updates: Partial<Shutter>): Promise<Shutter | null> => {
     console.log('✏️ StorageContext.updateShutter appelé pour:', shutterId, 'avec:', updates);
     
-    const newProjects = [...projects];
+    const newProjects = [...projectsRef.current];
     
     for (let i = 0; i < newProjects.length; i++) {
       for (let j = 0; j < newProjects[i].buildings.length; j++) {
@@ -588,7 +596,7 @@ export function StorageProvider({ children }: StorageProviderProps) {
   const deleteShutter = async (shutterId: string): Promise<boolean> => {
     console.log('🗑️ StorageContext.deleteShutter appelé pour:', shutterId);
     
-    const newProjects = [...projects];
+    const newProjects = [...projectsRef.current];
     let found = false;
     
     for (let i = 0; i < newProjects.length; i++) {
@@ -711,7 +719,7 @@ export function StorageProvider({ children }: StorageProviderProps) {
     const results: SearchResult[] = [];
     const queryWords = query.toLowerCase().trim().split(/\s+/).filter(word => word.length > 0);
 
-    for (const project of projects) {
+    for (const project of projectsRef.current) {
       for (const building of project.buildings) {
         for (const zone of building.functionalZones) {
           for (const shutter of zone.shutters) {
@@ -755,16 +763,16 @@ export function StorageProvider({ children }: StorageProviderProps) {
   };
 
   const getStorageInfo = () => {
-    const totalShutters = projects.reduce((total, project) => 
+    const totalShutters = projectsRef.current.reduce((total, project) => 
       total + project.buildings.reduce((buildingTotal, building) => 
         buildingTotal + building.functionalZones.reduce((zoneTotal, zone) => 
           zoneTotal + zone.shutters.length, 0), 0), 0);
 
-    const dataString = JSON.stringify(projects);
+    const dataString = JSON.stringify(projectsRef.current);
     const storageSize = `${(dataString.length / 1024).toFixed(2)} KB`;
 
     return {
-      projectsCount: projects.length,
+      projectsCount: projectsRef.current.length,
       totalShutters,
       storageSize
     };
@@ -772,7 +780,7 @@ export function StorageProvider({ children }: StorageProviderProps) {
 
   // Fonctions de compatibilité pour l'ancienne interface
   const getProjects = async (): Promise<Project[]> => {
-    return projects;
+    return projectsRef.current;
   };
 
   const getFavoriteBuildings = async (): Promise<string[]> => {
