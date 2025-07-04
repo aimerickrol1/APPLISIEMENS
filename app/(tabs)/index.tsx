@@ -72,6 +72,9 @@ export default function ProjectsScreen() {
   // Utiliser le hook pour gérer le double appui sur le bouton retour pour quitter
   useDoubleBackToExit();
 
+  // Convert favoriteProjects array to Set for .has() method
+  const favoriteProjectsSet = new Set(favoriteProjects);
+
   // Convertir l'array de favoris en Set pour une recherche plus efficace
   useEffect(() => {
     setFavoriteProjectsSet(new Set(storedFavorites));
@@ -368,6 +371,45 @@ export default function ProjectsScreen() {
     setCreateModalVisible(true);
   };
 
+  const handleSubmitProject = async () => {
+    if (!validateForm()) return;
+
+    setFormLoading(true);
+    try {
+      const projectData: any = {
+        name: name.trim(),
+      };
+
+      if (city.trim()) {
+        projectData.city = city.trim();
+      }
+
+      if (startDate && isValidDate(startDate)) {
+        projectData.startDate = parseDate(startDate);
+      }
+
+      if (endDate && isValidDate(endDate)) {
+        projectData.endDate = parseDate(endDate);
+      }
+
+      const project = await createProject(projectData);
+      
+      if (project) {
+        console.log('✅ Projet créé avec succès:', project.id);
+        
+        setCreateModalVisible(false);
+        resetForm();
+        
+        router.push(`/(tabs)/project/${project.id}`);
+      }
+    } catch (error) {
+      console.error('❌ Erreur lors de la création du projet:', error);
+      Alert.alert('Erreur', 'Impossible de créer le projet. Veuillez réessayer.');
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
   // Fonctions pour les favoris et sélection
   const handleToggleFavorite = async (projectId: string) => {
     const newFavorites = new Set(favoriteProjectsSet);
@@ -508,6 +550,34 @@ export default function ProjectsScreen() {
       nonCompliantCount,
       complianceRate
     };
+  };
+
+  // Calculer les statistiques de conformité
+  const getComplianceStats = (project: Project) => {
+    let compliant = 0;
+    let acceptable = 0;
+    let nonCompliant = 0;
+
+    project.buildings.forEach(building => {
+      building.functionalZones.forEach(zone => {
+        zone.shutters.forEach(shutter => {
+          const compliance = calculateCompliance(shutter.referenceFlow, shutter.measuredFlow);
+          switch (compliance.status) {
+            case 'compliant':
+              compliant++;
+              break;
+            case 'acceptable':
+              acceptable++;
+              break;
+            case 'non-compliant':
+              nonCompliant++;
+              break;
+          }
+        });
+      });
+    });
+
+    return { compliant, acceptable, nonCompliant };
   };
 
   // Trier les projets : favoris en premier
