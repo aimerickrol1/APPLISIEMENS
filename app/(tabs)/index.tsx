@@ -48,7 +48,6 @@ export default function ProjectsScreen() {
   } = useStorage();
   
   const [loading, setLoading] = useState(true);
-  const [loading, setLoading] = useState(true);
   const [favoriteProjects, setFavoriteProjectsState] = useState<Set<string>>(new Set());
   
   // États pour le mode sélection
@@ -81,10 +80,6 @@ export default function ProjectsScreen() {
   useEffect(() => {
     setFavoriteProjectsState(new Set(favProjects));
   }, [favProjects]);
-
-  useEffect(() => {
-    setLoading(false);
-  }, [projects]);
 
   // Fonctions pour la prédéfinition de structure
   // Convertir favoriteProjects array to Set pour .has() method
