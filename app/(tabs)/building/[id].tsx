@@ -1,6 +1,17 @@
-Here's the fixed version with all missing closing brackets added:
+      return building.compartmentZones || []; // Zones de compartimentage uniquement
+    } else if (projectMode === 'complete') {
+      // En mode complet, afficher selon l'onglet actif
+      if (activeTab === 'smoke') {
+        return building.functionalZones;
+      } else {
+        return building.compartmentZones || [];
+      }
+    }
+    
+    return building.functionalZones; // Par défaut
+  };
 
-```javascript
+  // Trier les zones : favoris en premier
   const zonesToDisplay = getZonesToDisplay();
   const sortedZones = zonesToDisplay.sort((a, b) => {
     const aIsFavorite = favoriteZonesSet.has(a.id);
@@ -10,9 +21,6 @@ Here's the fixed version with all missing closing brackets added:
     if (!aIsFavorite && bIsFavorite) return 1;
     return 0;
   });
-
-  return building.compartmentZones || []; // Zones de compartimentage uniquement
-}
 ```
 
 The main issues were:
