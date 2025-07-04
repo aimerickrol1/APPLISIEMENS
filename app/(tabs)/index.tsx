@@ -13,7 +13,7 @@ import { calculateCompliance } from '@/utils/compliance';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 
-// NOUVEAU : Interface pour la structure de bâtiment
+// Interface pour la structure de bâtiment
 interface BuildingStructure {
   id: string;
   name: string;
@@ -55,7 +55,7 @@ export default function ProjectsScreen() {
   const [formLoading, setFormLoading] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; startDate?: string; endDate?: string }>({});
 
-  // NOUVEAU : États pour la structure prédéfinie avancée
+  // États pour la structure prédéfinie avancée
   const [createWithStructure, setCreateWithStructure] = useState(false);
   const [buildingStructures, setBuildingStructures] = useState<BuildingStructure[]>([
     {
@@ -106,7 +106,7 @@ export default function ProjectsScreen() {
     setStartDate('');
     setEndDate('');
     setErrors({});
-    // NOUVEAU : Reset de la structure prédéfinie
+    // Reset de la structure prédéfinie
     setCreateWithStructure(false);
     setBuildingStructures([
       {
@@ -239,7 +239,7 @@ export default function ProjectsScreen() {
     return new Date(year, month - 1, day);
   };
 
-  // NOUVEAU : Fonctions pour gérer la structure prédéfinie avancée
+  // Fonctions pour gérer la structure prédéfinie avancée
   const addBuilding = () => {
     const newId = (buildingStructures.length + 1).toString();
     const newBuilding: BuildingStructure = {
@@ -317,7 +317,7 @@ export default function ProjectsScreen() {
     }));
   };
 
-  // NOUVEAU : Fonction pour créer la structure prédéfinie avancée
+  // Fonction pour créer la structure prédéfinie avancée
   const createAdvancedProjectStructure = async (project: Project) => {
     try {
       console.log('🏗️ Création de la structure prédéfinie avancée...');
@@ -398,7 +398,7 @@ export default function ProjectsScreen() {
       if (project) {
         console.log('✅ Projet créé avec succès:', project.id);
         
-        // NOUVEAU : Créer la structure prédéfinie avancée si demandée
+        // Créer la structure prédéfinie avancée si demandée
         if (createWithStructure) {
           await createAdvancedProjectStructure(project);
         }
@@ -839,7 +839,7 @@ export default function ProjectsScreen() {
                 error={errors.endDate}
               />
 
-              {/* NOUVEAU : Section structure prédéfinie avancée */}
+              {/* Section structure prédéfinie avancée */}
               <View style={styles.structureSection}>
                 <TouchableOpacity 
                   style={styles.structureToggle}
@@ -1004,7 +1004,7 @@ export default function ProjectsScreen() {
               <Text style={styles.modalText}>
                 <Text style={styles.modalBold}>Le taux de conformité affiché dans l'aperçu des projets n'a aucune valeur réglementaire.</Text>
                 {'\n\n'}
-                Il s'agit uniquement d\'un indicateur visuel pour aider à suivre globalement l'état des volets d\'un projet.
+                Il s'agit uniquement d'un indicateur visuel pour aider à suivre globalement l'état des volets d'un projet.
                 {'\n\n'}
                 Ce taux n'est défini nulle part dans la norme NF S61-933.
                 {'\n\n'}
@@ -1381,7 +1381,7 @@ const createStyles = (theme: any) => StyleSheet.create({
   modalButton: {
     flex: 1,
   },
-  // NOUVEAU : Styles pour la structure prédéfinie avancée
+  // Styles pour la structure prédéfinie avancée
   structureSection: {
     marginTop: 16,
     padding: 16,
