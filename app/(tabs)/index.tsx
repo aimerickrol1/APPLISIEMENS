@@ -477,28 +477,35 @@ export default function ProjectsScreen() {
     let compliantCount = 0;
     let acceptableCount = 0;
     let nonCompliantCount = 0;
+    let totalMeasuredShutters = 0;
 
     // Calculer la conformité pour chaque volet
     project.buildings.forEach(building => {
       building.functionalZones.forEach(zone => {
         zone.shutters.forEach(shutter => {
-          const compliance = calculateCompliance(shutter.referenceFlow, shutter.measuredFlow);
-          switch (compliance.status) {
-            case 'compliant':
-              compliantCount++;
-              break;
-            case 'acceptable':
-              acceptableCount++;
-              break;
-            case 'non-compliant':
-              nonCompliantCount++;
-              break;
+          // Ne compter que les volets qui ont des valeurs de référence et mesurées
+          if (shutter.referenceFlow > 0) {
+            totalMeasuredShutters++;
+            const compliance = calculateCompliance(shutter.referenceFlow, shutter.measuredFlow);
+            switch (compliance.status) {
+              case 'compliant':
+                compliantCount++;
+                break;
+              case 'acceptable':
+                acceptableCount++;
+                break;
+              case 'non-compliant':
+                nonCompliantCount++;
+                break;
+            }
           }
         });
       });
     });
 
-    const complianceRate = shutterCount > 0 ? (compliantCount / shutterCount) * 100 : 0;
+    // CORRIGÉ : Le taux de conformité inclut maintenant les volets fonctionnels ET acceptables
+    const complianceRate = totalMeasuredShutters > 0 ? 
+      ((compliantCount + acceptableCount) / totalMeasuredShutters) * 100 : 0;
 
     return {
       buildingCount,
@@ -507,7 +514,8 @@ export default function ProjectsScreen() {
       compliantCount,
       acceptableCount,
       nonCompliantCount,
-      complianceRate
+      complianceRate,
+      totalMeasuredShutters
     };
   };
 
