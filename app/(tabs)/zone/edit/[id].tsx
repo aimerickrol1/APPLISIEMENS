@@ -13,7 +13,7 @@ import { useAndroidBackButton } from '@/utils/BackHandler';
 export default function EditZoneScreen() {
   const { strings } = useLanguage();
   const { theme } = useTheme();
-  const { storage } = useStorage();
+  const { projects, updateFunctionalZone } = useStorage();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [zone, setZone] = useState<FunctionalZone | null>(null);
   const [building, setBuilding] = useState<Building | null>(null);
@@ -32,15 +32,16 @@ export default function EditZoneScreen() {
 
   useEffect(() => {
     loadZone();
-  }, [id]);
+  }, [id, projects]);
 
   const loadZone = async () => {
     try {
-      const projects = await storage.getProjects();
+      console.log('🔍 Recherche de la zone avec ID:', id);
       for (const proj of projects) {
         for (const bldg of proj.buildings) {
           const foundZone = bldg.functionalZones.find(z => z.id === id);
           if (foundZone) {
+            console.log('✅ Zone trouvée:', foundZone.name);
             setZone(foundZone);
             setBuilding(bldg);
             setProject(proj);
@@ -50,6 +51,7 @@ export default function EditZoneScreen() {
           }
         }
       }
+      console.error('❌ Zone non trouvée avec ID:', id);
     } catch (error) {
       console.error('Erreur lors du chargement de la zone:', error);
     } finally {
@@ -89,14 +91,19 @@ export default function EditZoneScreen() {
 
     setLoading(true);
     try {
-      const updatedZone = await storage.updateFunctionalZone(zone.id, {
+      console.log('💾 Sauvegarde de la zone:', zone.id);
+      
+      const updatedZone = await updateFunctionalZone(zone.id, {
         name: name.trim(),
         description: description.trim() || undefined,
       });
 
       if (updatedZone) {
+        console.log('✅ Zone mise à jour avec succès');
         // CORRIGÉ : Retourner vers la page de la zone (et non du bâtiment)
         router.push(`/(tabs)/zone/${zone.id}`);
+      } else {
+        console.error('❌ Erreur: Zone non trouvée pour la mise à jour');
       }
     } catch (error) {
       console.error('Erreur lors de la modification de la zone:', error);
@@ -165,7 +172,7 @@ export default function EditZoneScreen() {
 
         <View style={styles.buttonContainer}>
           <Button
-            title={strings.saveChanges}
+            title={loading ? "Sauvegarde..." : strings.saveChanges}
             onPress={handleSave}
             disabled={loading}
           />

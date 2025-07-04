@@ -15,7 +15,7 @@ import { useAndroidBackButton } from '@/utils/BackHandler';
 export default function EditShutterScreen() {
   const { strings, currentLanguage } = useLanguage();
   const { theme } = useTheme();
-  const { storage } = useStorage();
+  const { projects, updateShutter } = useStorage();
   const { id, from } = useLocalSearchParams<{ id: string; from?: string }>();
   const [shutter, setShutter] = useState<Shutter | null>(null);
   const [zone, setZone] = useState<FunctionalZone | null>(null);
@@ -49,16 +49,17 @@ export default function EditShutterScreen() {
 
   useEffect(() => {
     loadShutter();
-  }, [id]);
+  }, [id, projects]);
 
   const loadShutter = async () => {
     try {
-      const projects = await storage.getProjects();
+      console.log('🔍 Recherche du volet avec ID:', id);
       for (const proj of projects) {
         for (const bldg of proj.buildings) {
           for (const z of bldg.functionalZones) {
             const foundShutter = z.shutters.find(s => s.id === id);
             if (foundShutter) {
+              console.log('✅ Volet trouvé:', foundShutter.name);
               setShutter(foundShutter);
               setZone(z);
               setBuilding(bldg);
@@ -74,6 +75,7 @@ export default function EditShutterScreen() {
           }
         }
       }
+      console.error('❌ Volet non trouvé avec ID:', id);
     } catch (error) {
       console.error('Erreur lors du chargement du volet:', error);
     } finally {
@@ -129,7 +131,9 @@ export default function EditShutterScreen() {
 
     setLoading(true);
     try {
-      const updatedShutter = await storage.updateShutter(shutter.id, {
+      console.log('💾 Sauvegarde du volet:', shutter.id);
+      
+      const updatedShutter = await updateShutter(shutter.id, {
         name: name.trim(),
         type,
         referenceFlow: parseFloat(referenceFlow),
@@ -138,12 +142,15 @@ export default function EditShutterScreen() {
       });
 
       if (updatedShutter) {
+        console.log('✅ Volet mis à jour avec succès');
         // CORRIGÉ : Retourner vers la page du volet (et non de la zone)
         if (from === 'search') {
           router.push(`/(tabs)/shutter/${shutter.id}?from=search`);
         } else {
           router.push(`/(tabs)/shutter/${shutter.id}`);
         }
+      } else {
+        console.error('❌ Erreur: Volet non trouvé pour la mise à jour');
       }
     } catch (error) {
       console.error('Erreur lors de la modification du volet:', error);
@@ -285,7 +292,7 @@ export default function EditShutterScreen() {
 
         <View style={styles.buttonContainer}>
           <Button
-            title={strings.saveChanges}
+            title={loading ? "Sauvegarde..." : strings.saveChanges}
             onPress={handleSave}
             disabled={loading}
           />

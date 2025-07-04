@@ -14,7 +14,7 @@ import { useAndroidBackButton } from '@/utils/BackHandler';
 export default function EditProjectScreen() {
   const { strings } = useLanguage();
   const { theme } = useTheme();
-  const { storage } = useStorage();
+  const { projects, updateProject } = useStorage();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [project, setProject] = useState<Project | null>(null);
   const [name, setName] = useState('');
@@ -33,7 +33,7 @@ export default function EditProjectScreen() {
 
   useEffect(() => {
     loadProject();
-  }, [id]);
+  }, [id, projects]);
 
   const formatDate = (date: Date): string => {
     const day = date.getDate().toString().padStart(2, '0');
@@ -44,14 +44,17 @@ export default function EditProjectScreen() {
 
   const loadProject = async () => {
     try {
-      const projects = await storage.getProjects();
+      console.log('🔍 Recherche du projet avec ID:', id);
       const foundProject = projects.find(p => p.id === id);
       if (foundProject) {
+        console.log('✅ Projet trouvé:', foundProject.name);
         setProject(foundProject);
         setName(foundProject.name);
         setCity(foundProject.city || '');
         setStartDate(foundProject.startDate ? formatDate(new Date(foundProject.startDate)) : '');
         setEndDate(foundProject.endDate ? formatDate(new Date(foundProject.endDate)) : '');
+      } else {
+        console.error('❌ Projet non trouvé avec ID:', id);
       }
     } catch (error) {
       console.error('Erreur lors du chargement du projet:', error);
@@ -126,6 +129,8 @@ export default function EditProjectScreen() {
 
     setLoading(true);
     try {
+      console.log('💾 Sauvegarde du projet:', project.id);
+      
       const updateData: any = {
         name: name.trim(),
         city: city.trim() || undefined,
@@ -143,11 +148,14 @@ export default function EditProjectScreen() {
         updateData.endDate = undefined;
       }
 
-      const updatedProject = await storage.updateProject(project.id, updateData);
+      const updatedProject = await updateProject(project.id, updateData);
 
       if (updatedProject) {
+        console.log('✅ Projet mis à jour avec succès');
         // CORRIGÉ : Retourner vers la page du projet (et non la liste des projets)
         router.push(`/(tabs)/project/${project.id}`);
+      } else {
+        console.error('❌ Erreur: Projet non trouvé pour la mise à jour');
       }
     } catch (error) {
       console.error('Erreur lors de la modification du projet:', error);
@@ -229,7 +237,7 @@ export default function EditProjectScreen() {
 
         <View style={styles.buttonContainer}>
           <Button
-            title={strings.saveChanges}
+            title={loading ? "Sauvegarde..." : strings.saveChanges}
             onPress={handleSave}
             disabled={loading}
           />

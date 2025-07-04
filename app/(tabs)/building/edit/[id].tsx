@@ -13,7 +13,7 @@ import { useAndroidBackButton } from '@/utils/BackHandler';
 export default function EditBuildingScreen() {
   const { strings } = useLanguage();
   const { theme } = useTheme();
-  const { storage } = useStorage();
+  const { projects, updateBuilding } = useStorage();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [building, setBuilding] = useState<Building | null>(null);
   const [project, setProject] = useState<Project | null>(null);
@@ -31,21 +31,23 @@ export default function EditBuildingScreen() {
 
   useEffect(() => {
     loadBuilding();
-  }, [id]);
+  }, [id, projects]);
 
   const loadBuilding = async () => {
     try {
-      const projects = await storage.getProjects();
+      console.log('🔍 Recherche du bâtiment avec ID:', id);
       for (const proj of projects) {
         const foundBuilding = proj.buildings.find(b => b.id === id);
         if (foundBuilding) {
+          console.log('✅ Bâtiment trouvé:', foundBuilding.name);
           setBuilding(foundBuilding);
           setProject(proj);
           setName(foundBuilding.name);
           setDescription(foundBuilding.description || '');
-          break;
+          return;
         }
       }
+      console.error('❌ Bâtiment non trouvé avec ID:', id);
     } catch (error) {
       console.error('Erreur lors du chargement du bâtiment:', error);
     } finally {
@@ -85,14 +87,19 @@ export default function EditBuildingScreen() {
 
     setLoading(true);
     try {
-      const updatedBuilding = await storage.updateBuilding(building.id, {
+      console.log('💾 Sauvegarde du bâtiment:', building.id);
+      
+      const updatedBuilding = await updateBuilding(building.id, {
         name: name.trim(),
         description: description.trim() || undefined,
       });
 
       if (updatedBuilding) {
+        console.log('✅ Bâtiment mis à jour avec succès');
         // CORRIGÉ : Retourner vers la page du bâtiment (et non du projet)
         router.push(`/(tabs)/building/${building.id}`);
+      } else {
+        console.error('❌ Erreur: Bâtiment non trouvé pour la mise à jour');
       }
     } catch (error) {
       console.error('Erreur lors de la modification du bâtiment:', error);
@@ -163,7 +170,7 @@ export default function EditBuildingScreen() {
 
         <View style={styles.buttonContainer}>
           <Button
-            title={strings.saveChanges}
+            title={loading ? "Sauvegarde..." : strings.saveChanges}
             onPress={handleSave}
             disabled={loading}
           />
