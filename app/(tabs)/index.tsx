@@ -1012,7 +1012,7 @@ export default function ProjectsScreen() {
               <Text style={styles.modalText}>
                 <Text style={styles.modalBold}>Le taux de conformité affiché dans l'aperçu des projets n'a aucune valeur réglementaire.</Text>
                 {'\n\n'}
-                Il s'agit uniquement d\'un indicateur visuel pour aider à suivre globalement l'état des volets d\'un projet.
+                Il s'agit uniquement d\'un indicateur visuel pour aider à suivre globalement l\'état des volets d\'un projet.
                 {'\n\n'}
                 Ce taux n'est défini nulle part dans la norme NF S61-933.
                 {'\n\n'}
