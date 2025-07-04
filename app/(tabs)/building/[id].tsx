@@ -25,6 +25,9 @@ export default function BuildingDetailScreen() {
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Convert favoriteZones array to Set for .has() method
+  const favoriteZonesSet = new Set(favoriteZones);
+
   // États pour le mode sélection
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedZones, setSelectedZones] = useState<Set<string>>(new Set());
@@ -255,8 +258,8 @@ export default function BuildingDetailScreen() {
 
   // Trier les zones : favoris en premier
   const sortedZones = building ? [...building.functionalZones].sort((a, b) => {
-    const aIsFavorite = favoriteZones.has(a.id);
-    const bIsFavorite = favoriteZones.has(b.id);
+    const aIsFavorite = favoriteZonesSet.has(a.id);
+    const bIsFavorite = favoriteZonesSet.has(b.id);
     
     if (aIsFavorite && !bIsFavorite) return -1;
     if (!aIsFavorite && bIsFavorite) return 1;
@@ -266,7 +269,7 @@ export default function BuildingDetailScreen() {
   const renderZone = ({ item }: { item: FunctionalZone }) => {
     const shutterDetails = getShutterDetails(item);
     const isSelected = selectedZones.has(item.id);
-    const isFavorite = favoriteZones.has(item.id);
+    const isFavorite = favoriteZonesSet.has(item.id);
 
     return (
       <TouchableOpacity

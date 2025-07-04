@@ -30,6 +30,9 @@ export default function ZoneDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [copiedShutter, setCopiedShutter] = useState<Shutter | null>(null);
   
+  // Convert favoriteShutters array to Set for .has() method
+  const favoriteShuttersSet = new Set(favoriteShutters);
+
   // CORRIGÉ : États pour l'édition directe des débits - AVEC MISE À JOUR INSTANTANÉE
   const [editingFlows, setEditingFlows] = useState<{[key: string]: {
     referenceFlow: string;
@@ -501,8 +504,8 @@ export default function ZoneDetailScreen() {
 
     // Trier les favoris en premier
     return [...filtered].sort((a, b) => {
-      const aIsFavorite = favoriteShutters.has(a.id);
-      const bIsFavorite = favoriteShutters.has(b.id);
+      const aIsFavorite = favoriteShuttersSet.has(a.id);
+      const bIsFavorite = favoriteShuttersSet.has(b.id);
       
       if (aIsFavorite && !bIsFavorite) return -1;
       if (!aIsFavorite && bIsFavorite) return 1;
@@ -523,7 +526,7 @@ export default function ZoneDetailScreen() {
 
   const renderShutter = ({ item }: { item: Shutter }) => {
     const isSelected = selectedShutters.has(item.id);
-    const isFavorite = favoriteShutters.has(item.id);
+    const isFavorite = favoriteShuttersSet.has(item.id);
     const editData = editingFlows[item.id];
     
     // CORRIGÉ : Calculer la conformité avec les valeurs actuelles (éditées ou du volet mis à jour)
