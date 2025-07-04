@@ -188,18 +188,26 @@ export function StorageProvider({ children }: StorageProviderProps) {
     }
   };
 
-  // Fonction utilitaire pour sauvegarder les projets
+  // CORRIGÉ : Fonction utilitaire pour sauvegarder les projets ET mettre à jour l'état React
   const saveProjects = async (newProjects: Project[]) => {
     try {
+      console.log('💾 Sauvegarde de', newProjects.length, 'projets...');
       await AsyncStorage.setItem(STORAGE_KEYS.PROJECTS, JSON.stringify(newProjects));
+      console.log('✅ Projets sauvegardés dans AsyncStorage');
+      
+      // CRITIQUE : Mettre à jour l'état React immédiatement
       setProjects(newProjects);
+      console.log('✅ État React mis à jour avec', newProjects.length, 'projets');
     } catch (error) {
-      console.error('Erreur sauvegarde projets:', error);
+      console.error('❌ Erreur sauvegarde projets:', error);
+      throw error;
     }
   };
 
   // Actions pour les projets
   const createProject = async (projectData: Omit<Project, 'id' | 'createdAt' | 'updatedAt' | 'buildings'>): Promise<Project> => {
+    console.log('🚀 StorageContext.createProject appelé avec:', projectData);
+    
     const newProject: Project = {
       ...projectData,
       id: generateUniqueId(),
@@ -208,26 +216,41 @@ export function StorageProvider({ children }: StorageProviderProps) {
       buildings: []
     };
     
+    console.log('📦 Nouveau projet créé:', newProject);
+    
     const newProjects = [...projects, newProject];
     await saveProjects(newProjects);
+    
+    console.log('✅ Projet ajouté à la liste, total:', newProjects.length);
     return newProject;
   };
 
   const updateProject = async (id: string, updates: Partial<Project>): Promise<Project | null> => {
+    console.log('✏️ StorageContext.updateProject appelé pour:', id, 'avec:', updates);
+    
     const projectIndex = projects.findIndex(p => p.id === id);
-    if (projectIndex === -1) return null;
+    if (projectIndex === -1) {
+      console.error('❌ Projet non trouvé:', id);
+      return null;
+    }
     
     const updatedProject = { ...projects[projectIndex], ...updates, updatedAt: new Date() };
     const newProjects = [...projects];
     newProjects[projectIndex] = updatedProject;
     
     await saveProjects(newProjects);
+    console.log('✅ Projet mis à jour:', updatedProject.id);
     return updatedProject;
   };
 
   const deleteProject = async (id: string): Promise<boolean> => {
+    console.log('🗑️ StorageContext.deleteProject appelé pour:', id);
+    
     const projectIndex = projects.findIndex(p => p.id === id);
-    if (projectIndex === -1) return false;
+    if (projectIndex === -1) {
+      console.error('❌ Projet non trouvé pour suppression:', id);
+      return false;
+    }
     
     const newProjects = projects.filter(p => p.id !== id);
     const newFavoriteProjects = favoriteProjects.filter(fId => fId !== id);
@@ -237,13 +260,19 @@ export function StorageProvider({ children }: StorageProviderProps) {
       setFavoriteProjects(newFavoriteProjects)
     ]);
     
+    console.log('✅ Projet supprimé:', id);
     return true;
   };
 
   // Actions pour les bâtiments
   const createBuilding = async (projectId: string, buildingData: Omit<Building, 'id' | 'projectId' | 'createdAt' | 'functionalZones'>): Promise<Building | null> => {
+    console.log('🏗️ StorageContext.createBuilding appelé pour projet:', projectId, 'avec:', buildingData);
+    
     const projectIndex = projects.findIndex(p => p.id === projectId);
-    if (projectIndex === -1) return null;
+    if (projectIndex === -1) {
+      console.error('❌ Projet non trouvé pour création bâtiment:', projectId);
+      return null;
+    }
 
     const newBuilding: Building = {
       ...buildingData,
@@ -253,6 +282,8 @@ export function StorageProvider({ children }: StorageProviderProps) {
       functionalZones: []
     };
 
+    console.log('🏢 Nouveau bâtiment créé:', newBuilding);
+
     const newProjects = [...projects];
     newProjects[projectIndex] = {
       ...newProjects[projectIndex],
@@ -261,10 +292,13 @@ export function StorageProvider({ children }: StorageProviderProps) {
     };
 
     await saveProjects(newProjects);
+    console.log('✅ Bâtiment ajouté au projet:', newBuilding.id);
     return newBuilding;
   };
 
   const updateBuilding = async (buildingId: string, updates: Partial<Building>): Promise<Building | null> => {
+    console.log('✏️ StorageContext.updateBuilding appelé pour:', buildingId, 'avec:', updates);
+    
     const newProjects = [...projects];
     
     for (let i = 0; i < newProjects.length; i++) {
@@ -282,13 +316,18 @@ export function StorageProvider({ children }: StorageProviderProps) {
         };
         
         await saveProjects(newProjects);
+        console.log('✅ Bâtiment mis à jour:', updatedBuilding.id);
         return updatedBuilding;
       }
     }
+    
+    console.error('❌ Bâtiment non trouvé pour mise à jour:', buildingId);
     return null;
   };
 
   const deleteBuilding = async (buildingId: string): Promise<boolean> => {
+    console.log('🗑️ StorageContext.deleteBuilding appelé pour:', buildingId);
+    
     const newProjects = [...projects];
     let found = false;
     
@@ -311,6 +350,9 @@ export function StorageProvider({ children }: StorageProviderProps) {
         saveProjects(newProjects),
         setFavoriteBuildings(newFavoriteBuildings)
       ]);
+      console.log('✅ Bâtiment supprimé:', buildingId);
+    } else {
+      console.error('❌ Bâtiment non trouvé pour suppression:', buildingId);
     }
     
     return found;
@@ -318,6 +360,8 @@ export function StorageProvider({ children }: StorageProviderProps) {
 
   // Actions pour les zones
   const createFunctionalZone = async (buildingId: string, zoneData: Omit<FunctionalZone, 'id' | 'buildingId' | 'createdAt' | 'shutters'>): Promise<FunctionalZone | null> => {
+    console.log('🏢 StorageContext.createFunctionalZone appelé pour bâtiment:', buildingId, 'avec:', zoneData);
+    
     const newProjects = [...projects];
     
     for (let i = 0; i < newProjects.length; i++) {
@@ -330,6 +374,8 @@ export function StorageProvider({ children }: StorageProviderProps) {
           createdAt: new Date(),
           shutters: []
         };
+        
+        console.log('🏗️ Nouvelle zone créée:', newZone);
         
         newProjects[i] = {
           ...newProjects[i],
@@ -345,13 +391,18 @@ export function StorageProvider({ children }: StorageProviderProps) {
         };
         
         await saveProjects(newProjects);
+        console.log('✅ Zone ajoutée au bâtiment:', newZone.id);
         return newZone;
       }
     }
+    
+    console.error('❌ Bâtiment non trouvé pour création zone:', buildingId);
     return null;
   };
 
   const updateFunctionalZone = async (zoneId: string, updates: Partial<FunctionalZone>): Promise<FunctionalZone | null> => {
+    console.log('✏️ StorageContext.updateFunctionalZone appelé pour:', zoneId, 'avec:', updates);
+    
     const newProjects = [...projects];
     
     for (let i = 0; i < newProjects.length; i++) {
@@ -378,14 +429,19 @@ export function StorageProvider({ children }: StorageProviderProps) {
           };
           
           await saveProjects(newProjects);
+          console.log('✅ Zone mise à jour:', updatedZone.id);
           return updatedZone;
         }
       }
     }
+    
+    console.error('❌ Zone non trouvée pour mise à jour:', zoneId);
     return null;
   };
 
   const deleteFunctionalZone = async (zoneId: string): Promise<boolean> => {
+    console.log('🗑️ StorageContext.deleteFunctionalZone appelé pour:', zoneId);
+    
     const newProjects = [...projects];
     let found = false;
     
@@ -418,6 +474,9 @@ export function StorageProvider({ children }: StorageProviderProps) {
         saveProjects(newProjects),
         setFavoriteZones(newFavoriteZones)
       ]);
+      console.log('✅ Zone supprimée:', zoneId);
+    } else {
+      console.error('❌ Zone non trouvée pour suppression:', zoneId);
     }
     
     return found;
@@ -425,6 +484,8 @@ export function StorageProvider({ children }: StorageProviderProps) {
 
   // Actions pour les volets
   const createShutter = async (zoneId: string, shutterData: Omit<Shutter, 'id' | 'zoneId' | 'createdAt' | 'updatedAt'>): Promise<Shutter | null> => {
+    console.log('🔲 StorageContext.createShutter appelé pour zone:', zoneId, 'avec:', shutterData);
+    
     const newProjects = [...projects];
     
     for (let i = 0; i < newProjects.length; i++) {
@@ -438,6 +499,8 @@ export function StorageProvider({ children }: StorageProviderProps) {
             createdAt: new Date(),
             updatedAt: new Date()
           };
+          
+          console.log('🎯 Nouveau volet créé:', newShutter);
           
           newProjects[i] = {
             ...newProjects[i],
@@ -460,14 +523,19 @@ export function StorageProvider({ children }: StorageProviderProps) {
           };
           
           await saveProjects(newProjects);
+          console.log('✅ Volet ajouté à la zone:', newShutter.id);
           return newShutter;
         }
       }
     }
+    
+    console.error('❌ Zone non trouvée pour création volet:', zoneId);
     return null;
   };
 
   const updateShutter = async (shutterId: string, updates: Partial<Shutter>): Promise<Shutter | null> => {
+    console.log('✏️ StorageContext.updateShutter appelé pour:', shutterId, 'avec:', updates);
+    
     const newProjects = [...projects];
     
     for (let i = 0; i < newProjects.length; i++) {
@@ -506,15 +574,20 @@ export function StorageProvider({ children }: StorageProviderProps) {
             };
             
             await saveProjects(newProjects);
+            console.log('✅ Volet mis à jour:', updatedShutter.id);
             return updatedShutter;
           }
         }
       }
     }
+    
+    console.error('❌ Volet non trouvé pour mise à jour:', shutterId);
     return null;
   };
 
   const deleteShutter = async (shutterId: string): Promise<boolean> => {
+    console.log('🗑️ StorageContext.deleteShutter appelé pour:', shutterId);
+    
     const newProjects = [...projects];
     let found = false;
     
@@ -557,6 +630,9 @@ export function StorageProvider({ children }: StorageProviderProps) {
         saveProjects(newProjects),
         setFavoriteShutters(newFavoriteShutters)
       ]);
+      console.log('✅ Volet supprimé:', shutterId);
+    } else {
+      console.error('❌ Volet non trouvé pour suppression:', shutterId);
     }
     
     return found;
