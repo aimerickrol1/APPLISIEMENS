@@ -72,9 +72,6 @@ export default function ProjectsScreen() {
   // Utiliser le hook pour gérer le double appui sur le bouton retour pour quitter
   useDoubleBackToExit();
 
-  // Convert favoriteProjects array to Set for .has() method
-  const favoriteProjectsSet = new Set(favoriteProjects);
-
   // Convertir l'array de favoris en Set pour une recherche plus efficace
   useEffect(() => {
     setFavoriteProjectsSet(new Set(storedFavorites));
