@@ -330,9 +330,9 @@ const strings: Record<SupportedLanguage, LanguageStrings> = {
     compliant: 'Fonctionnel',
     acceptable: 'Acceptable',
     nonCompliant: 'Non conforme',
-    functionalDesc: 'Le volet fonctionne correctement selon la norme.',
-    acceptableDesc: 'Le volet présente un écart acceptable nécessitant une surveillance.',
-    nonCompliantDesc: 'Le volet nécessite une action corrective obligatoire.',
+    functionalDesc: 'Un écart inférieur à 10% entre les valeurs retenues lors de cet essai fonctionnel et les valeurs de référence conduit au constat du fonctionnement attendu du système de désenfumage mécanique.',
+    acceptableDesc: 'Un écart compris entre 10% et 20% entre les valeurs retenues lors de cet essai fonctionnel et les valeurs de référence conduit à signaler cette dérive, par une proposition d\'action corrective à l\'exploitant ou au chef d\'établissement.',
+    nonCompliantDesc: 'Un écart supérieur à 20% entre les valeurs retenues lors de cet essai fonctionnel et les valeurs de référence retenues à la mise en service, doit conduire à une action corrective.',
     invalidReference: 'Référence invalide',
 
     // Formulaires
@@ -545,9 +545,9 @@ const strings: Record<SupportedLanguage, LanguageStrings> = {
     compliant: 'Compliant',
     acceptable: 'Acceptable',
     nonCompliant: 'Non-compliant',
-    functionalDesc: 'The shutter works correctly according to the standard.',
-    acceptableDesc: 'The shutter shows an acceptable deviation requiring monitoring.',
-    nonCompliantDesc: 'The shutter requires mandatory corrective action.',
+    functionalDesc: 'A deviation of less than 10% between the values recorded during this functional test and the reference values leads to the observation of the expected operation of the mechanical smoke extraction system.',
+    acceptableDesc: 'A deviation between 10% and 20% between the values recorded during this functional test and the reference values leads to reporting this drift, through a proposal for corrective action to the operator or the establishment manager.',
+    nonCompliantDesc: 'A deviation greater than 20% between the values recorded during this functional test and the reference values retained at commissioning must lead to corrective action.',
     invalidReference: 'Invalid reference',
 
     // Formulaires
@@ -760,9 +760,9 @@ const strings: Record<SupportedLanguage, LanguageStrings> = {
     compliant: 'Conforme',
     acceptable: 'Aceptable',
     nonCompliant: 'No conforme',
-    functionalDesc: 'La compuerta funciona correctamente según la norma.',
-    acceptableDesc: 'La compuerta muestra una desviación aceptable que requiere monitoreo.',
-    nonCompliantDesc: 'La compuerta requiere acción correctiva obligatoria.',
+    functionalDesc: 'Una desviación inferior al 10% entre los valores registrados durante esta prueba funcional y los valores de referencia conduce a la constatación del funcionamiento esperado del sistema de extracción mecánica de humos.',
+    acceptableDesc: 'Una desviación entre el 10% y el 20% entre los valores registrados durante esta prueba funcional y los valores de referencia conduce a señalar esta deriva, mediante una propuesta de acción correctiva al operador o al responsable del establecimiento.',
+    nonCompliantDesc: 'Una desviación superior al 20% entre los valores registrados durante esta prueba funcional y los valores de referencia retenidos en la puesta en servicio debe conducir a una acción correctiva.',
     invalidReference: 'Referencia inválida',
 
     // Formulaires
@@ -975,9 +975,9 @@ const strings: Record<SupportedLanguage, LanguageStrings> = {
     compliant: 'Conforme',
     acceptable: 'Accettabile',
     nonCompliant: 'Non conforme',
-    functionalDesc: 'La serranda funziona correttamente secondo lo standard.',
-    acceptableDesc: 'La serranda mostra una deviazione accettabile che richiede monitoraggio.',
-    nonCompliantDesc: 'La serranda richiede azione correttiva obbligatoria.',
+    functionalDesc: 'Una deviazione inferiore al 10% tra i valori registrati durante questo test funzionale e i valori di riferimento porta alla constatazione del funzionamento previsto del sistema di estrazione meccanica del fumo.',
+    acceptableDesc: 'Una deviazione tra il 10% e il 20% tra i valori registrati durante questo test funzionale e i valori di riferimento porta a segnalare questa deriva, attraverso una proposta di azione correttiva all\'operatore o al responsabile della struttura.',
+    nonCompliantDesc: 'Una deviazione superiore al 20% tra i valori registrati durante questo test funzionale e i valori di riferimento mantenuti alla messa in servizio deve portare a un\'azione correttiva.',
     invalidReference: 'Riferimento non valido',
 
     // Formulaires

@@ -198,9 +198,9 @@ export default function SimpleCalculatorScreen() {
             </View>
 
             <Text style={styles.complianceDescription}>
-              {compliance.status === 'compliant' && strings.functionalDesc}
-              {compliance.status === 'acceptable' && strings.acceptableDesc}
-              {compliance.status === 'non-compliant' && strings.nonCompliantDesc}
+              {compliance.status === 'compliant' && "Un écart inférieur à 10% entre les valeurs retenues lors de cet essai fonctionnel et les valeurs de référence conduit au constat du fonctionnement attendu du système de désenfumage mécanique."}
+              {compliance.status === 'acceptable' && "Un écart compris entre 10% et 20% entre les valeurs retenues lors de cet essai fonctionnel et les valeurs de référence conduit à signaler cette dérive, par une proposition d'action corrective à l'exploitant ou au chef d'établissement."}
+              {compliance.status === 'non-compliant' && "Un écart supérieur à 20% entre les valeurs retenues lors de cet essai fonctionnel et les valeurs de référence retenues à la mise en service, doit conduire à une action corrective."}
             </Text>
 
             <View style={styles.saveToHistoryContainer}>
