@@ -8,17 +8,29 @@ import { Trash2, CreditCard as Edit, Plus, Star } from 'lucide-react-native';
 export default function BuildingDetail() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  const { buildings, zones, deleteBuilding, favoriteZones, toggleFavoriteZone } = useStorage();
+  const { projects, zones, deleteBuilding, favoriteZones, toggleFavoriteZone } = useStorage();
   const [building, setBuilding] = useState<Building | null>(null);
   const [activeTab, setActiveTab] = useState<'smoke' | 'compartment'>('smoke');
   const [projectMode, setProjectMode] = useState<'simple' | 'complete'>('simple');
 
   useEffect(() => {
-    const foundBuilding = buildings.find(b => b.id === id);
+    let foundBuilding: Building | null = null;
+    
+    // Search through all projects to find the building with the matching ID
+    for (const project of projects) {
+      if (project.buildings) {
+        const building = project.buildings.find(b => b.id === id);
+        if (building) {
+          foundBuilding = building;
+          break;
+        }
+      }
+    }
+    
     if (foundBuilding) {
       setBuilding(foundBuilding);
     }
-  }, [id, buildings]);
+  }, [id, projects]);
 
   const favoriteZonesSet = new Set(favoriteZones);
 
