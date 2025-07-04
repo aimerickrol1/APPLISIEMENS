@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'rea
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useStorage } from '@/contexts/StorageContext';
 import { Building, Zone } from '@/types';
-import { Trash2, Edit, Plus, Star } from 'lucide-react-native';
+import { Trash2, CreditCard as Edit, Plus, Star } from 'lucide-react-native';
 
 export default function BuildingDetail() {
   const { id } = useLocalSearchParams();
