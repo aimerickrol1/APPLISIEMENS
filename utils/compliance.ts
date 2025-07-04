@@ -7,7 +7,7 @@ import { getStrings } from '@/utils/i18n';
 export function calculateCompliance(referenceFlow: number, measuredFlow: number): ComplianceResult {
   const strings = getStrings(); // NOUVEAU : Obtenir les traductions actuelles
 
-  if (referenceFlow === 0) {
+  if (!referenceFlow || referenceFlow === 0) {
     return {
       deviation: 0,
       status: 'non-compliant',
@@ -17,7 +17,8 @@ export function calculateCompliance(referenceFlow: number, measuredFlow: number)
   }
 
   const deviation = ((measuredFlow - referenceFlow) / referenceFlow) * 100;
-  const absoluteDeviation = Math.abs(deviation);
+  // Éviter les NaN ou Infinity
+  const absoluteDeviation = isNaN(deviation) ? 0 : Math.abs(deviation);
 
   if (absoluteDeviation < 10) {
     return {

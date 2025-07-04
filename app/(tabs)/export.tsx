@@ -68,8 +68,8 @@ export default function ExportScreen() {
   };
 
   const generateProjectReport = (project: Project) => {
-    const totalShutters = project.buildings.reduce((total, building) => 
-      total + building.functionalZones.reduce((zoneTotal, zone) => zoneTotal + zone.shutters.length, 0), 0
+    const totalShutters = project.buildings?.reduce((total, building) => 
+      total + building.functionalZones?.reduce((zoneTotal, zone) => zoneTotal + (zone.shutters?.length || 0), 0), 0
     );
     
     let compliantCount = 0;
@@ -77,9 +77,9 @@ export default function ExportScreen() {
     let nonCompliantCount = 0;
     let totalMeasuredShutters = 0;
 
-    project.buildings.forEach(building => {
-      building.functionalZones.forEach(zone => {
-        zone.shutters.forEach(shutter => {
+    project.buildings?.forEach(building => {
+      building.functionalZones?.forEach(zone => {
+        zone.shutters?.forEach(shutter => {
           // Ne compter que les volets qui ont des valeurs de référence
           if (shutter.referenceFlow > 0) {
             totalMeasuredShutters++;

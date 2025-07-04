@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { useColorScheme } from 'react-native';
+import { useColorScheme, Platform } from 'react-native';
 
 export type ThemeMode = 'light' | 'dark' | 'auto';
 
@@ -117,7 +117,7 @@ interface ThemeProviderProps {
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
   const systemColorScheme = useColorScheme();
-  const [themeMode, setThemeModeState] = useState<ThemeMode>('auto');
+  const [themeMode, setThemeModeState] = useState<ThemeMode>(Platform.OS === 'android' ? 'light' : 'auto');
 
   // Déterminer le thème actuel basé sur le mode sélectionné
   const getCurrentTheme = (): Theme => {

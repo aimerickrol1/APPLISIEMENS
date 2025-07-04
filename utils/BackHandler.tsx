@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { BackHandler, Platform } from 'react-native';
-import { router } from 'expo-router';
+import { router, useNavigation } from 'expo-router';
 
 /**
  * Custom hook to handle Android back button presses
@@ -10,7 +10,7 @@ import { router } from 'expo-router';
 export function useAndroidBackButton(customAction?: () => boolean) {
   useEffect(() => {
     // Only apply this on Android
-    if (Platform.OS !== 'android') return;
+    if (Platform.OS !== 'android') return () => {};
 
     const backAction = () => {
       // If there's a custom action, run it first
@@ -20,7 +20,12 @@ export function useAndroidBackButton(customAction?: () => boolean) {
 
       // Check if we can go back in the navigation stack
       if (router.canGoBack()) {
-        router.back();
+        try {
+          router.back();
+        } catch (error) {
+          console.error('Error navigating back:', error);
+          return false;
+        }
         return true;
       }
 
@@ -46,7 +51,7 @@ export function useAndroidBackButton(customAction?: () => boolean) {
  */
 export function useDoubleBackToExit() {
   useEffect(() => {
-    if (Platform.OS !== 'android') return;
+    if (Platform.OS !== 'android') return () => {};
 
     let backPressCount = 0;
     let backPressTimer: NodeJS.Timeout | null = null;

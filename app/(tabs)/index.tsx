@@ -520,15 +520,15 @@ export default function ProjectsScreen() {
   };
 
   // Trier les projets : favoris en premier
-  const favoriteProjectsSet = new Set(favoriteProjects);
-  const sortedProjects = [...projects].sort((a, b) => {
+  const favoriteProjectsSet = new Set(favoriteProjects || []);
+  const sortedProjects = projects ? [...projects].sort((a, b) => {
     const aIsFavorite = favoriteProjectsSet.has(a.id);
     const bIsFavorite = favoriteProjectsSet.has(b.id);
     
     if (aIsFavorite && !bIsFavorite) return -1;
     if (!aIsFavorite && bIsFavorite) return 1;
     return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
-  });
+  }) : [];
 
   const renderProject = ({ item }: { item: Project }) => {
     const isSelected = selectedProjects.has(item.id);
